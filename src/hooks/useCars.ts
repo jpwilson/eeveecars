@@ -1,9 +1,9 @@
 import axios, { CanceledError } from "axios";
 import { useEffect, useState } from "react";
-import apiClient from "../../services/api-client";
+import apiClient from "../services/api-client";
 
 
-interface Car {
+export interface Car {
     make: string;
     model: string;
     submodel: string;
