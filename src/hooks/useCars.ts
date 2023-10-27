@@ -12,6 +12,8 @@ export interface Car {
     trim_first_released: string;
     carmodel_first_released: string;
     current_price: number;
+    customer_and_critic_rating: number;
+    range_combined_mid: number;
   }
   
   interface FetchCarsResponse {
