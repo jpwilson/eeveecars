@@ -2,6 +2,7 @@ import { SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
 import useCars from "../hooks/useCars";
 import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
+import CarCardContainer from "./CarCardContainer";
 
 const CarGrid = () => {
   const { cars, error, isLoading } = useCars();
@@ -15,9 +16,15 @@ const CarGrid = () => {
         padding={10}
       >
         {isLoading &&
-          skeletons.map((skeleton) => <CarCardSkeleton key={skeleton} />)}
+          skeletons.map((skeleton) => (
+            <CarCardContainer>
+              <CarCardSkeleton key={skeleton} />
+            </CarCardContainer>
+          ))}
         {cars.map((car) => (
-          <CarCard key={car.id} car={car} />
+          <CarCardContainer>
+            <CarCard key={car.id} car={car} />
+          </CarCardContainer>
         ))}
       </SimpleGrid>
     </>

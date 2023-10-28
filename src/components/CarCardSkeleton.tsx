@@ -1,8 +1,9 @@
 import { Card, CardBody, Skeleton, SkeletonText } from "@chakra-ui/react";
+import CarCardContainer from "./CarCardContainer";
 
 const CarCardSkeleton = () => {
   return (
-    <Card width="300px" borderRadius={10} overflow={"hidden"}>
+    <Card>
       <Skeleton height="200px" />
       <CardBody>
         <SkeletonText />

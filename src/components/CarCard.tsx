@@ -2,6 +2,7 @@ import { MdElectricCar } from "react-icons/md";
 import { Card, CardBody, HStack, Heading, Icon, Image } from "@chakra-ui/react";
 import { Car } from "../hooks/useCars";
 import CarScore from "./CarScore";
+import CarCardContainer from "./CarCardContainer";
 
 interface Props {
   car: Car;
@@ -9,7 +10,7 @@ interface Props {
 
 const CarCard = ({ car }: Props) => {
   return (
-    <Card width="300px" borderRadius={10} overflow={"hidden"}>
+    <Card>
       <Image
         src={car.image_url}
         height="200px"
