@@ -5,7 +5,7 @@ import CarCardSkeleton from "./CarCardSkeleton";
 
 const CarGrid = () => {
   const { cars, error, isLoading } = useCars();
-  const skeletons = [1, 2, 3, 4, 5, 6];
+  const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   return (
     <>
       {error && <Text>{error}</Text>}

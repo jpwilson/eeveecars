@@ -9,7 +9,7 @@ interface Props {
 
 const CarCard = ({ car }: Props) => {
   return (
-    <Card borderRadius={10} overflow={"hidden"}>
+    <Card width="300px" borderRadius={10} overflow={"hidden"}>
       <Image
         src={car.image_url}
         height="200px"
