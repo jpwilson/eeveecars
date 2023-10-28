@@ -1,9 +1,11 @@
-import { SimpleGrid, Text } from "@chakra-ui/react";
+import { SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
 import useCars from "../hooks/useCars";
 import CarCard from "./CarCard";
+import CarCardSkeleton from "./CarCardSkeleton";
 
 const CarGrid = () => {
-  const { cars, error } = useCars();
+  const { cars, error, isLoading } = useCars();
+  const skeletons = [1, 2, 3, 4, 5, 6];
   return (
     <>
       {error && <Text>{error}</Text>}
@@ -12,6 +14,8 @@ const CarGrid = () => {
         spacing={10}
         padding={10}
       >
+        {isLoading &&
+          skeletons.map((skeleton) => <CarCardSkeleton key={skeleton} />)}
         {cars.map((car) => (
           <CarCard key={car.id} car={car} />
         ))}

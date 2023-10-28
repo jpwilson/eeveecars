@@ -24,21 +24,28 @@ export interface Car {
 const useCars = () => {
     const [cars, setCars] = useState<Car[]>([]);
     const [error, setError] = useState("");
+    const [isLoading, setLoading] = useState(false);
   
     useEffect(() => {
         const controller = new AbortController();
+        setLoading(true);
 
       apiClient
         .get<FetchCarsResponse>("/cars", {signal: controller.signal})
-        .then((res) => setCars(res.data))
+        .then((res) => {
+          setCars(res.data);
+          setLoading(false);
+          })
         .catch((err) => {
             if (err instanceof CanceledError) return;
-            setError(err.message)});
+            setError(err.message);
+            setLoading(false);
+          });
     
         return () => controller.abort();
     }, []);
 
-    return {cars, error}
+    return {cars, error, isLoading}
 }
 
 export default useCars;
