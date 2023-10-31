@@ -4,7 +4,7 @@ import apiClient from "../services/api-client";
 
 
 export interface Car {
-    make: string;
+    make_name: string;
     model: string;
     submodel: string;
     generation: string;

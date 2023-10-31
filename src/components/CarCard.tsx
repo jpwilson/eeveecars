@@ -19,7 +19,7 @@ const CarCard = ({ car }: Props) => {
       ></Image>
       <CardBody>
         <Heading fontSize={"2xl"}>
-          {car.make} {car.model}
+          {car.make_name} {car.model}{" "}
           {car.submodel && car.submodel !== "N/A" ? `${car.submodel}` : ""} v-
           {car.generation}
         </Heading>
