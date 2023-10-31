@@ -26,7 +26,7 @@ const CarCard = ({ car }: Props) => {
         <HStack justifyContent="space-between" padding="10px">
           <p>
             <Icon as={MdElectricCar} boxSize={8} />
-            <nbsp /> {car.range_combined_mid}
+            {car.range_combined_mid}
           </p>
           <CarScore score={car.customer_and_critic_rating} />
         </HStack>

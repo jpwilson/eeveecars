@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import apiClient from "../services/api-client";
-import { CanceledError } from "axios";
+import useData from "./useData";
 
 
 
@@ -16,36 +14,7 @@ export interface Make {
     unionized?: boolean;
   }
   
-  interface FetchMakesResponse {
-    count: number;
-    results: Make[];
-  }
 
-const useMakes = () => {
-    const [makes, setMakes] = useState<Make[]>([]);
-    const [error, setError] = useState("");
-    const [isLoading, setLoading] = useState(false);
-  
-    useEffect(() => {
-        const controller = new AbortController();
-        setLoading(true);
-
-      apiClient
-        .get<FetchMakesResponse>("/makes", {signal: controller.signal})
-        .then((res) => {
-          setMakes(res.data);
-          setLoading(false);
-          })
-        .catch((err) => {
-            if (err instanceof CanceledError) return;
-            setError(err.message);
-            setLoading(false);
-          });
-    
-        return () => controller.abort();
-    }, []);
-
-    return {makes, error, isLoading}
-}
+const useMakes = () => useData<Make>('/makes');
 
 export default useMakes;

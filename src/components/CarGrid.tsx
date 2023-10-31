@@ -5,7 +5,7 @@ import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 
 const CarGrid = () => {
-  const { cars, error, isLoading } = useCars();
+  const { data, error, isLoading } = useCars();
   const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   return (
     <>
@@ -17,13 +17,13 @@ const CarGrid = () => {
       >
         {isLoading &&
           skeletons.map((skeleton) => (
-            <CarCardContainer>
-              <CarCardSkeleton key={skeleton} />
+            <CarCardContainer key={skeleton}>
+              <CarCardSkeleton />
             </CarCardContainer>
           ))}
-        {cars.map((car) => (
-          <CarCardContainer>
-            <CarCard key={car.id} car={car} />
+        {data.map((car) => (
+          <CarCardContainer key={car.id}>
+            <CarCard car={car} />
           </CarCardContainer>
         ))}
       </SimpleGrid>
