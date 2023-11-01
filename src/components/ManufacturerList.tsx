@@ -1,8 +1,13 @@
-import { HStack, Image, List, ListItem, Text } from "@chakra-ui/react";
+import { HStack, Image, List, ListItem, Spinner, Text } from "@chakra-ui/react";
 import useMakes from "../hooks/useMakes";
 
 const ManufacturerList = () => {
-  const { data } = useMakes();
+  const { data, isLoading, error } = useMakes();
+
+  if (error) return null;
+
+  if (isLoading) return <Spinner />;
+
   return (
     <List>
       {data.map((make) => (
