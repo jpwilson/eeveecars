@@ -12,6 +12,7 @@ export interface Make {
     num_ev_model?: number;
     first_ev_model_date?: string;
     unionized?: boolean;
+    lrg_logo_img_url: string;
   }
   
 
