@@ -13,6 +13,7 @@ export interface Make {
     first_ev_model_date?: string;
     unionized?: boolean;
     lrg_logo_img_url: string;
+    car_id_list: number[];
   }
   
 

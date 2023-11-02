@@ -1,7 +1,19 @@
-import { HStack, Image, List, ListItem, Spinner, Text } from "@chakra-ui/react";
-import useMakes from "../hooks/useMakes";
+import {
+  Button,
+  HStack,
+  Image,
+  List,
+  ListItem,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
+import useMakes, { Make } from "../hooks/useMakes";
 
-const ManufacturerList = () => {
+interface Props {
+  onSelectMake: (make: Make) => void;
+}
+
+const ManufacturerList = ({ onSelectMake }: Props) => {
   const { data, isLoading, error } = useMakes();
 
   if (error) return null;
@@ -10,8 +22,17 @@ const ManufacturerList = () => {
 
   return (
     <List>
+      <ListItem paddingY="6px">
+        <Button fontSize="lg" variant="link" onClick={() => onSelectMake(null)}>
+          All Cars
+        </Button>
+      </ListItem>
       {data.map((make) => (
-        <ListItem key={make.id} paddingY="6px">
+        <ListItem
+          key={make.id}
+          paddingY="6px"
+          onClick={() => onSelectMake(make)}
+        >
           <HStack>
             <Image
               width={"48px"}
@@ -25,7 +46,7 @@ const ManufacturerList = () => {
               borderColor="black" // black border color
               borderWidth="1px" // thin border width
             />
-            <Text fontSize="lg">{make.name}</Text>
+            <Button fontSize="lg">{make.name}</Button>
           </HStack>
         </ListItem>
       ))}

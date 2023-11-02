@@ -3,9 +3,14 @@ import useCars from "../hooks/useCars";
 import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
+import { Make } from "../hooks/useMakes";
 
-const CarGrid = () => {
-  const { data, error, isLoading } = useCars();
+interface Props {
+  selectedMake: Make | null;
+}
+
+const CarGrid = ({ selectedMake }: Props) => {
+  const { data, error, isLoading } = useCars(selectedMake);
   const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   return (
     <>

@@ -2,8 +2,11 @@ import { Button, ButtonGroup, Grid, GridItem, Show } from "@chakra-ui/react";
 import NavBar from "./NavBar";
 import CarGrid from "./CarGrid";
 import ManufacturerList from "./ManufacturerList";
+import { useState } from "react";
+import { Make } from "../hooks/useMakes";
 
 function App() {
+  const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   return (
     <Grid
       templateAreas={{
@@ -20,11 +23,11 @@ function App() {
       </GridItem>
       <Show above="lg">
         <GridItem area="aside" paddingX={5}>
-          <ManufacturerList />
+          <ManufacturerList onSelectMake={setSelectedMake} />
         </GridItem>
       </Show>
       <GridItem area="main">
-        <CarGrid />
+        <CarGrid selectedMake={selectedMake} />
       </GridItem>
     </Grid>
   );
