@@ -23,7 +23,7 @@ const ManufacturerList = ({ onSelectMake }: Props) => {
   return (
     <List>
       <ListItem paddingY="6px">
-        <Button fontSize="lg" variant="link" onClick={() => onSelectMake(null)}>
+        <Button fontSize="lg" onClick={() => onSelectMake(null)}>
           All Cars
         </Button>
       </ListItem>

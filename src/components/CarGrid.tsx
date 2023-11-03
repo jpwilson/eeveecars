@@ -1,9 +1,11 @@
-import { SimpleGrid, Skeleton, Text } from "@chakra-ui/react";
+import { SimpleGrid, Skeleton, Text, Flex } from "@chakra-ui/react";
 import useCars from "../hooks/useCars";
 import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 import { Make } from "../hooks/useMakes";
+import { MdSentimentDissatisfied } from "react-icons/md";
+import { FaSadTear } from "react-icons/fa";
 
 interface Props {
   selectedMake: Make | null;
@@ -26,6 +28,18 @@ const CarGrid = ({ selectedMake }: Props) => {
               <CarCardSkeleton />
             </CarCardContainer>
           ))}
+        {data && data.length === 0 && (
+          <Flex
+            textAlign="center"
+            fontWeight="bold"
+            fontSize="lg"
+            m={4}
+            w="100%"
+          >
+            <Text>No cars meet the filtering you have selected</Text>
+            <FaSadTear size="24px" color="gray.600" marginLeft="4px" />{" "}
+          </Flex>
+        )}
         {data.map((car) => (
           <CarCardContainer key={car.id}>
             <CarCard car={car} />
