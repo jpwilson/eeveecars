@@ -11,9 +11,10 @@ import useMakes, { Make } from "../hooks/useMakes";
 
 interface Props {
   onSelectMake: (make: Make) => void;
+  selectedMake: Make | null;
 }
 
-const ManufacturerList = ({ onSelectMake }: Props) => {
+const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
   const { data, isLoading, error } = useMakes();
 
   if (error) return null;
@@ -46,7 +47,15 @@ const ManufacturerList = ({ onSelectMake }: Props) => {
               borderColor="black" // black border color
               borderWidth="1px" // thin border width
             />
-            <Button fontSize="lg">{make.name}</Button>
+            <Button
+              fontWeight={make.id === selectedMake?.id ? "bold" : "normal"}
+              backgroundColor={
+                make.id === selectedMake?.id ? "blue.500" : "#313640"
+              }
+              fontSize="lg"
+            >
+              {make.name}
+            </Button>
           </HStack>
         </ListItem>
       ))}

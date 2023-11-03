@@ -3,6 +3,7 @@ import useData from "./useData";
 
 
 export interface Make {
+  id: number;
     name: string;
     ceo_pay?: number;
     headquarters?: string;

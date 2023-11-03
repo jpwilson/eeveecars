@@ -23,7 +23,10 @@ function App() {
       </GridItem>
       <Show above="lg">
         <GridItem area="aside" paddingX={5}>
-          <ManufacturerList onSelectMake={setSelectedMake} />
+          <ManufacturerList
+            selectedMake={selectedMake}
+            onSelectMake={setSelectedMake}
+          />
         </GridItem>
       </Show>
       <GridItem area="main">
