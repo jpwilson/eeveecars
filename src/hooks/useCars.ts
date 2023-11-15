@@ -11,6 +11,7 @@ export interface Car {
     carmodel_first_released: string;
     current_price: number;
     customer_and_critic_rating: number;
+    average_rating: number;
     range_combined_mid: number;
 }
 

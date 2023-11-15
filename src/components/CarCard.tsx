@@ -28,7 +28,8 @@ const CarCard = ({ car }: Props) => {
             <Icon as={MdElectricCar} boxSize={8} />
             {car.range_combined_mid}
           </p>
-          <CarScore score={car.customer_and_critic_rating} />
+          {/* <CarScore score={car.customer_and_critic_rating} /> */}
+          <CarScore score={car.average_rating} />
         </HStack>
       </CardBody>
     </Card>

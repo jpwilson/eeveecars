@@ -1,4 +1,4 @@
-import { SimpleGrid, Skeleton, Text, Flex } from "@chakra-ui/react";
+import { SimpleGrid, Skeleton, Text, Flex, Icon } from "@chakra-ui/react";
 import useCars from "../hooks/useCars";
 import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
@@ -37,7 +37,12 @@ const CarGrid = ({ selectedMake }: Props) => {
             w="100%"
           >
             <Text>No cars meet the filtering you have selected</Text>
-            <FaSadTear size="24px" color="gray.600" marginLeft="4px" />{" "}
+            <Icon
+              as={FaSadTear}
+              size="24px"
+              color="gray.600"
+              marginLeft="4px"
+            />{" "}
           </Flex>
         )}
         {data.map((car) => (
