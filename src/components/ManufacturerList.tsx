@@ -6,6 +6,8 @@ import {
   ListItem,
   Spinner,
   Text,
+  ColorMode,
+  useColorMode,
 } from "@chakra-ui/react";
 import useMakes, { Make } from "../hooks/useMakes";
 
@@ -16,6 +18,7 @@ interface Props {
 
 const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
   const { data, isLoading, error } = useMakes();
+  const { colorMode } = useColorMode();
 
   if (error) return null;
 
@@ -36,21 +39,28 @@ const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
         >
           <HStack>
             <Image
-              width={"48px"}
-              height={"48px"}
+              backgroundColor="#F5F5F5" // light gray background, this will be visible in spaces not covered by the image
+              borderColor="#1A202D" // black border color
+              border="1px" // thin border width
+              width={"52px"}
+              height={"52px"}
               borderRadius={8}
+              p={1}
               src={make.lrg_logo_img_url}
               //   objectFit="cover"
               objectFit="contain"
               // to help with the background:
-              backgroundColor="#F5F5F5" // light gray background, this will be visible in spaces not covered by the image
-              borderColor="black" // black border color
-              borderWidth="1px" // thin border width
             />
             <Button
               fontWeight={make.id === selectedMake?.id ? "bold" : "normal"}
               backgroundColor={
-                make.id === selectedMake?.id ? "blue.500" : "#313640"
+                colorMode === "light"
+                  ? make.id === selectedMake?.id
+                    ? "blue.200"
+                    : "#EDF2F7"
+                  : make.id === selectedMake?.id
+                  ? "blue.500"
+                  : "#313640"
               }
               fontSize="lg"
             >
