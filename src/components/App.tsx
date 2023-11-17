@@ -5,9 +5,22 @@ import ManufacturerList from "./ManufacturerList";
 import { useState } from "react";
 import { Make } from "../hooks/useMakes";
 import FeatureSelector from "./FeatureSelector";
+import { Features } from "../hooks/useFeatures";
 
 function App() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
+  // const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
+  const handleSelectFeature = (
+    featureName: string,
+    bucketName: string,
+    carIds: number[]
+  ) => {
+    // Handle the selected feature here
+    console.log(`Feature selected: ${featureName}`);
+    console.log(`Bucket selected: ${bucketName}`);
+    console.log(`Car IDs: ${carIds}`);
+  };
+
   return (
     <Grid
       templateAreas={{
@@ -31,7 +44,7 @@ function App() {
         </GridItem>
       </Show>
       <GridItem area="main">
-        <FeatureSelector />
+        <FeatureSelector onSelectFeature={handleSelectFeature} />
         <CarGrid selectedMake={selectedMake} />
       </GridItem>
     </Grid>

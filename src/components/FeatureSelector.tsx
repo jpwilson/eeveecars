@@ -1,4 +1,6 @@
 import useFeatures from "../hooks/useFeatures";
+import { Features } from "../hooks/useFeatures";
+import { BsChevronDown } from "react-icons/bs";
 import {
   Button,
   Menu,
@@ -7,9 +9,16 @@ import {
   MenuList,
   VStack,
 } from "@chakra-ui/react";
-import { BsChevronDown } from "react-icons/bs";
 
-const FeatureSelector = () => {
+interface Props {
+  onSelectFeature: (
+    featureName: string,
+    bucketName: string,
+    carIds: number[]
+  ) => void;
+}
+
+const FeatureSelector = ({ onSelectFeature }: Props) => {
   const { features, isLoading, error } = useFeatures();
 
   if (isLoading) return "Loading...";
@@ -30,7 +39,13 @@ const FeatureSelector = () => {
               </MenuButton>
               <MenuList>
                 {Object.entries(featureValues).map(([bucketName, carIds]) => (
-                  <MenuItem key={bucketName} as={Button}>
+                  <MenuItem
+                    onClick={() =>
+                      onSelectFeature(featureName, bucketName, carIds)
+                    }
+                    key={bucketName}
+                    as={Button}
+                  >
                     {bucketName}
                   </MenuItem>
                 ))}
