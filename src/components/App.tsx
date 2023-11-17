@@ -4,6 +4,7 @@ import CarGrid from "./CarGrid";
 import ManufacturerList from "./ManufacturerList";
 import { useState } from "react";
 import { Make } from "../hooks/useMakes";
+import FeatureSelector from "./FeatureSelector";
 
 function App() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -30,6 +31,7 @@ function App() {
         </GridItem>
       </Show>
       <GridItem area="main">
+        <FeatureSelector />
         <CarGrid selectedMake={selectedMake} />
       </GridItem>
     </Grid>
