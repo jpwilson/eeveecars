@@ -1,16 +1,15 @@
 import { SimpleGrid, Skeleton, Text, Flex, Icon } from "@chakra-ui/react";
-import useCars from "../hooks/useCars";
+import useCars, { SelectedFeature } from "../hooks/useCars";
 import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 import { Make } from "../hooks/useMakes";
 import { Features } from "../hooks/useFeatures";
-import { MdSentimentDissatisfied } from "react-icons/md";
 import { FaSadTear } from "react-icons/fa";
 
 interface Props {
   selectedMake: Make | null;
-  selectedFeature: Features | null;
+  selectedFeature: SelectedFeature | null;
 }
 
 const CarGrid = ({ selectedMake, selectedFeature }: Props) => {
