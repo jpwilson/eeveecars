@@ -9,16 +9,21 @@ import { Features } from "../hooks/useFeatures";
 
 function App() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
-  // const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
+  const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
   const handleSelectFeature = (
     featureName: string,
     bucketName: string,
     carIds: number[]
   ) => {
     // Handle the selected feature here
-    console.log(`Feature selected: ${featureName}`);
-    console.log(`Bucket selected: ${bucketName}`);
-    console.log(`Car IDs: ${carIds}`);
+    // setSelectedFeature({
+    //   // console.log(`Feature selected: ${featureName}`);
+    //   // console.log(`Bucket selected: ${bucketName}`);
+    //   // console.log(`Car IDs: ${carIds}`);
+    //   feature: featureName,
+    //   bucket: bucketName,
+    //   carIds: carIds,
+    setSelectedFeature({ featureName, bucketName, carIds });
   };
 
   return (
@@ -45,7 +50,10 @@ function App() {
       </Show>
       <GridItem area="main">
         <FeatureSelector onSelectFeature={handleSelectFeature} />
-        <CarGrid selectedMake={selectedMake} />
+        <CarGrid
+          selectedFeature={selectedFeature}
+          selectedMake={selectedMake}
+        />
       </GridItem>
     </Grid>
   );

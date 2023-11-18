@@ -15,15 +15,35 @@ export interface Car {
     range_combined_mid: number;
 }
 
-const useCars = (selectedMake?: Make | null) => {
+// Add an interface for SelectedFeature to detail the expected shape
+export interface SelectedFeature {
+    featureName: string;
+    bucketName: string;
+    carIds: number[];
+  }
+
+const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature | null) => {
     const { data, error, isLoading } = useData<Car>('/cars');
 
-    // If a make is selected, filter the cars
-    const filteredCars = selectedMake
-        ? data.filter(car => selectedMake.car_id_list.includes(car.id))
-        : data;
+    let filteredCars = data;
 
-    return { data: filteredCars, error, isLoading };
+    //TODO add filtering by multiple features.... 17 Nov 2023
+
+    // If a make is selected, filter the cars
+    // const filteredCars = selectedMake
+    //     ? data.filter(car => selectedMake.car_id_list.includes(car.id))
+    //     : data;
+  // Filter by make if selected
+  if (selectedMake) {
+    filteredCars = filteredCars.filter(car => selectedMake.car_id_list.includes(car.id));
+  }
+
+  // Further filter by feature if selected
+  if (selectedFeature) {
+    filteredCars = filteredCars.filter(car => selectedFeature.carIds.includes(car.id));
+  }
+
+  return { data: filteredCars, error, isLoading };
 };
 
 export default useCars;

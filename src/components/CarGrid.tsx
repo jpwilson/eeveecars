@@ -4,15 +4,17 @@ import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 import { Make } from "../hooks/useMakes";
+import { Features } from "../hooks/useFeatures";
 import { MdSentimentDissatisfied } from "react-icons/md";
 import { FaSadTear } from "react-icons/fa";
 
 interface Props {
   selectedMake: Make | null;
+  selectedFeature: Features | null;
 }
 
-const CarGrid = ({ selectedMake }: Props) => {
-  const { data, error, isLoading } = useCars(selectedMake);
+const CarGrid = ({ selectedMake, selectedFeature }: Props) => {
+  const { data, error, isLoading } = useCars(selectedMake, selectedFeature);
   const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   return (
     <>
