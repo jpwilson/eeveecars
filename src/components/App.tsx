@@ -1,4 +1,11 @@
-import { Button, ButtonGroup, Grid, GridItem, Show } from "@chakra-ui/react";
+import {
+  Button,
+  ButtonGroup,
+  Grid,
+  GridItem,
+  HStack,
+  Show,
+} from "@chakra-ui/react";
 import NavBar from "./NavBar";
 import CarGrid from "./CarGrid";
 import ManufacturerList from "./ManufacturerList";
@@ -15,14 +22,6 @@ function App() {
     bucketName: string,
     carIds: number[]
   ) => {
-    // Handle the selected feature here
-    // setSelectedFeature({
-    //   // console.log(`Feature selected: ${featureName}`);
-    //   // console.log(`Bucket selected: ${bucketName}`);
-    //   // console.log(`Car IDs: ${carIds}`);
-    //   feature: featureName,
-    //   bucket: bucketName,
-    //   carIds: carIds,
     setSelectedFeature({ featureName, bucketName, carIds });
   };
 
@@ -49,7 +48,17 @@ function App() {
         </GridItem>
       </Show>
       <GridItem area="main">
-        <FeatureSelector onSelectFeature={handleSelectFeature} />
+        <HStack>
+          <FeatureSelector onSelectFeature={handleSelectFeature} />
+          <Button
+            fontSize="lg"
+            onClick={() => {
+              setSelectedFeature(null);
+            }}
+          >
+            Clear Feature Selection
+          </Button>
+        </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
           selectedMake={selectedMake}
