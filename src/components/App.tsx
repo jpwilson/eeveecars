@@ -49,7 +49,11 @@ function App() {
       </Show>
       <GridItem area="main">
         <HStack>
-          <FeatureSelector onSelectFeature={handleSelectFeature} />
+          <FeatureSelector
+            onSelectFeature={handleSelectFeature}
+            selectedBucketName={selectedFeature?.bucketName}
+            selectedFeatureName={selectedFeature?.featureName}
+          />
           <Button
             fontSize="lg"
             onClick={() => {
