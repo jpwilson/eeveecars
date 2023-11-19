@@ -15,6 +15,74 @@ EeveeCars is dedicated to aggregating, curating, and presenting accurate electri
 - **User-Friendly Interface:** Designed with React, our platform ensures an intuitive and smooth user experience.
 - **Data-Driven Insights:** Get the latest trends and analyses tailored for electric car enthusiasts and potential buyers.
 
+## Branching Strategy
+
+This project follows the Trunk Based Development approach. Here are some guidelines:
+
+### Main Branch
+
+- The `main` branch is the primary branch from which all new branches are created and where they are merged back after development.
+- All changes to the `main` branch are made via Pull Requests to ensure code quality and maintainability.
+- The `main` branch is always deployable and is the source of truth for the current state of the project.
+
+### Feature Branches
+
+- For every new feature or bug fix, create a new branch from the latest `main` branch.
+- Use a descriptive name for your branch, such as `feature/add-car-detail-page` or `fix/issue-with-charging-info`.
+- Keep branches short-lived and merge them back into the `main` branch frequently after the work is complete and tested.
+
+### Pull Requests
+
+- When you're ready to merge your feature branch, submit a Pull Request to the `main` branch.
+- Ensure that your Pull Request passes all continuous integration checks and gets the required approvals (if applicable) before merging.
+- Once merged, it's safe to delete the feature branch.
+
+### Hotfixes
+
+## Branching Strategy
+
+This project follows the Trunk Based Development approach. Here are some guidelines:
+
+### Main Branch
+
+- The `main` branch is the primary branch from which all new branches are created and where they are merged back after development.
+- All changes to the `main` branch are made via Pull Requests to ensure code quality and maintainability.
+- The `main` branch is always deployable and is the source of truth for the current state of the project.
+
+### Feature Branches
+
+- For every new feature or bug fix, create a new branch from the latest `main` branch.
+- Use a descriptive name for your branch, such as `feature/add-car-detail-page` or `fix/issue-with-charging-info`.
+- Keep branches short-lived and merge them back into the `main` branch frequently after the work is complete and tested.
+
+### Pull Requests
+
+- When you're ready to merge your feature branch, submit a Pull Request to the `main` branch.
+- Ensure that your Pull Request passes all continuous integration checks and gets the required approvals (if applicable) before merging.
+- Once merged, it's safe to delete the feature branch.
+
+### Hotfixes
+
+- Hotfixes are treated as high-priority feature branches.
+- Create a branch prefixed with `hotfix/`, make the necessary fixes, and submit a Pull Request back to `main`.
+
+### Releases
+
+- Releases are cut directly from the `main` branch.
+- Use semantic versioning to tag releases, for example, `v1.0.0`.
+
+By adhering to this strategy, we maintain a clean and manageable repository that enables continuous integration and delivery.
+
+- Hotfixes are treated as high-priority feature branches.
+- Create a branch prefixed with `hotfix/`, make the necessary fixes, and submit a Pull Request back to `main`.
+
+### Releases
+
+- Releases are cut directly from the `main` branch.
+- Use semantic versioning to tag releases, for example, `v1.0.0`.
+
+By adhering to this strategy, we maintain a clean and manageable repository that enables continuous integration and delivery.
+
 ## Development
 
 Built with:
