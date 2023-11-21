@@ -13,6 +13,8 @@ import { useState } from "react";
 import { Make } from "../hooks/useMakes";
 import FeatureSelector from "./FeatureSelector";
 import { Features } from "../hooks/useFeatures";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import CarDetails from "./CarDetails";
 
 function App() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -26,49 +28,68 @@ function App() {
   };
 
   return (
-    <Grid
-      templateAreas={{
-        base: `"nav" "main"`,
-        lg: `"nav nav" "aside main"`,
-      }}
-      templateColumns={{
-        base: "1fr",
-        lg: "200px 1fr",
-      }}
-    >
-      <GridItem area="nav">
-        <NavBar />
-      </GridItem>
-      <Show above="lg">
-        <GridItem area="aside" paddingX={5}>
-          <ManufacturerList
-            selectedMake={selectedMake}
-            onSelectMake={setSelectedMake}
-          />
+    <Router>
+      <Grid
+        templateAreas={{
+          base: `"nav" "main"`,
+          lg: `"nav nav" "aside main"`,
+        }}
+        templateColumns={{
+          base: "1fr",
+          lg: "200px 1fr",
+        }}
+      >
+        <GridItem area="nav">
+          <NavBar />
         </GridItem>
-      </Show>
-      <GridItem area="main">
-        <HStack>
-          <FeatureSelector
-            onSelectFeature={handleSelectFeature}
-            selectedBucketName={selectedFeature?.bucketName}
-            selectedFeatureName={selectedFeature?.featureName}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Show above="lg">
+                  <GridItem area="aside" paddingX={5}>
+                    <ManufacturerList
+                      selectedMake={selectedMake}
+                      onSelectMake={setSelectedMake}
+                    />
+                  </GridItem>
+                </Show>
+                <GridItem area="main">
+                  <HStack>
+                    <FeatureSelector
+                      onSelectFeature={handleSelectFeature}
+                      selectedBucketName={selectedFeature?.bucketName}
+                      selectedFeatureName={selectedFeature?.featureName}
+                    />
+                    <Button
+                      fontSize="lg"
+                      onClick={() => {
+                        setSelectedFeature(null);
+                      }}
+                    >
+                      Clear Feature Selection
+                    </Button>
+                  </HStack>
+                  <CarGrid
+                    selectedFeature={selectedFeature}
+                    selectedMake={selectedMake}
+                  />
+                </GridItem>
+              </>
+            }
           />
-          <Button
-            fontSize="lg"
-            onClick={() => {
-              setSelectedFeature(null);
-            }}
-          >
-            Clear Feature Selection
-          </Button>
-        </HStack>
-        <CarGrid
-          selectedFeature={selectedFeature}
-          selectedMake={selectedMake}
-        />
-      </GridItem>
-    </Grid>
+          <Route
+            path="/car_detail/:id"
+            element={
+              <>
+                <CarDetails />
+              </>
+            }
+          />
+        </Routes>
+      </Grid>
+    </Router>
   );
 }
 
