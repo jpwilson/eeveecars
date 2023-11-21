@@ -3,6 +3,7 @@ import { Card, CardBody, HStack, Heading, Icon, Image } from "@chakra-ui/react";
 import { Car } from "../hooks/useCars";
 import CarScore from "./CarScore";
 import CarCardContainer from "./CarCardContainer";
+import { Link } from "react-router-dom";
 
 interface Props {
   car: Car;
@@ -19,7 +20,9 @@ const CarCard = ({ car }: Props) => {
       ></Image>
       <CardBody>
         <Heading fontSize={"2xl"}>
-          {car.make_name} {car.model}{" "}
+          <Link to={`car_detail/${car.id}`}>
+            {car.make_name} {car.model}{" "}
+          </Link>
           {car.submodel && car.submodel !== "N/A" ? `${car.submodel}` : ""} v-
           {car.generation}
         </Heading>
