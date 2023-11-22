@@ -83,7 +83,9 @@ function App() {
             path="/car_detail/:id"
             element={
               <>
-                <CarDetails />
+                <GridItem area="main">
+                  <CarDetails />
+                </GridItem>
               </>
             }
           />
