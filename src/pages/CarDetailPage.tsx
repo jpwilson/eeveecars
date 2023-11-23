@@ -4,15 +4,18 @@ import {
   Grid,
   GridItem,
   HStack,
+  Link,
   Show,
+  VStack,
 } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import { useState } from "react";
 import { Make } from "../hooks/useMakes";
-import FeatureSelector from "../components/FeatureSelector";
 import CarDetails from "../components/CarDetails";
+import ManufacturerList from "../components/ManufacturerList";
 
 function CarDetail() {
+  const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   return (
     <Grid
       templateAreas={{
@@ -27,6 +30,21 @@ function CarDetail() {
       <GridItem area="nav">
         <NavBar />
       </GridItem>
+      <Show above="lg">
+        <GridItem area="aside" paddingX={5}>
+          <VStack h={"300px"} justifyContent="space-around">
+            <Link to="/">
+              <Button>All Cars</Button>
+            </Link>
+            <Link to="/">
+              <Button>All Manufacturers</Button>
+            </Link>
+            <Link to="/">
+              <Button>All People</Button>
+            </Link>
+          </VStack>
+        </GridItem>
+      </Show>
       <GridItem area="main">
         <CarDetails />
       </GridItem>

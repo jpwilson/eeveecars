@@ -1,6 +1,8 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import useCarDetail from "../hooks/useCarDetails";
+import NavBar from "./NavBar";
+
 import {
   Box,
   Image,
@@ -9,11 +11,23 @@ import {
   HStack,
   Grid,
   GridItem,
+  Show,
+  Button,
+  Flex,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 
 const CarDetails = () => {
   const { id } = useParams();
   const { car, error, isLoading } = useCarDetail(id);
+
+  // Responsive breakpoints for image size
+  const imageSize = useBreakpointValue({
+    base: "100%", // full width on base breakpoint
+    md: "400px", // 400px on md breakpoint
+    lg: "600px", // larger size on lg breakpoint
+    xl: "800px", // even larger size on xl breakpoint
+  });
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -88,40 +102,75 @@ const CarDetails = () => {
   } = car;
 
   return (
-    <Grid templateColumns="repeat(5, 1fr)" gap={6}>
-      <GridItem colSpan={3}>
-        <Image
-          src={image_url}
-          alt={`${make_name} ${model}`}
-          objectFit="cover"
-        />
-      </GridItem>
-      <GridItem colSpan={2}>
-        <VStack align="start">
-          <Text
-            fontSize="3xl"
-            fontWeight="bold"
-          >{`${make_name} ${model} ${submodel} ${generation}`}</Text>
-          <Text>Price: ${current_price}</Text>
-          <Text>Acceleration 0-60: {acceleration_0_60} seconds</Text>
-          <Text>Range: {epa_range} miles</Text>
-          <Text>Top Speed: {top_speed} mph</Text>
-          {/* ... add other attributes here */}
-        </VStack>
-      </GridItem>
-    </Grid>
-
-    // <div>
-    //   <img src={car.image_url} alt={car.model} />
-    //   <h1>
-    //     {car.make_name} {car.model} {car.submodel}
-    //   </h1>
-    //   <p>Acceleration 0-60,
-    //   <p>Range: {car.epa_range} miles</p>
-    //   <p>Top Speed: {car.top_speed} mph</p>
-    //   <p>Price: ${car.current_price}</p>
-    // </div>
+    <VStack align="stretch" spacing={4} p={4}>
+      <HStack justify="space-between" align="center">
+        <Text fontSize="2xl" fontWeight="bold">
+          {make_name} {model}
+        </Text>
+        <Button colorScheme="blue">Back to results</Button>
+      </HStack>
+      <Grid
+        templateColumns={{ md: "1fr 2fr", base: "1fr" }}
+        gap={6}
+        alignItems="start"
+      >
+        <GridItem>
+          <Image
+            src={image_url}
+            alt={`${make_name} ${model}`}
+            maxW={imageSize}
+            maxH={{ base: "auto", md: "500px" }}
+            objectFit="contain"
+          />
+        </GridItem>
+        <GridItem>
+          <VStack spacing={4} align="start">
+            <Text>Price: ${current_price}</Text>
+            <Text>Acceleration 0-60: {acceleration_0_60} seconds</Text>
+            <Text>Range: {epa_range} miles</Text>
+            <Text>Top Speed: {top_speed} mph</Text>
+            {/* Add more car details as needed */}
+          </VStack>
+        </GridItem>
+      </Grid>
+    </VStack>
   );
 };
+
+//     <Grid
+//       templateColumns={{ lg: "repeat(2, 1fr)", base: "1fr" }}
+//       gap={6}
+//       px={{ lg: "12", base: "4" }}
+//       py="6"
+//     >
+//       {/* Car Details */}
+//       <GridItem>
+//         <VStack spacing={4} align="start" justify="center">
+//           {/* Image of the car */}
+//           <Box>
+//             <Image src={image_url} alt="Car Image" />
+//           </Box>
+
+//           {/* Car Details - You can map through car details for actual data */}
+//           <VStack spacing={4} align="start" justify="center">
+//             <Text fontWeight="bold">
+//               {make_name} {model}
+//             </Text>
+//             <Text>Price: ${current_price}</Text>
+//             <Text>Acceleration 0-60: {acceleration_0_60} seconds</Text>
+//             <Text>Range: {epa_range} miles</Text>
+//             <Text>Top Speed: {top_speed} mph</Text>
+//             {/* More details... */}
+//           </VStack>
+
+//           {/* Actions, e.g., Back button */}
+//           <Flex justifyContent="flex-middle">
+//             <Button colorScheme="blue">Back to results</Button>
+//           </Flex>
+//         </VStack>
+//       </GridItem>
+//     </Grid>
+//   );
+// };
 
 export default CarDetails;
