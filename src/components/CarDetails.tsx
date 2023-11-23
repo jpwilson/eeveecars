@@ -15,6 +15,7 @@ import {
   Button,
   Flex,
   useBreakpointValue,
+  Heading,
 } from "@chakra-ui/react";
 
 const CarDetails = () => {
@@ -104,9 +105,12 @@ const CarDetails = () => {
   return (
     <VStack align="stretch" spacing={4} p={4}>
       <HStack justify="space-between" align="center">
-        <Text fontSize="2xl" fontWeight="bold">
-          {make_name} {model}
+        <Text fontSize="4xl" fontWeight="bold">
+          {make_name} {model} {submodel}
         </Text>
+        <Link to="/">
+          <Image src={logo} boxSize="60px" borderRadius={8} />
+        </Link>
         <Button colorScheme="blue">Back to results</Button>
       </HStack>
       <Grid
@@ -125,6 +129,7 @@ const CarDetails = () => {
         </GridItem>
         <GridItem>
           <VStack spacing={4} align="start">
+            <Heading>Car Details</Heading>
             <Text>Price: ${current_price}</Text>
             <Text>Acceleration 0-60: {acceleration_0_60} seconds</Text>
             <Text>Range: {epa_range} miles</Text>

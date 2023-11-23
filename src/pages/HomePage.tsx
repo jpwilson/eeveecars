@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Make } from "../hooks/useMakes";
 import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
+import SortSelector from "../components/SortSelector";
 //import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 //import CarDetails from "./CarDetails";
 
@@ -64,6 +65,7 @@ function HomePage() {
           >
             Clear Feature Selection
           </Button>
+          <SortSelector />
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
