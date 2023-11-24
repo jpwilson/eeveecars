@@ -14,6 +14,7 @@ import {
   Show,
   Button,
   Flex,
+  Link,
   useBreakpointValue,
   Heading,
 } from "@chakra-ui/react";
@@ -109,7 +110,7 @@ const CarDetails = () => {
           {make_name} {model} {submodel}
         </Text>
         <Link to="/">
-          <Image src={logo} boxSize="60px" borderRadius={8} />
+          {/* <Image src={logo} boxSize="60px" borderRadius={8} /> */}
         </Link>
         <Button colorScheme="blue">Back to results</Button>
       </HStack>
@@ -130,10 +131,22 @@ const CarDetails = () => {
         <GridItem>
           <VStack spacing={4} align="start">
             <Heading>Car Details</Heading>
-            <Text>Price: ${current_price}</Text>
-            <Text>Acceleration 0-60: {acceleration_0_60} seconds</Text>
-            <Text>Range: {epa_range} miles</Text>
-            <Text>Top Speed: {top_speed} mph</Text>
+            <HStack>
+              <Text fontWeight="bold">Price:</Text>
+              <Text>${current_price}</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Acceleration 0-60:</Text>
+              <Text>{acceleration_0_60} seconds</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Range:</Text>
+              <Text>{epa_range} miles</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Top Speed:</Text>
+              <Text>{top_speed} mph</Text>
+            </HStack>
             {/* Add more car details as needed */}
           </VStack>
         </GridItem>
