@@ -39,7 +39,7 @@ function HomePage() {
         lg: "200px 1fr",
       }}
     >
-      <GridItem area="nav">
+      <GridItem area="nav" mb={10}>
         <NavBar />
       </GridItem>
       <Show above="lg">
@@ -51,7 +51,7 @@ function HomePage() {
         </GridItem>
       </Show>
       <GridItem area="main">
-        <HStack>
+        <HStack spacing={5} pl={10} mb={1} mt={2}>
           <FeatureSelector
             onSelectFeature={handleSelectFeature}
             selectedBucketName={selectedFeature?.bucketName}
