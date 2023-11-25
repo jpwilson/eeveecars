@@ -14,12 +14,19 @@ import { Make } from "../hooks/useMakes";
 import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
+import useCars from "../hooks/useCars";
 //import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 //import CarDetails from "./CarDetails";
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
+
+  const [sortOption, setSortOption] = useState("price"); // default sort by price
+
+  const handleSortChange = (option) => {
+    setSortOption(option);
+  };
   const handleSelectFeature = (
     featureName: string,
     bucketName: string,
@@ -65,11 +72,13 @@ function HomePage() {
           >
             Clear Feature Selection
           </Button>
-          <SortSelector />
+          <SortSelector onSortChange={handleSortChange} />
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
           selectedMake={selectedMake}
+          sortOption={sortOption}
+          // data={sortedData}
         />
       </GridItem>
     </Grid>
