@@ -22,28 +22,6 @@ const CarGrid = ({ selectedMake, selectedFeature, sortOption }: Props) => {
   const getSortedData = () => {
     if (!data) return [];
 
-    // return [...data].sort((a, b) => {
-    //   switch (sortOption) {
-    //     case "current_price":
-    //       // current_price is a number, so we can compare directly
-    //       return a.current_price - b.current_price;
-    //     case "epa_range":
-    //       // epa_range is a number, so we can compare directly
-    //       return a.epa_range - b.epa_range;
-    //     case "acceleration_0_60":
-    //       // acceleration_0_60 is a number, so we can compare directly
-    //       return a.acceleration_0_60 - b.acceleration_0_60;
-    //     case "top_speed":
-    //       // top_speed is a number, so we can compare directly
-    //       return a.top_speed - b.top_speed;
-    //     case "average_rating":
-    //       // average_rating is a number, so we can compare directly
-    //       return a.average_rating - b.average_rating;
-    //     // Add cases for other numerical properties if needed
-    //     default:
-    //       return 0;
-    //   }
-
     return [...data].sort((a, b) => {
       const valueA = a[sortOption.field];
       const valueB = b[sortOption.field];
@@ -55,8 +33,7 @@ const CarGrid = ({ selectedMake, selectedFeature, sortOption }: Props) => {
 
   const sortedData = getSortedData();
   // end of car sort ordeing logic
-  console.log("Here is the sort option: " + sortOption);
-  console.log("Sorted data: ", sortedData.slice(0, 5)); // Log the first 5 cars to check sorting
+
   return (
     <>
       {error && <Text>{error}</Text>}
