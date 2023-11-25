@@ -22,11 +22,15 @@ function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
 
-  const [sortOption, setSortOption] = useState("price"); // default sort by price
+  const [sortOption, setSortOption] = useState({
+    field: "price",
+    direction: "desc",
+  }); // default sort by price (change to sales volume later)
 
   const handleSortChange = (option) => {
     setSortOption(option);
   };
+
   const handleSelectFeature = (
     featureName: string,
     bucketName: string,

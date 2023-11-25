@@ -6,15 +6,53 @@ import {
   MenuList,
   VStack,
 } from "@chakra-ui/react";
+
+import { ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
+
 import { BsChevronDown } from "react-icons/bs";
 
 const SortSelector = ({ onSortChange }) => {
   const sortOptions = [
-    { label: "Price", value: "current_price" },
-    { label: "Range", value: "epa_range" },
-    { label: "0-60", value: "acceleration_0_60" },
-    { label: "Top Speed", value: "top_speed" },
-    { label: "Rating", value: "average_rating" },
+    {
+      label: "Price (lowest first) ↑",
+      value: { field: "current_price", direction: "asc" },
+    },
+    {
+      label: "Price (highest first) ↓",
+      value: { field: "current_price", direction: "desc" },
+    },
+    {
+      label: "Range (worst first) ↑",
+      value: { field: "epa_range", direction: "asc" },
+    },
+    {
+      label: "Range (best first) ↓",
+      value: { field: "epa_range", direction: "desc" },
+    },
+    {
+      label: "0-60 (fastest first) ↑",
+      value: { field: "acceleration_0_60", direction: "asc" },
+    },
+    {
+      label: "0-60 (slowest first) ↓",
+      value: { field: "acceleration_0_60", direction: "desc" },
+    },
+    {
+      label: "Top Speed (fastest first) ↑",
+      value: { field: "top_speed", direction: "asc" },
+    },
+    {
+      label: "Top Speed (slowest first) ↓",
+      value: { field: "top_speed", direction: "desc" },
+    },
+    {
+      label: "Rating (worst first) ↑",
+      value: { field: "average_rating", direction: "asc" },
+    },
+    {
+      label: "Rating (best first) ↓",
+      value: { field: "average_rating", direction: "desc" },
+    },
   ];
 
   return (
@@ -25,11 +63,8 @@ const SortSelector = ({ onSortChange }) => {
       <MenuList>
         {sortOptions.map((option) => (
           <MenuItem
-            key={option.value}
-            onClick={() => {
-              console.log("is this firing?");
-              onSortChange(option.value);
-            }}
+            key={option.label}
+            onClick={() => onSortChange(option.value)}
           >
             {option.label}
           </MenuItem>
