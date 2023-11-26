@@ -5,7 +5,7 @@ import {
   InputRightElement,
   IconButton,
 } from "@chakra-ui/react";
-import { useRef, useState } from "react";
+import { useRef, useState, ChangeEvent } from "react";
 import { BsSearch, BsX } from "react-icons/bs";
 
 interface Props {
@@ -16,7 +16,7 @@ const SearchInput = ({ onSearch }: Props) => {
   const [value, setValue] = useState("");
   const ref = useRef<HTMLInputElement>(null);
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
     onSearch(event.target.value); // This triggers the search in the parent component
   };
