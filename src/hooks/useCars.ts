@@ -31,7 +31,10 @@ const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature |
       filteredCars = filteredCars.filter(car => 
         car.make_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.submodel.toLowerCase().includes(searchTerm.toLowerCase())
+        car.submodel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (`${car.make_name} ${car.model}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (`${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (`${car.make_name} ${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase())
         // ... any other fields you want to search by
         // TODO - add ability to search for people and companies--- 26 Nov 2023
       );
