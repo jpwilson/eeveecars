@@ -14,9 +14,6 @@ import { Make } from "../hooks/useMakes";
 import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
-import useCars from "../hooks/useCars";
-//import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-//import CarDetails from "./CarDetails";
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -29,6 +26,12 @@ function HomePage() {
 
   const handleSortChange = (option) => {
     setSortOption(option);
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearch = (text: string) => {
+    setSearchTerm(text);
   };
 
   const handleSelectFeature = (
@@ -51,7 +54,7 @@ function HomePage() {
       }}
     >
       <GridItem area="nav" mb={10}>
-        <NavBar />
+        <NavBar onSearch={handleSearch} />
       </GridItem>
       <Show above="lg">
         <GridItem area="aside" paddingX={5}>
@@ -82,6 +85,7 @@ function HomePage() {
           selectedFeature={selectedFeature}
           selectedMake={selectedMake}
           sortOption={sortOption}
+          searchTerm={searchTerm}
           // data={sortedData}
         />
       </GridItem>

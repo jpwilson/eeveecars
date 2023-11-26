@@ -22,10 +22,20 @@ export interface SelectedFeature {
     carIds: number[];
   }
 
-const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature | null) => {
+const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature | null, searchTerm?: string) => {
     const { data, error, isLoading } = useData<Car>('/cars');
 
     let filteredCars = data;
+
+    if (searchTerm) {
+      filteredCars = filteredCars.filter(car => 
+        car.make_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        car.submodel.toLowerCase().includes(searchTerm.toLowerCase())
+        // ... any other fields you want to search by
+        // TODO - add ability to search for people and companies--- 26 Nov 2023
+      );
+    }
 
     //TODO add filtering by multiple features.... 17 Nov 2023
 
@@ -43,9 +53,3 @@ const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature |
 };
 
 export default useCars;
-
-
-
-
-
-

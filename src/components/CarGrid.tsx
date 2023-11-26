@@ -10,11 +10,21 @@ import { FaSadTear } from "react-icons/fa";
 interface Props {
   selectedMake: Make | null;
   selectedFeature: SelectedFeature | null;
-  sortOption: string; // Add this line
+  sortOption: string;
+  searchTerm: string;
 }
 
-const CarGrid = ({ selectedMake, selectedFeature, sortOption }: Props) => {
-  const { data, error, isLoading } = useCars(selectedMake, selectedFeature);
+const CarGrid = ({
+  selectedMake,
+  selectedFeature,
+  sortOption,
+  searchTerm,
+}: Props) => {
+  const { data, error, isLoading } = useCars(
+    selectedMake,
+    selectedFeature,
+    searchTerm
+  );
   const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   //Car ordering code:

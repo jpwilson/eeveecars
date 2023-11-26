@@ -4,7 +4,11 @@ import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
 
-const NavBar = () => {
+interface Props {
+  onSearch: (searchText: string) => void;
+}
+
+const NavBar = ({ onSearch }: Props) => {
   return (
     <Flex justifyContent="space-between" padding="14px" align="center">
       <Flex align="center" minW="200px">
@@ -21,7 +25,7 @@ const NavBar = () => {
         {" "}
         {/* Search bar will grow to fill available space */}
         {/* <Input borderRadius={20} placeholder="Search EVs..." variant="filled" /> */}
-        <SearchInput />
+        <SearchInput onSearch={onSearch} />
       </Box>
       <ColorModeSwitch />
     </Flex>
