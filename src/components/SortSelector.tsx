@@ -39,11 +39,11 @@ const SortSelector = ({ onSortChange }) => {
     },
     {
       label: "Top Speed (fastest first) ↑",
-      value: { field: "top_speed", direction: "asc" },
+      value: { field: "top_speed", direction: "desc" },
     },
     {
       label: "Top Speed (slowest first) ↓",
-      value: { field: "top_speed", direction: "desc" },
+      value: { field: "top_speed", direction: "asc" },
     },
     {
       label: "Rating (worst first) ↑",
