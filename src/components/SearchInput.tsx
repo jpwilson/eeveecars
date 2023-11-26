@@ -8,6 +8,12 @@ interface Props {
 
 const SearchInput = ({ onSearch }: Props) => {
   const ref = useRef<HTMLInputElement>(null);
+
+  const handleInputChange = (event) => {
+    const currentText = event.target.value;
+    onSearch(currentText); // Assuming onSearch updates the search state in your parent component
+  };
+
   return (
     <form
       onSubmit={(event) => {
@@ -20,8 +26,9 @@ const SearchInput = ({ onSearch }: Props) => {
         <Input
           ref={ref}
           borderRadius={20}
-          placeholder="Search EVs..."
+          placeholder="Search EV makes, models and submodels"
           variant="filled"
+          onChange={handleInputChange} // Add this line
         />
       </InputGroup>
     </form>
