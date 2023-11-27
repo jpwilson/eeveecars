@@ -2,6 +2,7 @@ import useData from "./useData";
 import { Make } from "./useMakes";
 
 export interface Car {
+  id: number;
     make_name: string;
     model: string;
     submodel: string;
