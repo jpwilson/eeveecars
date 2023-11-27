@@ -11,8 +11,22 @@ import { ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
 
 import { BsChevronDown } from "react-icons/bs";
 
-const SortSelector = ({ onSortChange }) => {
-  const sortOptions = [
+interface SortOption {
+  field: string;
+  direction: "asc" | "desc";
+}
+
+interface SortOptionItem {
+  label: string;
+  value: SortOption;
+}
+
+interface SortSelectorProps {
+  onSortChange: (option: SortOption) => void;
+}
+
+const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
+  const sortOptions: SortOptionItem[] = [
     {
       label: "Price (lowest first) ↑",
       value: { field: "current_price", direction: "asc" },

@@ -4,13 +4,18 @@ import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 import { Make } from "../hooks/useMakes";
-import { Features } from "../hooks/useFeatures";
+import { Car } from "../hooks/useCars";
 import { FaSadTear } from "react-icons/fa";
+
+interface SortOption {
+  field: keyof Car; // assuming Car is the type with all possible sortable fields
+  direction: "asc" | "desc";
+}
 
 interface Props {
   selectedMake: Make | null;
   selectedFeature: SelectedFeature | null;
-  sortOption: string;
+  sortOption: SortOption;
   searchTerm: string;
 }
 
@@ -37,7 +42,16 @@ const CarGrid = ({
       const valueB = b[sortOption.field];
       const sortMultiplier = sortOption.direction === "asc" ? 1 : -1;
 
-      return (valueA - valueB) * sortMultiplier;
+      if (typeof valueA === "number" && typeof valueB === "number") {
+        return (valueA - valueB) * sortMultiplier;
+      } else if (typeof valueA === "string" && typeof valueB === "string") {
+        return valueA.localeCompare(valueB) * sortMultiplier;
+      } else {
+        console.error(
+          "Trying to sort on incompatible or non-numeric/string fields"
+        );
+        return 0;
+      }
     });
   };
 

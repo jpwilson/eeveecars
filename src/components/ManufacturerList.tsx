@@ -12,7 +12,7 @@ import {
 import useMakes, { Make } from "../hooks/useMakes";
 
 interface Props {
-  onSelectMake: (make: Make) => void;
+  onSelectMake: (make: Make | null) => void;
   selectedMake: Make | null;
 }
 
