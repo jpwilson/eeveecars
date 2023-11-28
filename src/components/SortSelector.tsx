@@ -11,10 +11,7 @@ import { ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
 
 import { BsChevronDown } from "react-icons/bs";
 
-interface SortOption {
-  field: string;
-  direction: "asc" | "desc";
-}
+import { SortOption } from "../types/types";
 
 interface SortOptionItem {
   label: string;

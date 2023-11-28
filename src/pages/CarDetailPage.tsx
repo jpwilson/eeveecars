@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Make } from "../hooks/useMakes";
 import CarDetails from "../components/CarDetails";
 import ManufacturerList from "../components/ManufacturerList";
+import { Link as RouterLink } from "react-router-dom";
 
 function CarDetail() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -27,19 +28,19 @@ function CarDetail() {
         lg: "200px 1fr",
       }}
     >
-      <GridItem area="nav">
+      {/* <GridItem area="nav"> Shuoldn't be here
         <NavBar />
-      </GridItem>
+      </GridItem> */}
       <Show above="lg">
         <GridItem area="aside" paddingX={5}>
           <VStack h={"300px"} justifyContent="space-around">
-            <Link to="/">
+            <Link as={RouterLink} to="/">
               <Button>All Cars</Button>
             </Link>
-            <Link to="/">
+            <Link as={RouterLink} to="/">
               <Button>All Manufacturers</Button>
             </Link>
-            <Link to="/">
+            <Link as={RouterLink} to="/">
               <Button>All People</Button>
             </Link>
           </VStack>

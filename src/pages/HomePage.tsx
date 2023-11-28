@@ -14,6 +14,7 @@ import { Make } from "../hooks/useMakes";
 import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
+import { SortOption } from "../types/types";
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -24,7 +25,7 @@ function HomePage() {
     direction: "desc",
   }); // default sort by price (change to sales volume later)
 
-  const handleSortChange = (option) => {
+  const handleSortChange = (option: SortOption) => {
     setSortOption(option);
   };
 

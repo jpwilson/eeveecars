@@ -4,13 +4,9 @@ import CarCard from "./CarCard";
 import CarCardSkeleton from "./CarCardSkeleton";
 import CarCardContainer from "./CarCardContainer";
 import { Make } from "../hooks/useMakes";
-import { Car } from "../hooks/useCars";
-import { FaSadTear } from "react-icons/fa";
 
-interface SortOption {
-  field: keyof Car; // assuming Car is the type with all possible sortable fields
-  direction: "asc" | "desc";
-}
+import { FaSadTear } from "react-icons/fa";
+import { SortOption } from "../types/types";
 
 interface Props {
   selectedMake: Make | null;
