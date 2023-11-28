@@ -16,12 +16,21 @@ import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
 
+interface SelectedFeatureBucket {
+  featureName: string;
+  bucketName: string;
+  carIds: number[];
+}
+
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
-  const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
+  //const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
+  // Update the state initialization and type
+  const [selectedFeature, setSelectedFeature] =
+    useState<SelectedFeatureBucket | null>(null);
 
-  const [sortOption, setSortOption] = useState({
-    field: "price",
+  const [sortOption, setSortOption] = useState<SortOption>({
+    field: "current_price",
     direction: "desc",
   }); // default sort by price (change to sales volume later)
 
@@ -69,8 +78,8 @@ function HomePage() {
         <HStack spacing={5} pl={10} mb={1} mt={2}>
           <FeatureSelector
             onSelectFeature={handleSelectFeature}
-            selectedBucketName={selectedFeature?.bucketName}
-            selectedFeatureName={selectedFeature?.featureName}
+            selectedBucketName={selectedFeature?.bucketName ?? null}
+            selectedFeatureName={selectedFeature?.featureName ?? null}
           />
           <Button
             fontSize="lg"

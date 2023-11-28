@@ -29,7 +29,7 @@ const FeatureSelector = ({
   const { features, isLoading, error } = useFeatures();
   const { colorMode } = useColorMode(); // Use color mode for styling
 
-  if (isLoading) return "Loading...";
+  if (isLoading) return <p>Loading...</p>;
   if (error) return null; // rather show nothing `Error: ${error}`;
   if (!features) return null;
 

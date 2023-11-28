@@ -15,7 +15,7 @@ export interface Car {
     average_rating: number;
     epa_range: number;
     acceleration_0_60: number; 
-  top_speed: number; 
+    top_speed: number; 
 }
 
 // Add an interface for SelectedFeature to detail the expected shape
