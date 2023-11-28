@@ -21,7 +21,7 @@ const useData = <T>(endpoint: string) => {
       apiClient
         .get<FetchResponse<T>>(endpoint, {signal: controller.signal})
         .then((res) => {
-          setData(res.data);
+          setData(res.data as unknown as T[]);
           setLoading(false);
           })
         .catch((err) => {
