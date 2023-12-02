@@ -1,5 +1,5 @@
 import axios from 'axios';
 
 export default axios.create({
-    baseURL: 'http://127.0.0.1:8000/',
+    baseURL: import.meta.env.VITE_REACT_APP_API_URL as string,
 })

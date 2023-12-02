@@ -31,12 +31,16 @@ const CarGrid = ({
   //Car ordering code:
 
   const getSortedData = () => {
-    if (!data) return [];
+    if (!data || data.length === 0) return [];
 
     return [...data].sort((a, b) => {
-      const valueA = a[sortOption.field];
-      const valueB = b[sortOption.field];
+      let valueA = a[sortOption.field];
+      let valueB = b[sortOption.field];
       const sortMultiplier = sortOption.direction === "asc" ? 1 : -1;
+
+      // Treat null as 0 for sorting purposes
+      valueA = valueA === null ? 0 : valueA;
+      valueB = valueB === null ? 0 : valueB;
 
       if (typeof valueA === "number" && typeof valueB === "number") {
         return (valueA - valueB) * sortMultiplier;
@@ -44,7 +48,12 @@ const CarGrid = ({
         return valueA.localeCompare(valueB) * sortMultiplier;
       } else {
         console.error(
-          "Trying to sort on incompatible or non-numeric/string fields"
+          "Trying to sort on incompatible or non-numeric/string fields",
+          {
+            valueA,
+            valueB,
+            sortOption,
+          }
         );
         return 0;
       }
