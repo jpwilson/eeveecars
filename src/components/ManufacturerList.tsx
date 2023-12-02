@@ -28,7 +28,7 @@ const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
     <List>
       <ListItem paddingY="6px">
         <Button fontSize="lg" onClick={() => onSelectMake(null)}>
-          All Cars
+          All EVs
         </Button>
       </ListItem>
       {data.map((make) => (
