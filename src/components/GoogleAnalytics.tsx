@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ReactGA from "react-ga";
 
-const TRACKING_ID = import.meta.env.REACT_APP_GA_TRACKING_ID || "";
+const TRACKING_ID = import.meta.env.VITE_GA_TRACKING_ID || "";
 
 // Initialize ReactGA
 if (TRACKING_ID) {
