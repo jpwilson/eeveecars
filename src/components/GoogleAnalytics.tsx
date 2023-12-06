@@ -23,6 +23,7 @@ const GoogleAnalytics = () => {
         hitType: "pageview",
         page: location.pathname + location.search,
       });
+      console.log("checking.... page: " + location.pathname + location.search);
     }
   }, [location]);
 
