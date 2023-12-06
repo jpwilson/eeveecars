@@ -21,7 +21,7 @@ const useData = <T>(endpoint: string) => {
       apiClient
         .get<FetchResponse<T>>(endpoint, {signal: controller.signal,headers: {
           'Content-Type': 'application/json',
-          "access_token_ev_lineup": import.meta.env.VITE_API_SECRET_KEY as string,  // Securely use the environment variable
+          [import.meta.env.VITE_API_SECRET_KEY_NAME]: import.meta.env.VITE_API_SECRET_KEY as string,  // Securely use the environment variable
         }})
         .then((res) => {
           setData(res.data as unknown as T[]);
