@@ -1,4 +1,4 @@
-import { Flex, Box, Heading, Image, Input } from "@chakra-ui/react";
+import { Flex, Box, Heading, Text, Image, Input } from "@chakra-ui/react";
 import logo from "../assets/logo_s.png";
 import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
@@ -18,6 +18,17 @@ const NavBar = ({ onSearch }: Props) => {
           <Heading color={"lightgreen"} ml={3}>
             EV Lineup
           </Heading>
+          <Text
+            color={"gray.450"}
+            ml={2}
+            mt={1}
+            mb={3}
+            fontSize="sm"
+            w="full"
+            textAlign="center"
+          >
+            Electric Car Database
+          </Text>
         </Link>
       </Flex>
       <Box flex="1" mx={3}>
