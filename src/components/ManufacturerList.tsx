@@ -23,7 +23,9 @@ const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
   if (error) return null;
 
   if (isLoading) return <Spinner />;
-
+  // Sort the data alphabetically by the 'name' property
+  const sortedData =
+    data?.sort((a: Make, b: Make) => a.name.localeCompare(b.name)) ?? [];
   return (
     <List>
       <ListItem paddingY="6px">
@@ -31,7 +33,7 @@ const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
           All EVs
         </Button>
       </ListItem>
-      {data.map((make) => (
+      {sortedData.map((make) => (
         <ListItem
           key={make.id}
           paddingY="6px"
