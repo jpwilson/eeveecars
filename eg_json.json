@@ -1,0 +1,67 @@
+{
+    "make_id": 16,
+    "model": "e-tron Q8 e-tron Sportback",
+    "submodel": "Launch Edition",
+    "generation": "1st",
+    "image_url": "/pub_assets/car_images/audi_etron_sportback.png",
+    "acceleration_0_60": 5.4,
+    "current_price": 77800.00,
+    "epa_range": 296,
+    "number_of_full_adult_seats": 5,
+    "available_countries": [
+        "United States"
+    ],
+    "battery_capacity": 114,
+    "battery_max_charging_speed": 31,
+    "bidirectional_details": {},
+    "chargers": [],
+    "carmodel_first_released": "2020",
+    "carmodel_ended": "current",
+    "trim_first_released": "unknown",
+    "trim_ended": "unknown",
+    "color_options": {
+        "2024": [
+            "Magnet Gray",
+            "Glacier White Metallic",
+            "Madeira Brown Metallic",
+            "Mythos Black Metallic"
+        ]
+    },
+    "customer_and_critic_rating": {},
+    "drive_assist_features": [
+        "Adaptive cruise assist with lane guidance",
+        "Audi pre-sense front"
+    ],
+    "drive_type": "AWD - 2 motor e-quattro",
+    "frunk_capacity": 0.7,
+    "has_spare_tire": true,
+    "power": 402,
+    "top_speed": 124,
+    "torque": 0,
+    "speed_acc": {},
+    "price_history": {
+        "2023": 77800.00
+    },
+    "range_details": {},
+    "reviews": [("Raitis Rides - 10Aug23",
+        "https://www.youtube.com/watch?v=VZ42yV6ZScY")
+    ],
+    "euroncap_rating": 0,
+    "nhtsa_rating": 0,
+    "sentry_security": false,
+    "sentry_details": {},
+    "camping_features": {},
+    "dog_mode": {},
+    "infotainment_details": {},
+    "interior_ambient_lighting_details": {},
+    "keyless": false,
+    "number_of_passenger_doors": 0,
+    "remote_heating_cooling": {},
+    "seating_details": {},
+    "towing_details": {},
+    "regen_details": {},
+    "vehicle_class": "unknown",
+    "vehicle_sound_details": {},
+    "average_rating": 7,
+    "make_name": "Audi"
+}
