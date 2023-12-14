@@ -1,70 +1,111 @@
 {
     "make_id": 1,
-    "model": "Semi",
-    "submodel": "Large",
+    "model": "Model S",
+    "submodel": "Plaid",
     "generation": "1",
-    "image_url": "/pub_assets/car_images/tes_semi_lrg.png",
-    "acceleration_0_60": 20,
-    "current_price": 180000.00,
-    "epa_range": 500,
-    "number_of_full_adult_seats": 2,
+    "image_url": "/pub_assets/car_images/tes_ms_plaid.png",
+    "acceleration_0_60": 1.9,
+    "current_price": 89990.00,
+    "epa_range": 396,
+    "number_of_full_adult_seats": 5,
     "available_countries": {
         "12-02-2023": [
-            "USA"
+            "United States",
+            "Canada",
+            "United Kingdom",
+            "Germany",
+            "France",
+            "Netherlands",
+            "Norway",
+            "Sweden",
+            "Switzerland",
+            "Denmark",
+            "Austria",
+            "Belgium",
+            "Italy",
+            "Spain",
+            "Portugal",
+            "China",
+            "Japan",
+            "New Zealand",
+            "South Korea",
+            "Singapore",
+            "Hong Kong",
+            "UAE",
+            "Qatar",
+            "Kuwait",
+            "Saudi Arabia"
         ]
     },
-    "battery_capacity": 900,
+    "battery_capacity": 100,
     "battery_max_charging_speed": 30,
     "bidirectional_details": {
-        "car to house": "unknown, but unlikely"
+        "car to house": "No"
     },
     "chargers": [
-        "Tesla Megacharger Network"
+        "Tesla Supercharger Network",
+        "Electrify America",
+        "EVgo",
+        "ChargePoint",
+        "Blink",
+        "SemaConnect",
+        "Greenlots"
     ],
-    "carmodel_first_released": "2022",
+    "carmodel_first_released": "2021",
     "carmodel_ended": "current",
-    "trim_first_released": "2022",
+    "trim_first_released": "2021",
     "trim_ended": "current",
     "color_options": {
-        "2022": [
-            "Metallic Silver"
+        "2022 & earlier": [
+            "Pearl White Multicoat",
+            "Solid Black",
+            "Deep Blue Metallic",
+            "Midnight Grey",
+            "Milticoat Red"
         ],
-        "2023": [
-            "Metallic Silver"
-        ],
-        "2024": [
-            "Metallic Silver"
+        "2023 - present": [
+            "Pearl White Multicoat",
+            "Solid Black",
+            "Deep Blue Metallic",
+            "Stealth Grey",
+            "Ultra Red"
         ]
     },
     "customer_and_critic_rating": {},
     "drive_assist_features": [
         "Autopilot"
     ],
-    "drive_type": "AWD - quad-motor",
-    "frunk_capacity": 0,
+    "drive_type": "AWD - tri-motor",
+    "frunk_capacity": 3.1,
     "has_spare_tire": false,
-    "power": 800,
-    "top_speed": 130,
-    "torque": 0,
+    "power": 1020,
+    "top_speed": 200,
+    "torque": 1050,
     "speed_acc": {
-        "0-60": 20
+        "0-60": 1.99,
+        "0-100": 4.2,
+        "quarter mile": 9.23
     },
     "price_history": {
-        "2022 & 2023": 180000.00
+        "06-10-2021": 129000.00,
+        "08-01-2022": 104990.00,
+        "01-01-2023": 109990.00,
+        "03-06-2021": 94990.00,
+        "05-01-2023": 89990.00
     },
     "range_details": {},
     "reviews": [
         {
-            "description": "Jay Leno's Garage - Jay Leno Hauls Tesla Semi with Tesla Semi",
-            "url": "https://www.youtube.com/watch?v=LMKySYs-hCg"
+            "description": "Carwow - Tesla Model S Plaid review - what will it do 0-60mph?",
+            "url": "https://www.youtube.com/watch?v=dP0deOQkZtQ"
         },
         {
-            "description": "MoosePower740 - Pepsico explaining how it uses Tesla Semi electric trucks",
-            "url": "https://www.youtube.com/watch?v=z-P6uhbTU38"
+            "description": "Doug DeMuro - The Tesla Model S Plaid Is the World’s Fastest (and Coolest) Sedan",
+            "url": "https://www.youtube.com/watch?v=qen0ZlZM0ZA"
         }
     ],
-    "euroncap_rating": 0,
-    "nhtsa_rating": 0,
+    "euroncap_rating": 5,
+    "nhtsa_rating": 5,
     "sentry_security": true,
     "sentry_details": {
         "name": "Tesla Sentry",
@@ -77,30 +118,30 @@
         "In cabin, with camera": "yes"
     },
     "infotainment_details": {
-        "No of screens": "1",
-        "Main Screen Specs": "15 inches",
-        "Gaming": "BCurrently unknown"
+        "No of screens": "3",
+        "Main Screen Specs": "17 inches, 4K main + 12.3 inch behind steering wheel",
+        "Gaming": "Both the Tesla Arcade, and Steam Platform"
     },
     "interior_ambient_lighting_details": {},
     "keyless": true,
-    "number_of_passenger_doors": 1,
+    "number_of_passenger_doors": 4,
     "remote_heating_cooling": {
         "climate": "yes",
         "remote seat heating": "yes",
         "remote steering wheel heating": "yes"
     },
     "seating_details": {
-        "no of adult seats": "2"
+        "no of adult seats": "5"
     },
     "towing_details": {
-        "payload": "82, 000 lbs"
+        "payload": "3, 500 lbs"
     },
     "regen_details": {
         "regen settings": "yes"
     },
-    "vehicle_class": "Class 8 - Semi Trailer",
+    "vehicle_class": "Full Size Luxury Sedan",
     "vehicle_sound_details": {
-        "Description": "Currently unknown"
+        "Description": "22-speaker, 960-watt audio system with active noise canceling technology."
     },
     "average_rating": 9,
     "make_name": "Tesla"
