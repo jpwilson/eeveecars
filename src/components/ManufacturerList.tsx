@@ -25,7 +25,18 @@ const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
   if (isLoading) return <Spinner />;
   // Sort the data alphabetically by the 'name' property
   const sortedData =
-    data?.sort((a: Make, b: Make) => a.name.localeCompare(b.name)) ?? [];
+    data?.sort((a: Make, b: Make) => {
+      // Prioritize Tesla
+      if (a.name === "Tesla") return -1;
+      if (b.name === "Tesla") return 1;
+
+      // Prioritize Rivian
+      if (a.name === "Rivian") return -1;
+      if (b.name === "Rivian") return 1;
+
+      // Alphabetical order for the rest
+      return a.name.localeCompare(b.name);
+    }) ?? [];
   return (
     <List>
       <ListItem paddingY="6px">
