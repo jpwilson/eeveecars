@@ -1,0 +1,74 @@
+{
+    "make_id": 1,
+    "make_name": "Tesla",
+    "model": "Semi",
+    "submodel": "Small",
+    "generation": "2021",
+    "image_url": "/pub_assets/car_images/tes_semi_sml.png",
+    "acceleration_0_60": 20,
+    "current_price": 150000,
+    "epa_range": 300,
+    "number_of_full_adult_seats": 1,
+    "is_model_rep": false,
+    "desc": "A smaller version of the Tesla semi, with a smaller range of 300 miles",
+    "production_availability": false,
+    "availability_desc": null,
+    "available_countries": {},
+    "battery_capacity": 600,
+    "battery_max_charging_speed": 1000,
+    "bidirectional_details": {},
+    "chargers": [
+        "Supercharger",
+        "Megacharger"
+    ],
+    "carmodel_first_released": "2019-11-01",
+    "carmodel_ended": null,
+    "trim_first_released": null,
+    "trim_ended": null,
+    "color_options": {
+        "2024": [
+            "Tesla White"
+        ]
+    },
+    "customer_and_critic_rating": {
+        "Truck Trend": 4.7,
+        "Electrek": 4.5
+    },
+    "drive_assist_features": [
+        "Autopilot",
+        "Lane Keeping Assistance"
+    ],
+    "drive_type": "RWD",
+    "frunk_capacity": null,
+    "has_spare_tire": null,
+    "power": null,
+    "top_speed": 60,
+    "torque": 10000,
+    "speed_acc": {},
+    "price_history": {},
+    "range_details": {},
+    "reviews": [
+        {
+            "description": "The Tesla Semi is poised to revolutionize the trucking industry with its fully electric powertrain and unprecedented safety features.",
+            "url": "http://example.com/reviews/semi"
+        }
+    ],
+    "euroncap_rating": null,
+    "nhtsa_rating": null,
+    "sentry_security": true,
+    "sentry_details": {},
+    "camping_features": {},
+    "dog_mode": {},
+    "infotainment_details": {},
+    "interior_ambient_lighting_details": {},
+    "keyless": null,
+    "number_of_passenger_doors": null,
+    "remote_heating_cooling": {},
+    "seating_details": {},
+    "towing_details": {},
+    "regen_details": {},
+    "vehicle_class": "Semi-Truck",
+    "vehicle_sound_details": {},
+    "id": 5,
+    "average_rating": 9.2
+}

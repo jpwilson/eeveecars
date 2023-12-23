@@ -26,7 +26,7 @@ export interface SelectedFeature {
   }
 
 const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature | null, searchTerm?: string) => {
-    const { data, error, isLoading } = useData<Car>('/cars');
+    const { data, error, isLoading } = useData<Car>('/cars/model-reps');
 
     let filteredCars = data;
 
