@@ -20,11 +20,9 @@ const CarCard = ({ car }: Props) => {
       ></Image>
       <CardBody>
         <Heading fontSize={"2xl"}>
-          <Link to={`car_detail/${car.id}`}>
-            {car.make_name} {car.model}{" "}
+          <Link to={`model_detail/${car.make_model_slug}`}>
+            {car.make_name} {car.model}
           </Link>
-          {car.submodel && car.submodel !== "N/A" ? `${car.submodel}` : ""} v-
-          {car.generation}
         </Heading>
         <HStack justifyContent="space-between" padding="10px">
           <p>

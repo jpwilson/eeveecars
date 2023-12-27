@@ -16,6 +16,7 @@ export interface Car {
     epa_range: number;
     acceleration_0_60: number; 
     top_speed: number; 
+    make_model_slug: string;
 }
 
 // Add an interface for SelectedFeature to detail the expected shape
