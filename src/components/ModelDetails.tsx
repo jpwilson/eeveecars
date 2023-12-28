@@ -14,12 +14,13 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import useModelDetails, {
-  ModelDetails as ModelDetailsType,
+  ModelDetailsResponse as ModelDetailsType,
 } from "../hooks/useModelDetails"; // Import the hook and type
 
 const ModelDetails: React.FC = () => {
   const { make_model_slug } = useParams<{ make_model_slug: string }>(); // This should match the route parameter
-  const { modelDetails, error, isLoading } = useModelDetails(make_model_slug); // Invoke the hook with the model ID
+  const safeMakeModelSlug = make_model_slug ?? ""; // Fallback to an empty string if undefined
+  const { modelDetails, error, isLoading } = useModelDetails(safeMakeModelSlug); // Invoke the hook with the model ID
 
   // Responsive breakpoints for image size
   const imageSize = useBreakpointValue({
@@ -34,23 +35,26 @@ const ModelDetails: React.FC = () => {
   if (!modelDetails) return <div>Model not found.</div>;
 
   const {
-    make_name,
-    model,
-    model_description,
-    image_url,
+    representative_model: {
+      make_name,
+      model,
+      model_description,
+      image_url,
 
-    //submodels,
-    average_rating,
-    // ... other fields you may want to include
-  } = modelDetails.representative_model;
+      //submodels,
+      average_rating,
+      // ... other fields you may want to include
+    },
+    submodels,
+  } = modelDetails;
 
-  const submodels = modelDetails.submodels;
+  // const submodels = modelDetails.submodels;
 
   console.log("mode details below  ");
   console.log({ modelDetails });
   console.log("mode details above  ");
   if (modelDetails) {
-    console.log({ submodels: modelDetails.submodels });
+    console.log({ submodels: submodels });
   }
 
   return (
