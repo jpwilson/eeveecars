@@ -1,33 +1,37 @@
 {
     "make_id": 1,
     "make_name": "Tesla",
-    "model": "Semi",
-    "submodel": "Small",
+    "model": "Model 3",
+    "submodel": "AWD Long Range",
     "generation": "2021",
-    "image_url": "/pub_assets/car_images/tes_semi_sml.png",
-    "acceleration_0_60": 20,
-    "current_price": 150000,
-    "epa_range": 300,
-    "number_of_full_adult_seats": 1,
+    "image_url": "/pub_assets/car_images/tes_m3_lng_range.png",
+    "acceleration_0_60": 4.2,
+    "current_price": 38990,
+    "epa_range": 272,
+    "number_of_full_adult_seats": 5,
     "is_model_rep": false,
-    "desc": "A smaller version of the Tesla semi, with a smaller range of 300 miles",
-    "production_availability": false,
-    "availability_desc": null,
+    "model_description": "",
+    "car_description": "The Tesla Model 3 Long Range AWD is engineered for drivers seeking extended range without compromising on performance. With dual electric motors and all-wheel drive, it provides enhanced stability and traction across varying conditions. This model achieves a considerable increase in range compared to the Standard variant, aided by a larger battery capacity. The Long Range AWD maintains Tesla’s signature acceleration smoothness and adds improved energy efficiency for long-distance travel.",
+    "production_availability": true,
+    "availability_desc": "available",
     "available_countries": {},
-    "battery_capacity": 600,
-    "battery_max_charging_speed": 1000,
+    "battery_capacity": 82,
+    "battery_max_charging_speed": 250,
     "bidirectional_details": {},
     "chargers": [
-        "Supercharger",
-        "Megacharger"
+        "Supercharger"
     ],
-    "carmodel_first_released": "2019-11-01",
+    "carmodel_first_released": "2008-06-01",
     "carmodel_ended": null,
     "trim_first_released": null,
     "trim_ended": null,
     "color_options": {
         "2024": [
-            "Tesla White"
+            "Solid Black",
+            "Midnight Silver Metallic",
+            "Deep Blue Metallic",
+            "Pearl White Multi-Coat",
+            "Red Multi-Coat"
         ]
     },
     "customer_and_critic_rating": {
@@ -38,23 +42,23 @@
         "Autopilot",
         "Lane Keeping Assistance"
     ],
-    "drive_type": "RWD",
-    "frunk_capacity": null,
+    "drive_type": "AWD",
+    "frunk_capacity": 3.1,
     "has_spare_tire": null,
     "power": null,
-    "top_speed": 60,
-    "torque": 10000,
+    "top_speed": 145,
+    "torque": 376,
     "speed_acc": {},
     "price_history": {},
     "range_details": {},
     "reviews": [
         {
-            "description": "The Tesla Semi is poised to revolutionize the trucking industry with its fully electric powertrain and unprecedented safety features.",
-            "url": "http://example.com/reviews/semi"
+            "description": "Livewire rEView - Tesla Model 3 Long Range AWD | Long Term Review",
+            "url": "https://www.youtube.com/watch?v=5CGh_eZnhok"
         }
     ],
-    "euroncap_rating": null,
-    "nhtsa_rating": null,
+    "euroncap_rating": 5.0,
+    "nhtsa_rating": 5.0,
     "sentry_security": true,
     "sentry_details": {},
     "camping_features": {},
@@ -64,11 +68,18 @@
     "keyless": null,
     "number_of_passenger_doors": null,
     "remote_heating_cooling": {},
-    "seating_details": {},
-    "towing_details": {},
-    "regen_details": {},
-    "vehicle_class": "Semi-Truck",
-    "vehicle_sound_details": {},
-    "id": 5,
-    "average_rating": 9.2
+    "seating_details": {
+        "no of adult seats": "5"
+    },
+    "towing_details": {
+        "available on configurator": "no"
+    },
+    "regen_details": {
+        "regen settings": "yes"
+    },
+    "vehicle_class": "Midsize Luxury Sedan",
+    "vehicle_sound_details": {
+        "Sound description": "Our premium audio system features 14 speakers, including a subwoofer and dual amplifiers, for interior sound dynamics comparable to a recording studio."
+    },
+    "average_rating": 8.9
 }
