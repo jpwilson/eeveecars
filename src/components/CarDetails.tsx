@@ -52,6 +52,7 @@ const CarDetails = () => {
     acceleration_0_60,
     current_price,
     epa_range,
+    make_model_slug,
     //  number_of_full_adult_seats,
 
     // available_countries,
@@ -81,6 +82,7 @@ const CarDetails = () => {
     //performance
     // power,
     top_speed,
+    car_description,
     // torque,
     // speed_acc,
 
@@ -116,9 +118,8 @@ const CarDetails = () => {
         <Text fontSize="4xl" fontWeight="bold">
           {make_name} {model} {submodel}
         </Text>
-        <Link as={RouterLink} to="/">
-          {/* <Image src={logo} boxSize="60px" borderRadius={8} /> */}
-          <Button colorScheme="blue">Back to results</Button>
+        <Link as={RouterLink} to={`/model_detail/${make_model_slug}`}>
+          <Button colorScheme="blue">Back to {model} overview</Button>
         </Link>
       </HStack>
       <Grid
@@ -137,7 +138,8 @@ const CarDetails = () => {
         </GridItem>
         <GridItem>
           <VStack spacing={4} align="start">
-            <Heading>Car Details</Heading>
+            <Heading>Overview</Heading>
+            <Text>{car_description}</Text>
             <HStack>
               <Text fontWeight="bold">Price:</Text>
               <Text>${current_price}</Text>
