@@ -59,9 +59,17 @@ const ModelDetails: React.FC = () => {
 
   return (
     <VStack align="stretch" spacing={4} p={4}>
-      <Heading>
-        {make_name} {model}
-      </Heading>
+      <HStack justify="space-between" align="center">
+        <Text fontSize="4xl" fontWeight="bold">
+          {make_name} {model}
+        </Text>
+        {/* <Button colorScheme="blue" as={RouterLink} to="/">
+          Back to results
+        </Button> */}
+        <Link as={RouterLink} to="/">
+          <Button colorScheme="blue">Back to results</Button>
+        </Link>
+      </HStack>
       <Image
         src={image_url}
         alt={`${make_name} ${model}`}
@@ -81,9 +89,6 @@ const ModelDetails: React.FC = () => {
           </Link>
         ))}
       </VStack>
-      <Button colorScheme="blue" as={RouterLink} to="/">
-        Back to results
-      </Button>
     </VStack>
   );
 };
