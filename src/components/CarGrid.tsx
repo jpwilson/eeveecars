@@ -34,6 +34,19 @@ const CarGrid = ({
     if (!data || data.length === 0) return [];
 
     return [...data].sort((a, b) => {
+      // Prioritize consumer vehicles over semi-trucks
+      if (
+        a.vehicle_class !== "Semi-Truck" &&
+        b.vehicle_class === "Semi-Truck"
+      ) {
+        return -1; // 'a' should come before 'b'
+      } else if (
+        a.vehicle_class === "Semi-Truck" &&
+        b.vehicle_class !== "Semi-Truck"
+      ) {
+        return 1; // 'a' should come after 'b'
+      }
+
       let valueA = a[sortOption.field];
       let valueB = b[sortOption.field];
       const sortMultiplier = sortOption.direction === "asc" ? 1 : -1;
