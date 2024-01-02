@@ -85,8 +85,6 @@ const CarDetails = () => {
     car_description,
     // torque,
     // speed_acc,
-
-    current_price,
     // price_history,
 
     // range_details,
