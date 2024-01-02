@@ -17,6 +17,8 @@ export interface CarDetails {
   // range_combined_mid: number;
   epa_range: number;
   top_speed: number;
+  car_description: string;
+  make_model_slug: string;
 }
 
 const useCarDetails = (id: number) => {
