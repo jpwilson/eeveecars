@@ -86,7 +86,7 @@ const CarDetails = () => {
     // torque,
     // speed_acc,
 
-    //price
+    current_price,
     // price_history,
 
     // range_details,
@@ -130,7 +130,7 @@ const CarDetails = () => {
         <GridItem>
           <Image
             src={image_url}
-            alt={`${make_name} ${model}`}
+            alt={`${make_name} ${model} ${submodel}`}
             maxW={imageSize}
             maxH={{ base: "auto", md: "500px" }}
             objectFit="contain"
