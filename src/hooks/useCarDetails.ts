@@ -19,6 +19,7 @@ export interface CarDetails {
   top_speed: number;
   car_description: string;
   make_model_slug: string;
+  vehicle_class: string;
 }
 
 const useCarDetails = (id: number) => {

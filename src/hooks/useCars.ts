@@ -17,6 +17,7 @@ export interface Car {
     acceleration_0_60: number; 
     top_speed: number; 
     make_model_slug: string;
+    vehicle_class: string;
 }
 
 // Add an interface for SelectedFeature to detail the expected shape
