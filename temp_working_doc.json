@@ -66,7 +66,7 @@
     "infotainment_details": {},
     "interior_ambient_lighting_details": {},
     "keyless": null,
-    "number_of_passenger_doors": null,
+    "number_of_passenger_doors": 4,
     "remote_heating_cooling": {},
     "seating_details": {
         "no of adult seats": "5"
