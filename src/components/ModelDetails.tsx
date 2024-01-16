@@ -66,6 +66,7 @@ const ModelDetails: React.FC = () => {
   if (modelDetails) {
     console.log({ submodels: submodels });
   }
+  submodels.sort((a, b) => a.current_price - b.current_price);
 
   return (
     <VStack align="stretch" spacing={4} p={4}>
