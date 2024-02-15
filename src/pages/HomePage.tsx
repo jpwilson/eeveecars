@@ -76,6 +76,7 @@ function HomePage() {
       </Show>
       <GridItem area="main">
         <HStack spacing={5} pl={10} mb={1} mt={2}>
+          <SortSelector onSortChange={handleSortChange} />
           <FeatureSelector
             onSelectFeature={handleSelectFeature}
             selectedBucketName={selectedFeature?.bucketName ?? null}
@@ -86,10 +87,11 @@ function HomePage() {
             onClick={() => {
               setSelectedFeature(null);
             }}
+            color="yellow.500"
+            fontWeight="bold"
           >
             Clear Feature Selection
           </Button>
-          <SortSelector onSortChange={handleSortChange} />
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}

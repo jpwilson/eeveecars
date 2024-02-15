@@ -35,8 +35,13 @@ const FeatureSelector = ({
 
   return (
     <Menu>
-      <MenuButton as={Button} rightIcon={<BsChevronDown />}>
-        Features
+      <MenuButton
+        as={Button}
+        rightIcon={<BsChevronDown />}
+        color="blue.500"
+        fontWeight="bold"
+      >
+        Feature Filter
       </MenuButton>
       <MenuList>
         <VStack>

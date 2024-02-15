@@ -68,7 +68,12 @@ const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
 
   return (
     <Menu>
-      <MenuButton as={Button} rightIcon={<BsChevronDown />}>
+      <MenuButton
+        as={Button}
+        rightIcon={<BsChevronDown />}
+        color="blue.500"
+        fontWeight="bold"
+      >
         Order by
       </MenuButton>
       <MenuList>
