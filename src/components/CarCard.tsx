@@ -1,5 +1,14 @@
 import { MdElectricCar } from "react-icons/md";
-import { Card, CardBody, HStack, Heading, Icon, Image } from "@chakra-ui/react";
+import {
+  Card,
+  CardBody,
+  VStack,
+  HStack,
+  Heading,
+  Icon,
+  Image,
+  Text,
+} from "@chakra-ui/react";
 import { Car } from "../hooks/useCars";
 import CarScore from "./CarScore";
 import CarCardContainer from "./CarCardContainer";
@@ -12,27 +21,38 @@ interface Props {
 const CarCard = ({ car }: Props) => {
   return (
     <Card>
-      <Image
-        src={car.image_url}
-        height="200px"
-        width="full"
-        objectFit="cover"
-      ></Image>
-      <CardBody>
-        <Heading fontSize={"2xl"}>
-          <Link to={`model_detail/${car.make_model_slug}`}>
+      <Link to={`model_detail/${car.make_model_slug}`}>
+        <Image
+          src={car.image_url}
+          height="200px"
+          width="full"
+          objectFit="cover"
+        ></Image>
+        <CardBody>
+          <Heading fontSize={"2xl"}>
             {car.make_name} {car.model}
-          </Link>
-        </Heading>
-        <HStack justifyContent="space-between" padding="10px">
-          <p>
-            <Icon as={MdElectricCar} boxSize={8} />
-            {car.epa_range}
-          </p>
-          {/* <CarScore score={car.customer_and_critic_rating} /> */}
-          <CarScore score={car.average_rating} />
-        </HStack>
-      </CardBody>
+          </Heading>
+          <VStack justifyContent="space-between" padding="10px">
+            <Text fontSize="xs" fontWeight="bold">
+              Price est: ${car.current_price}
+            </Text>
+            <Text fontSize="xs" fontWeight="bold">
+              Range: {car.epa_range} mi
+            </Text>
+            <Text
+              fontSize="xs
+            "
+              fontWeight="bold"
+            >
+              Avg rating: <CarScore score={car.average_rating} />
+            </Text>
+            {/* <p>
+              <Icon as={MdElectricCar} boxSize={8} />
+              {car.epa_range} miles
+            </p> */}
+          </VStack>
+        </CardBody>
+      </Link>
     </Card>
   );
 };
