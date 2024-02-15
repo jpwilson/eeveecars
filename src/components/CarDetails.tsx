@@ -58,7 +58,7 @@ const CarDetails = () => {
     // available_countries,
 
     //charging
-    // battery_capacity,
+    battery_capacity,
     // battery_max_charging_speed,
     // bidirectional_details,
     // chargers,
@@ -74,16 +74,16 @@ const CarDetails = () => {
     // customer_and_critic_rating, //dict of publication,
 
     // drive_assist_features,
-    // drive_type,
+    drive_type,
     // frunk_capacity,
 
     // has_spare_tire,
 
     //performance
-    // power,
+    power,
     top_speed,
     car_description,
-    // torque,
+    torque,
     // speed_acc,
     // price_history,
 
@@ -147,12 +147,28 @@ const CarDetails = () => {
               <Text>{acceleration_0_60} seconds</Text>
             </HStack>
             <HStack>
+              <Text fontWeight="bold">Top Speed:</Text>
+              <Text>{top_speed} mph</Text>
+            </HStack>
+            <HStack>
               <Text fontWeight="bold">Range:</Text>
               <Text>{epa_range} miles</Text>
             </HStack>
             <HStack>
-              <Text fontWeight="bold">Top Speed:</Text>
-              <Text>{top_speed} mph</Text>
+              <Text fontWeight="bold">Battery Capacity:</Text>
+              <Text>{battery_capacity} kWh</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Power:</Text>
+              <Text>{power} hp</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Torque:</Text>
+              <Text>{torque} lb-ft</Text>
+            </HStack>
+            <HStack>
+              <Text fontWeight="bold">Drive Type</Text>
+              <Text>{drive_type}</Text>
             </HStack>
             {/* Add more car details as needed */}
           </VStack>
