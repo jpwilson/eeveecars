@@ -12,13 +12,14 @@ export interface CarDetails {
   car_description: string;
   carmodel_first_released: string;
   current_price: number;
-  customer_and_critic_rating: number;
+  customer_and_critic_rating: { [key: string]: number };
   drive_type: string;
   epa_range: number;
   generation: string;
   image_url: string;
   make_model_slug: string;
   power: number;
+  reviews: { description: string; url: string }[];
   top_speed: number;
   torque: number;
   trim_first_released: string;

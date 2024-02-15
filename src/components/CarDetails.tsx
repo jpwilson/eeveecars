@@ -18,6 +18,7 @@ import {
   useBreakpointValue,
   Heading,
 } from "@chakra-ui/react";
+import { Md10K } from "react-icons/md";
 
 const CarDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,7 +72,7 @@ const CarDetails = () => {
 
     // color_options, //the year is the key + list of colors as val
 
-    // customer_and_critic_rating, //dict of publication,
+    customer_and_critic_rating, //dict of publication,
 
     // drive_assist_features,
     drive_type,
@@ -88,7 +89,7 @@ const CarDetails = () => {
     // price_history,
 
     // range_details,
-    // reviews,
+    reviews,
 
     //safety
     // euroncap_rating,
@@ -117,11 +118,11 @@ const CarDetails = () => {
           {make_name} {model} {submodel}
         </Text>
         <Link as={RouterLink} to={`/model_detail/${make_model_slug}`}>
-          <Button colorScheme="blue">Back to {model} overview</Button>
+          <Button colorScheme="blue">Back to all {model}s</Button>
         </Link>
       </HStack>
       <Grid
-        templateColumns={{ md: "1fr 2fr", base: "1fr" }}
+        templateColumns={{ lg: "1fr 1fr", md: "2fr 3fr", base: "1fr" }}
         gap={6}
         alignItems="start"
       >
@@ -171,6 +172,35 @@ const CarDetails = () => {
               <Text>{drive_type}</Text>
             </HStack>
             {/* Add more car details as needed */}
+          </VStack>
+        </GridItem>
+        <GridItem>
+          <VStack align="start" spacing={4}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Ratings
+            </Heading>
+            {Object.entries(car.customer_and_critic_rating).map(
+              ([source, rating]) => (
+                <HStack key={source}>
+                  <Text fontWeight="bold">{source}:</Text>
+                  <Text>{rating}</Text>
+                </HStack>
+              )
+            )}
+          </VStack>
+        </GridItem>
+        <GridItem>
+          <VStack align="start" spacing={4}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Reviews
+            </Heading>
+            {car.reviews.map((review, index) => (
+              <Box key={index}>
+                <Link href={review.url} isExternal>
+                  {review.description}
+                </Link>
+              </Box>
+            ))}
           </VStack>
         </GridItem>
       </Grid>
