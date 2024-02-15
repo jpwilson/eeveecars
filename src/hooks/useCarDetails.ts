@@ -6,19 +6,23 @@ export interface CarDetails {
   make_name: string;
   model: string;
   submodel: string;
-  generation: string;
-  image_url: string;
   acceleration_0_60: number;
-  trim_first_released: string;
+  average_rating: number;
+  battery_capacity: number;
+  car_description: string;
   carmodel_first_released: string;
   current_price: number;
   customer_and_critic_rating: number;
-  average_rating: number;
-  // range_combined_mid: number;
+  drive_type: string;
   epa_range: number;
-  top_speed: number;
-  car_description: string;
+  generation: string;
+  image_url: string;
   make_model_slug: string;
+  power: number;
+  top_speed: number;
+  torque: number;
+  trim_first_released: string;
+  // range_combined_mid: number;
   vehicle_class: string;
 }
 
