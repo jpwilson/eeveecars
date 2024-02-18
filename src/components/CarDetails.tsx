@@ -232,11 +232,13 @@ const CarDetails = () => {
                       <Icon as={FaGlobe} color="blue.500" boxSize={6} />
                     )}
                   </Link>
-                  <Text fontSize="sm">
-                    {review.description.length > 20
-                      ? `${review.description.substring(0, 40)}...`
-                      : review.description}
-                  </Text>
+                  <Link href={review.url} isExternal>
+                    <Text fontSize="sm">
+                      {review.description.length > 20
+                        ? `${review.description.substring(0, 40)}...`
+                        : review.description}
+                    </Text>
+                  </Link>
                 </HStack>
               ))
             ) : (
