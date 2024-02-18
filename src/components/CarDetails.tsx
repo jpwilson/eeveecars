@@ -223,7 +223,8 @@ const CarDetails = () => {
               car.reviews.map((review, index) => (
                 <HStack key={index} spacing={2}>
                   <Link href={review.url} isExternal>
-                    {review.url.startsWith("https://youtu") ? (
+                    {review.url.startsWith("https://youtu.be") ||
+                    review.url.startsWith("https://www.youtube.com/watch") ? (
                       <Icon as={FaYoutube} color="red.500" boxSize={6} />
                     ) : review.url.startsWith("https://x.com") ? (
                       <Icon as={FaXing} color="green.500" boxSize={6} />
