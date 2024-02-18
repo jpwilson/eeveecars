@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import useCarDetail from "../hooks/useCarDetails";
+import { FaYoutube, FaXing, FaGlobe } from "react-icons/fa";
 import NavBar from "./NavBar";
 
 import {
@@ -17,6 +18,7 @@ import {
   Link,
   useBreakpointValue,
   Heading,
+  Icon,
 } from "@chakra-ui/react";
 import { Md10K } from "react-icons/md";
 
@@ -118,7 +120,7 @@ const CarDetails = () => {
           {make_name} {model} {submodel}
         </Text>
         <Link as={RouterLink} to={`/model_detail/${make_model_slug}`}>
-          <Button colorScheme="blue">Back to all {model}s</Button>
+          <Button colorScheme="blue">Back to all {model} models</Button>
         </Link>
       </HStack>
       <Grid
@@ -179,28 +181,66 @@ const CarDetails = () => {
             <Heading fontSize="xl" textDecoration="underline">
               Ratings
             </Heading>
-            {Object.entries(car.customer_and_critic_rating).map(
-              ([source, rating]) => (
-                <HStack key={source}>
-                  <Text fontWeight="bold">{source}:</Text>
-                  <Text>{rating}</Text>
-                </HStack>
+            {car.customer_and_critic_rating &&
+            Object.keys(car.customer_and_critic_rating).length > 0 ? (
+              Object.entries(car.customer_and_critic_rating).map(
+                ([source, rating]) => (
+                  <HStack key={source}>
+                    <Text fontWeight="bold">{source}:</Text>
+                    <Text>{rating}</Text>
+                  </HStack>
+                )
               )
+            ) : (
+              <Text>No ratings available yet.</Text>
             )}
           </VStack>
         </GridItem>
+        {/* <GridItem>
+          <VStack align="start" spacing={4}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Reviews
+            </Heading>
+            {car.reviews && car.reviews.length > 0 ? (
+              car.reviews.map((review, index) => (
+                <Box key={index}>
+                  <Link href={review.url} isExternal>
+                    {review.description}
+                  </Link>
+                </Box>
+              ))
+            ) : (
+              <Text>No reviews available yet.</Text>
+            )}
+          </VStack>
+        </GridItem> */}
         <GridItem>
           <VStack align="start" spacing={4}>
             <Heading fontSize="xl" textDecoration="underline">
               Reviews
             </Heading>
-            {car.reviews.map((review, index) => (
-              <Box key={index}>
-                <Link href={review.url} isExternal>
-                  {review.description}
-                </Link>
-              </Box>
-            ))}
+            {car.reviews && car.reviews.length > 0 ? (
+              car.reviews.map((review, index) => (
+                <HStack key={index} spacing={2}>
+                  <Link href={review.url} isExternal>
+                    {review.url.startsWith("https://youtu") ? (
+                      <Icon as={FaYoutube} color="red.500" boxSize={6} />
+                    ) : review.url.startsWith("https://x.com") ? (
+                      <Icon as={FaXing} color="green.500" boxSize={6} />
+                    ) : (
+                      <Icon as={FaGlobe} color="blue.500" boxSize={6} />
+                    )}
+                  </Link>
+                  <Text fontSize="sm">
+                    {review.description.length > 20
+                      ? `${review.description.substring(0, 40)}...`
+                      : review.description}
+                  </Text>
+                </HStack>
+              ))
+            ) : (
+              <Text>No reviews available yet.</Text>
+            )}
           </VStack>
         </GridItem>
       </Grid>
