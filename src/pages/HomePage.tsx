@@ -67,7 +67,12 @@ function HomePage() {
         <NavBar onSearch={handleSearch} />
       </GridItem>
       <Show above="lg">
-        <GridItem area="aside" paddingX={5}>
+        <GridItem
+          area="aside"
+          paddingX={5}
+          maxHeight="calc(100vh - 4rem)"
+          overflowY="auto"
+        >
           <ManufacturerList
             selectedMake={selectedMake}
             onSelectMake={setSelectedMake}
