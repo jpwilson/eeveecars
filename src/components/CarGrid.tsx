@@ -98,7 +98,11 @@ const CarGrid = ({
             m={4}
             w="100%"
           >
-            <Text>No cars meet the filtering you have selected</Text>
+            <Text>
+              No cars meet the filtering you have selected. Or... this brand has
+              not yet released a full EV in your market. We will keep the brand
+              here, in the hopes that one day they do join the EV party.
+            </Text>
             <Icon
               as={FaSadTear}
               size="24px"
