@@ -13,6 +13,7 @@ import { Car } from "../hooks/useCars";
 import CarScore from "./CarScore";
 import CarCardContainer from "./CarCardContainer";
 import { Link } from "react-router-dom";
+import { formatPrice } from "../utils/formatPrice";
 
 interface Props {
   car: Car;
@@ -34,7 +35,8 @@ const CarCard = ({ car }: Props) => {
           </Heading>
           <VStack justifyContent="space-between" padding="10px">
             <Text fontSize="xs" fontWeight="bold">
-              Price est: ${car.current_price}
+              Price est:
+              {formatPrice(car.current_price)}
             </Text>
             <Text fontSize="xs" fontWeight="bold">
               Range: {car.epa_range} mi

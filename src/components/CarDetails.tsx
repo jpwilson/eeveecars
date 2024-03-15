@@ -3,7 +3,7 @@ import { useParams, Link as RouterLink } from "react-router-dom";
 import useCarDetail from "../hooks/useCarDetails";
 import { FaYoutube, FaXing, FaGlobe } from "react-icons/fa";
 import NavBar from "./NavBar";
-
+import { formatPrice } from "../utils/formatPrice";
 import {
   Box,
   Image,
@@ -143,7 +143,7 @@ const CarDetails = () => {
             <Text>{car_description}</Text>
             <HStack>
               <Text fontWeight="bold">Price:</Text>
-              <Text>${current_price}</Text>
+              <Text>{formatPrice(car.current_price)}</Text>
             </HStack>
             <HStack>
               <Text fontWeight="bold">Acceleration 0-60:</Text>

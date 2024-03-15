@@ -22,6 +22,7 @@ import {
 import useModelDetails, {
   ModelDetailsResponse as ModelDetailsType,
 } from "../hooks/useModelDetails"; // Import the hook and type
+import { formatPrice } from "../utils/formatPrice";
 
 const ModelDetails: React.FC = () => {
   const { make_model_slug } = useParams<{ make_model_slug: string }>(); // This should match the route parameter
@@ -127,7 +128,7 @@ const ModelDetails: React.FC = () => {
                           {submodel.submodel}
                         </Link>
                       </Td>
-                      <Td>${submodel.current_price}</Td>
+                      <Td>{formatPrice(submodel.current_price)}</Td>
                       <Td>{submodel.acceleration_0_60} seconds</Td>
                       <Td>{submodel.top_speed} mph</Td>
                       <Td>{submodel.epa_range} miles</Td>
