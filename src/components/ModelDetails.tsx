@@ -62,6 +62,8 @@ const ModelDetails: React.FC = () => {
 
   // const submodels = modelDetails.submodels;
 
+  console.log(`The logo url: ${make_details?.lrg_logo_img_url}`);
+
   submodels.sort((a, b) => a.current_price - b.current_price);
 
   return (
