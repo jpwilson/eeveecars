@@ -47,6 +47,7 @@ const ModelDetails: React.FC = () => {
       model,
       model_description,
       image_url,
+      model_webpage,
       top_speed,
       epa_range,
       // torque,
@@ -69,14 +70,16 @@ const ModelDetails: React.FC = () => {
       <HStack justify="space-between" align="center">
         <HStack>
           {/* Conditionally render the logo if the URL is available */}
-          {make_details?.lrg_logo_img_url && (
-            <Image
-              src={make_details.lrg_logo_img_url}
-              alt={`${make_name} logo`}
-              boxSize="50px"
-              objectFit="contain"
-              mr={4}
-            />
+          {make_details?.lrg_logo_img_url && model_webpage && (
+            <a href={model_webpage} target="_blank" rel="noopener noreferrer">
+              <Image
+                src={make_details.lrg_logo_img_url}
+                alt={`${make_name} logo`}
+                boxSize="50px"
+                objectFit="contain"
+                mr={4}
+              />
+            </a>
           )}
           <Text fontSize="4xl" fontWeight="bold">
             {make_name} {model}

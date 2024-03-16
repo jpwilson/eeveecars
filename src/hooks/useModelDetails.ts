@@ -31,6 +31,7 @@ export interface ModelDetailsResponse {
     // range_combined_mid: number;
     epa_range: number;
     top_speed: number;
+    model_webpage: string;
   
     model_description: string; // This is the new field for the model's description
     make_model_slug: string;
