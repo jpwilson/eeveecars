@@ -57,27 +57,31 @@ const ModelDetails: React.FC = () => {
       // ... other fields you may want to include
     },
     submodels,
+    make_details,
   } = modelDetails;
 
   // const submodels = modelDetails.submodels;
 
-  console.log("mode details below  ");
-  console.log({ modelDetails });
-  console.log("mode details above  ");
-  if (modelDetails) {
-    console.log({ submodels: submodels });
-  }
   submodels.sort((a, b) => a.current_price - b.current_price);
 
   return (
     <VStack align="stretch" spacing={4} p={4}>
       <HStack justify="space-between" align="center">
-        <Text fontSize="4xl" fontWeight="bold">
-          {make_name} {model}
-        </Text>
-        {/* <Button colorScheme="blue" as={RouterLink} to="/">
-          Back to results
-        </Button> */}
+        <HStack>
+          {/* Conditionally render the logo if the URL is available */}
+          {make_details?.lrg_logo_img_url && (
+            <Image
+              src={make_details.lrg_logo_img_url}
+              alt={`${make_name} logo`}
+              boxSize="50px"
+              objectFit="contain"
+              mr={4}
+            />
+          )}
+          <Text fontSize="4xl" fontWeight="bold">
+            {make_name} {model}
+          </Text>
+        </HStack>
         <Link as={RouterLink} to="/">
           <Button colorScheme="blue">Back to results</Button>
         </Link>

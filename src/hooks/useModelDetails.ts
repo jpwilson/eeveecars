@@ -1,6 +1,6 @@
  
 import useSingleData from "./useSingleData";
-
+import { Make } from './useMakes';
 
 export interface Submodel {
   id: number;
@@ -37,6 +37,7 @@ export interface ModelDetailsResponse {
     submodels: Submodel[]; // Array of Submodel objects
   };
   submodels: Submodel[];
+  make_details: Make;
 }
 
 
