@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import useCarDetail from "../hooks/useCarDetails";
 import { FaYoutube, FaXing, FaGlobe } from "react-icons/fa";
@@ -6,6 +6,7 @@ import NavBar from "./NavBar";
 import { formatPrice } from "../utils/formatPrice";
 import {
   Box,
+  Collapse,
   Image,
   Text,
   VStack,
@@ -26,6 +27,9 @@ const CarDetails = () => {
   const { id } = useParams<{ id: string }>();
 
   const numericId = id ? parseInt(id, 10) : null;
+
+  const [showMore, setShowMore] = useState(false);
+  const handleToggle = () => setShowMore(!showMore);
 
   if (numericId === null) {
     return <div>No car ID was provided in the URL.</div>;
@@ -140,7 +144,21 @@ const CarDetails = () => {
         <GridItem>
           <VStack spacing={4} align="start">
             <Heading>Overview</Heading>
-            <Text>{car_description}</Text>
+            <Collapse startingHeight={50} in={showMore}>
+              <Text>{car_description}</Text>
+            </Collapse>
+            <Text
+              color="blue.500"
+              mt="-4"
+              fontWeight="bold"
+              cursor="pointer"
+              onClick={handleToggle}
+            >
+              {showMore ? "..... Read Less" : "..... Read More"}
+            </Text>
+            {/* <Button size="sm" onClick={handleToggle} mt="4">
+              {showMore ? "Read Less" : "Read More"}
+            </Button> */}
             <HStack>
               <Text fontWeight="bold">Price:</Text>
               <Text>{formatPrice(car.current_price)}</Text>

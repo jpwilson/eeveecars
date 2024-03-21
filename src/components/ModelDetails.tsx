@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import {
   Box,
+  Collapse,
   Image,
   Text,
   VStack,
@@ -28,6 +29,10 @@ const ModelDetails: React.FC = () => {
   const { make_model_slug } = useParams<{ make_model_slug: string }>(); // This should match the route parameter
   const safeMakeModelSlug = make_model_slug ?? ""; // Fallback to an empty string if undefined
   const { modelDetails, error, isLoading } = useModelDetails(safeMakeModelSlug); // Invoke the hook with the model ID
+
+  // Collapsible text in description
+  const [showMore, setShowMore] = useState(false);
+  const handleToggle = () => setShowMore(!showMore);
 
   // Responsive breakpoints for image size
   const imageSize = useBreakpointValue({
@@ -107,11 +112,30 @@ const ModelDetails: React.FC = () => {
         <GridItem>
           <VStack spacing={6} align="start">
             <Heading>Model Overview</Heading>
-            <Text>{model_description}</Text>
-            <VStack spacing={4}>
-              <Heading fontWeight="bold">Variants</Heading>
-            </VStack>
+            <Collapse startingHeight={50} in={showMore}>
+              <Text>{model_description}</Text>
+            </Collapse>
+            <Text
+              color="gray.300"
+              mt="-4"
+              fontWeight="bold"
+              cursor="pointer"
+              onClick={handleToggle}
+            >
+              {showMore ? "..... Read Less" : "..... Read More"}
+            </Text>
 
+            <HStack spacing={4} justify="space-between" width="full">
+              <Heading fontWeight="bold">Variants</Heading>
+              <Link
+                href={model_webpage}
+                isExternal
+                color="blue.500"
+                fontWeight="bold"
+              >
+                Official {model} Site
+              </Link>
+            </HStack>
             <Table variant="simple">
               <Thead>
                 <Tr>
