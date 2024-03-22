@@ -10,6 +10,7 @@ export interface CarDetails {
   average_rating: number;
   battery_capacity: number;
   battery_max_charging_speed: number;
+  bidirectional_details: boolean;
   car_description: string;
   carmodel_first_released: string;
   chargers: string[];
@@ -22,8 +23,8 @@ export interface CarDetails {
   has_spare_tire: boolean;
   image_url: string;
   make_model_slug: string;
-  nhsta_rating: number;
-  euro_ncap_rating: number;
+  nhtsa_rating: number;
+  euroncap_rating: number;
   power: number;
   reviews: { description: string; url: string }[];
   top_speed: number;
