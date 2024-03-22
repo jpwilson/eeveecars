@@ -66,9 +66,10 @@ const CarDetails = () => {
 
     //charging
     battery_capacity,
-    // battery_max_charging_speed,
-    // bidirectional_details,
-    // chargers,
+    battery_max_charging_speed,
+    bidirectional_details,
+    chargers,
+    frunk_capacity,
 
     // //dates
     // carmodel_first_released,
@@ -84,7 +85,7 @@ const CarDetails = () => {
     drive_type,
     // frunk_capacity,
 
-    // has_spare_tire,
+    has_spare_tire,
 
     //performance
     power,
@@ -98,8 +99,8 @@ const CarDetails = () => {
     reviews,
 
     //safety
-    // euroncap_rating,
-    // nhtsa_rating,
+    euroncap_rating,
+    nhtsa_rating,
     // sentry_security,
     // sentry_details,
 
@@ -111,7 +112,7 @@ const CarDetails = () => {
     // number_of_passenger_doors,
     // remote_heating_cooling,
     // seating_details,
-    // towing_details,
+    towing_details,
     // regen_details,
     // vehicle_class,
     // vehicle_sound_details,
@@ -156,38 +157,31 @@ const CarDetails = () => {
             >
               {showMore ? "..... Read Less" : "..... Read More"}
             </Text>
-            {/* <Button size="sm" onClick={handleToggle} mt="4">
-              {showMore ? "Read Less" : "Read More"}
-            </Button> */}
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Price:</Text>
               <Text>{formatPrice(car.current_price)}</Text>
             </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Acceleration 0-60:</Text>
               <Text>{acceleration_0_60} seconds</Text>
             </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Top Speed:</Text>
               <Text>{top_speed} mph</Text>
             </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Range:</Text>
               <Text>{epa_range} miles</Text>
             </HStack>
-            <HStack>
-              <Text fontWeight="bold">Battery Capacity:</Text>
-              <Text>{battery_capacity} kWh</Text>
-            </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Power:</Text>
               <Text>{power} hp</Text>
             </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Torque:</Text>
               <Text>{torque} lb-ft</Text>
             </HStack>
-            <HStack>
+            <HStack mb="-2">
               <Text fontWeight="bold">Drive Type</Text>
               <Text>{drive_type}</Text>
             </HStack>
@@ -195,45 +189,7 @@ const CarDetails = () => {
           </VStack>
         </GridItem>
         <GridItem>
-          <VStack align="start" spacing={4}>
-            <Heading fontSize="xl" textDecoration="underline">
-              Ratings
-            </Heading>
-            {car.customer_and_critic_rating &&
-            Object.keys(car.customer_and_critic_rating).length > 0 ? (
-              Object.entries(car.customer_and_critic_rating).map(
-                ([source, rating]) => (
-                  <HStack key={source}>
-                    <Text fontWeight="bold">{source}:</Text>
-                    <Text>{rating}</Text>
-                  </HStack>
-                )
-              )
-            ) : (
-              <Text>No ratings available yet.</Text>
-            )}
-          </VStack>
-        </GridItem>
-        {/* <GridItem>
-          <VStack align="start" spacing={4}>
-            <Heading fontSize="xl" textDecoration="underline">
-              Reviews
-            </Heading>
-            {car.reviews && car.reviews.length > 0 ? (
-              car.reviews.map((review, index) => (
-                <Box key={index}>
-                  <Link href={review.url} isExternal>
-                    {review.description}
-                  </Link>
-                </Box>
-              ))
-            ) : (
-              <Text>No reviews available yet.</Text>
-            )}
-          </VStack>
-        </GridItem> */}
-        <GridItem>
-          <VStack align="start" spacing={4}>
+          <VStack align="start" spacing={4} mb={10}>
             <Heading fontSize="xl" textDecoration="underline">
               Reviews
             </Heading>
@@ -262,6 +218,114 @@ const CarDetails = () => {
             ) : (
               <Text>No reviews available yet.</Text>
             )}
+          </VStack>
+          <VStack align="start" spacing={4} mb={10}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Ratings
+            </Heading>
+            {car.customer_and_critic_rating &&
+            Object.keys(car.customer_and_critic_rating).length > 0 ? (
+              Object.entries(car.customer_and_critic_rating).map(
+                ([source, rating]) => (
+                  <HStack key={source}>
+                    <Text fontWeight="bold">{source}:</Text>
+                    <Text>{rating}</Text>
+                  </HStack>
+                )
+              )
+            ) : (
+              <Text>No ratings available yet.</Text>
+            )}
+          </VStack>
+        </GridItem>
+        <GridItem>
+          <VStack align="start" spacing={4} mb={10}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Charging Specs
+            </Heading>
+            <VStack align="start">
+              <HStack>
+                <Text fontWeight="bold">Battery Capacity:</Text>
+                <Text>{battery_capacity} kWh</Text>
+              </HStack>
+              <HStack>
+                <Text fontWeight="bold">Max Charging Output: </Text>
+                <Text>
+                  {battery_max_charging_speed
+                    ? `${battery_max_charging_speed} kW`
+                    : "n/a"}
+                </Text>
+              </HStack>
+              <Text fontWeight="bold">Charging Options: </Text>
+              <HStack>
+                {" "}
+                {chargers.map((charger) => (
+                  <Text>
+                    {charger} {"  "};
+                  </Text>
+                ))}
+              </HStack>
+            </VStack>
+          </VStack>
+
+          <VStack align="start" spacing={4} mb={10}>
+            <Heading fontSize="xl" textDecoration="underline">
+              Safety Specs
+            </Heading>
+            <VStack align="start">
+              <HStack>
+                <Text fontWeight="bold">NHTSA Star Rating:</Text>
+                <Text>
+                  {nhtsa_rating ? `${nhtsa_rating} Stars` : "No rating yet"}
+                </Text>
+              </HStack>
+              <HStack>
+                <Text fontWeight="bold">Euro NCAP Star Rating:</Text>
+                <Text>
+                  {euroncap_rating
+                    ? `${euroncap_rating} Stars`
+                    : "No rating yet"}
+                </Text>
+              </HStack>
+            </VStack>
+          </VStack>
+
+          <VStack align="start" spacing={4} mb={10}>
+            <Heading fontSize="xl" textDecoration="underline">
+              EV Nice-To-Haves
+            </Heading>
+            <VStack align="start">
+              <HStack>
+                <Text fontWeight="bold">Frunk Dimensions:</Text>
+                <Text>
+                  {frunk_capacity
+                    ? `${frunk_capacity} cu-ft`
+                    : "No Frunk, or size not available 😞"}
+                </Text>
+              </HStack>
+              <HStack>
+                <Text fontWeight="bold">Has Spare Tire:</Text>
+                <Text>
+                  {has_spare_tire
+                    ? `Yes  😊`
+                    : "Nope, just like most of the others 😞"}
+                </Text>
+              </HStack>
+              <VStack align="start">
+                <Text fontWeight="bold">Towing Details:</Text>
+                {towing_details && Object.keys(towing_details).length > 0 ? (
+                  <VStack align="start">
+                    {Object.entries(towing_details).map(([key, value]) => (
+                      <Text key={key}>
+                        - {key}: {value}
+                      </Text>
+                    ))}
+                  </VStack>
+                ) : (
+                  <Text>Towing not an option 😞</Text>
+                )}
+              </VStack>
+            </VStack>
           </VStack>
         </GridItem>
       </Grid>
