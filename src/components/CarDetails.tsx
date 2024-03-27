@@ -20,6 +20,11 @@ import {
   useBreakpointValue,
   Heading,
   Icon,
+  AccordionItem,
+  Accordion,
+  AccordionIcon,
+  AccordionButton,
+  AccordionPanel,
 } from "@chakra-ui/react";
 import { Md10K } from "react-icons/md";
 
@@ -256,15 +261,21 @@ const CarDetails = () => {
                     : "n/a"}
                 </Text>
               </HStack>
-              <Text fontWeight="bold">Charging Options: </Text>
-              <HStack>
-                {" "}
-                {chargers.map((charger) => (
-                  <Text>
-                    {charger} {"  "};
-                  </Text>
-                ))}
-              </HStack>
+              <Accordion allowMultiple>
+                <AccordionItem>
+                  <AccordionButton>
+                    <Box flex="1" textAlign="left" fontWeight="bold">
+                      Charging Options
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                  <AccordionPanel pb={4}>
+                    {chargers.map((charger, index) => (
+                      <Text key={index}>{charger}</Text>
+                    ))}
+                  </AccordionPanel>
+                </AccordionItem>
+              </Accordion>
             </VStack>
           </VStack>
 
