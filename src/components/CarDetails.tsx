@@ -193,6 +193,7 @@ const CarDetails = () => {
             {/* Add more car details as needed */}
           </VStack>
         </GridItem>
+
         <GridItem>
           <VStack align="start" spacing={4} mb={10}>
             <Heading fontSize="xl" textDecoration="underline">
@@ -223,26 +224,36 @@ const CarDetails = () => {
             ) : (
               <Text>No reviews available yet.</Text>
             )}
-          </VStack>
-          <VStack align="start" spacing={4} mb={10}>
-            <Heading fontSize="xl" textDecoration="underline">
-              Ratings
-            </Heading>
-            {car.customer_and_critic_rating &&
-            Object.keys(car.customer_and_critic_rating).length > 0 ? (
-              Object.entries(car.customer_and_critic_rating).map(
-                ([source, rating]) => (
-                  <HStack key={source}>
-                    <Text fontWeight="bold">{source}:</Text>
-                    <Text>{rating}</Text>
-                  </HStack>
-                )
-              )
-            ) : (
-              <Text>No ratings available yet.</Text>
-            )}
+            <Accordion allowToggle>
+              <AccordionItem>
+                <h2>
+                  <AccordionButton>
+                    <Box flex="1" textAlign="left">
+                      Ratings
+                    </Box>
+                    <AccordionIcon />
+                  </AccordionButton>
+                </h2>
+                <AccordionPanel pb={4}>
+                  {car.customer_and_critic_rating &&
+                  Object.keys(car.customer_and_critic_rating).length > 0 ? (
+                    Object.entries(car.customer_and_critic_rating).map(
+                      ([source, rating]) => (
+                        <HStack key={source}>
+                          <Text fontWeight="bold">{source}:</Text>
+                          <Text>{rating}</Text>
+                        </HStack>
+                      )
+                    )
+                  ) : (
+                    <Text>No ratings available yet.</Text>
+                  )}
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
           </VStack>
         </GridItem>
+
         <GridItem>
           <VStack align="start" spacing={4} mb={10}>
             <Heading fontSize="xl" textDecoration="underline">

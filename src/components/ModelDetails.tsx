@@ -136,6 +136,12 @@ const ModelDetails: React.FC = () => {
                 Official {model} Site
               </Link>
             </HStack>
+            <Text fontSize="sm">
+              <Text as="span" fontWeight="bold" fontSize="md">
+                Note:{" "}
+              </Text>
+              Click on submodels in table for detailed info
+            </Text>
             <Table variant="simple">
               <Thead>
                 <Tr>
