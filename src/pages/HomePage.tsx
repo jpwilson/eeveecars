@@ -15,6 +15,7 @@ import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
+import PeopleSelector from "../components/PeopleSelector";
 
 interface SelectedFeatureBucket {
   featureName: string;
@@ -52,6 +53,14 @@ function HomePage() {
     setSelectedFeature({ featureName, bucketName, carIds });
   };
 
+  const [selectedPeopleCategory, setSelectedPeopleCategory] = useState<
+    string | null
+  >(null);
+
+  const handlePeopleCategoryChange = (category: string) => {
+    setSelectedPeopleCategory(category);
+  };
+
   return (
     <Grid
       templateAreas={{
@@ -87,15 +96,17 @@ function HomePage() {
             selectedBucketName={selectedFeature?.bucketName ?? null}
             selectedFeatureName={selectedFeature?.featureName ?? null}
           />
+          <PeopleSelector onCategoryChange={handlePeopleCategoryChange} />
           <Button
             fontSize="lg"
             onClick={() => {
               setSelectedFeature(null);
+              setSelectedPeopleCategory(null);
             }}
             color="yellow.500"
             fontWeight="bold"
           >
-            Clear Feature Selection
+            Clear Selections
           </Button>
         </HStack>
         <CarGrid
@@ -103,6 +114,7 @@ function HomePage() {
           selectedMake={selectedMake}
           sortOption={sortOption}
           searchTerm={searchTerm}
+          selectedPeopleCategory={selectedPeopleCategory}
           // data={sortedData}
         />
       </GridItem>
