@@ -15,6 +15,7 @@ import FeatureSelector from "../components/FeatureSelector";
 import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
+import PeopleSelector from "../components/PeopleSelector";
 
 interface SelectedFeatureBucket {
   featureName: string;
@@ -50,6 +51,14 @@ function HomePage() {
     carIds: number[]
   ) => {
     setSelectedFeature({ featureName, bucketName, carIds });
+  };
+
+  const [selectedPeopleCategory, setSelectedPeopleCategory] = useState<
+    string | null
+  >(null);
+
+  const handlePeopleCategoryChange = (category: string) => {
+    setSelectedPeopleCategory(category);
   };
 
   return (
@@ -97,6 +106,7 @@ function HomePage() {
           >
             Clear Feature Selection
           </Button>
+          <PeopleSelector onCategoryChange={handlePeopleCategoryChange} />
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
