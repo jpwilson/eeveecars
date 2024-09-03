@@ -61,6 +61,12 @@ function HomePage() {
     setSelectedPeopleCategory(category);
   };
 
+  // Add a function to handle category changes
+  const handleCategoryChange = (category: string) => {
+    // Implement the logic for category change here
+    console.log("Category changed:", category);
+  };
+
   return (
     <Grid
       templateAreas={{
@@ -106,7 +112,7 @@ function HomePage() {
           >
             Clear Feature Selection
           </Button>
-          <PeopleSelector onCategoryChange={handlePeopleCategoryChange} />
+          <PeopleSelector onCategoryChange={handleCategoryChange} />
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
