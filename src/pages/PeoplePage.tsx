@@ -18,18 +18,42 @@ import {
   Switch,
   FormControl,
   FormLabel,
+  Tag,
+  TagLabel,
+  TagCloseButton,
 } from "@chakra-ui/react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import usePeople, { Person } from "../hooks/usePeople";
 
+// Helper function to format roles by company
+const formatRolesByCompany = (roles: { title: string; company: string }[]) => {
+  const rolesByCompany = roles.reduce((acc, role) => {
+    if (!acc[role.company]) {
+      acc[role.company] = [];
+    }
+    acc[role.company].push(role.title);
+    return acc;
+  }, {} as Record<string, string[]>);
+
+  return Object.entries(rolesByCompany)
+    .map(([company, titles]) => `${company}: ${titles.join(", ")}`)
+    .join("\n");
+};
+
 function PeoplePage() {
-  const { data: people, error, isLoading } = usePeople();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [categoryTag, setCategoryTag] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [displayedPeople, setDisplayedPeople] = useState<Person[]>([]);
   const [isCardView, setIsCardView] = useState(true);
   const [page, setPage] = useState(1);
   const itemsPerPage = 9;
+  const { people, isLoading, error } = usePeople();
+  const flatPeople = people ? people.flat() : null;
+
   const observer = useRef<IntersectionObserver | null>(null);
   const lastPersonElementRef = useCallback(
     (node: HTMLElement | null) => {
@@ -38,32 +62,78 @@ function PeoplePage() {
       observer.current = new IntersectionObserver((entries) => {
         if (
           entries[0].isIntersecting &&
-          displayedPeople.length < filteredPeople.length
+          displayedPeople.length < (people?.length || 0)
         ) {
           setPage((prevPage) => prevPage + 1);
         }
       });
       if (node) observer.current.observe(node);
     },
-    [isLoading, displayedPeople]
+    [isLoading, displayedPeople, people]
   );
 
-  const filteredPeople =
-    people?.filter(
-      (person) =>
-        person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.current_company
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        person.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.skills.some((skill) =>
-          skill.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-    ) || [];
+  useEffect(() => {
+    const category = searchParams.get("category");
+    if (category) {
+      setCategoryTag(category);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
-    setDisplayedPeople(filteredPeople.slice(0, page * itemsPerPage));
-  }, [filteredPeople, page]);
+    if (people) {
+      let filteredPeople: Person[] = people.flat();
+
+      // Apply category filter
+      if (categoryTag) {
+        filteredPeople = filteredPeople.filter((person: Person) => {
+          const lowerCategory = categoryTag.toLowerCase();
+          if (lowerCategory === "ceo") {
+            return person.current_roles.some(
+              (role) =>
+                role.title.toLowerCase().includes("ceo") ||
+                role.title.toLowerCase().includes("chief executive officer")
+            );
+          } else if (lowerCategory === "founder") {
+            return person.current_roles.some(
+              (role) =>
+                role.title.toLowerCase().includes("founder") ||
+                role.title.toLowerCase().includes("co-founder")
+            );
+          } else if (lowerCategory === "journalist") {
+            return person.current_roles.some(
+              (role) =>
+                role.title.toLowerCase().includes("journalist") ||
+                role.company.toLowerCase().includes("news") ||
+                role.company.toLowerCase().includes("media")
+            );
+          }
+          return true;
+        });
+      }
+
+      // Apply search term filter
+      if (searchTerm) {
+        filteredPeople = filteredPeople.filter(
+          (person) =>
+            person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            person.current_roles.some(
+              (role) =>
+                role.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                role.company.toLowerCase().includes(searchTerm.toLowerCase())
+            )
+        );
+      }
+
+      setDisplayedPeople(filteredPeople.slice(0, page * itemsPerPage));
+    }
+  }, [people, categoryTag, searchTerm, page]);
+
+  const handleRemoveTag = () => {
+    setCategoryTag(null);
+    setSearchTerm("");
+    // Remove the category from the URL
+    navigate("/people", { replace: true });
+  };
 
   const PersonCard = ({ person }: { person: Person }) => (
     <Card>
@@ -73,8 +143,10 @@ function PeoplePage() {
       <CardBody>
         <Text>Age: {person.age}</Text>
         <Text>Location: {person.location}</Text>
-        <Text>Current Company: {person.current_company}</Text>
-        <Text>Skills: {person.skills.join(", ")}</Text>
+        <Text>Current Roles:</Text>
+        <Text whiteSpace="pre-wrap">
+          {formatRolesByCompany(person.current_roles)}
+        </Text>
       </CardBody>
     </Card>
   );
@@ -88,10 +160,23 @@ function PeoplePage() {
         </Heading>
         <VStack spacing={4} align="stretch">
           <Input
-            placeholder="Search by name, company, location, or skills"
+            placeholder="Search by name"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {categoryTag && (
+            <Tag
+              size="md"
+              key={categoryTag}
+              borderRadius="full"
+              variant="solid"
+              colorScheme="blue"
+              alignSelf="flex-start" // This will align the tag to the left
+            >
+              <TagLabel>{categoryTag}</TagLabel>
+              <TagCloseButton onClick={handleRemoveTag} />
+            </Tag>
+          )}
           <FormControl display="flex" alignItems="center">
             <FormLabel htmlFor="view-switch" mb="0">
               Table View
@@ -110,6 +195,8 @@ function PeoplePage() {
           <Text>Loading...</Text>
         ) : error ? (
           <Text>Error loading people data</Text>
+        ) : displayedPeople.length === 0 ? (
+          <Text>No results found</Text>
         ) : isCardView ? (
           <SimpleGrid columns={{ sm: 1, md: 2, lg: 3 }} spacing={4} mt={4}>
             {displayedPeople.map((person, index) => (
@@ -129,11 +216,10 @@ function PeoplePage() {
           <Table variant="simple" mt={4}>
             <Thead>
               <Tr>
-                <Th>Name</Th>
-                <Th>Age</Th>
-                <Th>Location</Th>
-                <Th>Current Company</Th>
-                <Th>Skills</Th>
+                <Th>NAME</Th>
+                <Th>AGE</Th>
+                <Th>LOCATION</Th>
+                <Th>CURRENT ROLES</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -149,8 +235,9 @@ function PeoplePage() {
                   <Td>{person.name}</Td>
                   <Td>{person.age}</Td>
                   <Td>{person.location}</Td>
-                  <Td>{person.current_company}</Td>
-                  <Td>{person.skills.join(", ")}</Td>
+                  <Td whiteSpace="pre-wrap">
+                    {formatRolesByCompany(person.current_roles)}
+                  </Td>
                 </Tr>
               ))}
             </Tbody>

@@ -28,7 +28,8 @@ export interface Person {
 }
 
 const usePeople = () => {
-  return useData<Person>('/people');
+  const { data, error, isLoading } = useData<Person[]>('/people');
+  return { people: data, error, isLoading };
 };
 
 export default usePeople;
