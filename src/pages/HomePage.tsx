@@ -1,6 +1,5 @@
 import {
   Button,
-  ButtonGroup,
   Grid,
   GridItem,
   HStack,
@@ -12,10 +11,12 @@ import ManufacturerList from "../components/ManufacturerList";
 import { useState } from "react";
 import { Make } from "../hooks/useMakes";
 import FeatureSelector from "../components/FeatureSelector";
-import { Features } from "../hooks/useFeatures";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
 import PeopleSelector from "../components/PeopleSelector";
+import { useCompare } from "../contexts/CompareContext";
+import CompareBar from "../components/CompareBar";
+import ComparisonModal from "../components/ComparisonModal";
 
 interface SelectedFeatureBucket {
   featureName: string;
@@ -25,15 +26,15 @@ interface SelectedFeatureBucket {
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
-  //const [selectedFeature, setSelectedFeature] = useState<Features | null>(null);
-  // Update the state initialization and type
   const [selectedFeature, setSelectedFeature] =
     useState<SelectedFeatureBucket | null>(null);
 
   const [sortOption, setSortOption] = useState<SortOption>({
     field: "current_price",
     direction: "desc",
-  }); // default sort by price (change to sales volume later)
+  });
+
+  const { isCompareMode, toggleCompareMode } = useCompare();
 
   const handleSortChange = (option: SortOption) => {
     setSortOption(option);
@@ -113,15 +114,24 @@ function HomePage() {
             Clear Feature Selection
           </Button>
           <PeopleSelector onCategoryChange={handleCategoryChange} />
+          <Button
+            fontSize="lg"
+            onClick={toggleCompareMode}
+            colorScheme={isCompareMode ? "green" : "blue"}
+            fontWeight="bold"
+          >
+            {isCompareMode ? "Exit Compare" : "Compare"}
+          </Button>
         </HStack>
         <CarGrid
           selectedFeature={selectedFeature}
           selectedMake={selectedMake}
           sortOption={sortOption}
           searchTerm={searchTerm}
-          // data={sortedData}
         />
       </GridItem>
+      <CompareBar />
+      <ComparisonModal />
     </Grid>
   );
 }

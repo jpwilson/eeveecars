@@ -4,12 +4,15 @@ import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
 import App from "./components/App";
 import theme from "./theme";
 import "./index.css";
+import { CompareProvider } from "./contexts/CompareContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <App />
+      <CompareProvider>
+        <App />
+      </CompareProvider>
     </ChakraProvider>
   </React.StrictMode>
 );
