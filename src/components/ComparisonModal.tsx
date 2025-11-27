@@ -19,6 +19,7 @@ import {
   useColorModeValue,
   Box,
   Badge,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useCompare } from "../contexts/CompareContext";
 import useMultipleCarDetails from "../hooks/useMultipleCarDetails";
@@ -39,6 +40,15 @@ const ComparisonModal = () => {
 
   const headerBg = useColorModeValue("gray.100", "gray.700");
   const highlightBg = useColorModeValue("green.100", "green.900");
+
+  // Responsive values
+  const imageHeight = useBreakpointValue({ base: "60px", md: "100px" });
+  const imageWidth = useBreakpointValue({ base: "80px", md: "150px" });
+  const columnMinWidth = useBreakpointValue({ base: "100px", md: "200px" });
+  const headerFontSize = useBreakpointValue({ base: "xs", md: "md" });
+  const cellFontSize = useBreakpointValue({ base: "xs", md: "sm" });
+  const showBadge = useBreakpointValue({ base: false, md: true });
+  const tableSize = useBreakpointValue({ base: "xs", md: "sm" }) as "xs" | "sm";
 
   const specRows: SpecRow[] = [
     {
@@ -181,28 +191,35 @@ const ComparisonModal = () => {
             </Center>
           ) : (
             <Box overflowX="auto">
-              <Table variant="simple" size="sm">
+              <Table variant="simple" size={tableSize}>
                 <Thead>
                   <Tr>
-                    <Th bg={headerBg} position="sticky" left={0} zIndex={1}>
-                      Specification
+                    <Th
+                      bg={headerBg}
+                      position="sticky"
+                      left={0}
+                      zIndex={1}
+                      fontSize={cellFontSize}
+                      px={{ base: 2, md: 4 }}
+                    >
+                      Spec
                     </Th>
                     {carsDetails.map((car) => (
-                      <Th key={car.id} textAlign="center" minW="200px">
-                        <VStack spacing={2}>
+                      <Th key={car.id} textAlign="center" minW={columnMinWidth} px={{ base: 1, md: 4 }}>
+                        <VStack spacing={1}>
                           <Image
                             src={car.image_url}
                             alt={`${car.make_name} ${car.model}`}
-                            h="100px"
-                            w="150px"
+                            h={imageHeight}
+                            w={imageWidth}
                             objectFit="cover"
                             borderRadius="md"
                           />
-                          <Text fontSize="md" fontWeight="bold">
+                          <Text fontSize={headerFontSize} fontWeight="bold" noOfLines={1}>
                             {car.make_name}
                           </Text>
-                          <Text fontSize="sm">
-                            {car.model} {car.submodel}
+                          <Text fontSize={cellFontSize} noOfLines={1}>
+                            {car.model}
                           </Text>
                         </VStack>
                       </Th>
@@ -218,6 +235,9 @@ const ComparisonModal = () => {
                         position="sticky"
                         left={0}
                         zIndex={1}
+                        fontSize={cellFontSize}
+                        px={{ base: 2, md: 4 }}
+                        whiteSpace="nowrap"
                       >
                         {spec.label}
                       </Td>
@@ -230,13 +250,15 @@ const ComparisonModal = () => {
                             textAlign="center"
                             bg={isBest ? highlightBg : undefined}
                             position="relative"
+                            fontSize={cellFontSize}
+                            px={{ base: 1, md: 4 }}
                           >
                             {spec.format ? spec.format(value) : value}
-                            {isBest && (
+                            {isBest && showBadge && (
                               <Badge
                                 colorScheme="green"
-                                ml={2}
-                                fontSize="xs"
+                                ml={1}
+                                fontSize="2xs"
                               >
                                 Best
                               </Badge>
@@ -254,21 +276,24 @@ const ComparisonModal = () => {
                       position="sticky"
                       left={0}
                       zIndex={1}
+                      fontSize={cellFontSize}
+                      px={{ base: 2, md: 4 }}
+                      whiteSpace="nowrap"
                     >
-                      Charging Options
+                      Charging
                     </Td>
                     {carsDetails.map((car) => (
-                      <Td key={car.id} textAlign="center">
+                      <Td key={car.id} textAlign="center" fontSize={cellFontSize} px={{ base: 1, md: 4 }}>
                         {car.chargers && car.chargers.length > 0 ? (
-                          <VStack spacing={1} align="center">
-                            {car.chargers.slice(0, 3).map((charger, idx) => (
-                              <Text key={idx} fontSize="xs">
+                          <VStack spacing={0} align="center">
+                            {car.chargers.slice(0, 2).map((charger, idx) => (
+                              <Text key={idx} fontSize="2xs" noOfLines={1}>
                                 {charger}
                               </Text>
                             ))}
-                            {car.chargers.length > 3 && (
-                              <Text fontSize="xs" color="gray.500">
-                                +{car.chargers.length - 3} more
+                            {car.chargers.length > 2 && (
+                              <Text fontSize="2xs" color="gray.500">
+                                +{car.chargers.length - 2} more
                               </Text>
                             )}
                           </VStack>
@@ -286,8 +311,11 @@ const ComparisonModal = () => {
                       position="sticky"
                       left={0}
                       zIndex={1}
+                      fontSize={cellFontSize}
+                      px={{ base: 2, md: 4 }}
+                      whiteSpace="nowrap"
                     >
-                      Average Rating
+                      Rating
                     </Td>
                     {carsDetails.map((car) => {
                       const rating = car.average_rating;
@@ -301,10 +329,12 @@ const ComparisonModal = () => {
                           key={car.id}
                           textAlign="center"
                           bg={isBest ? highlightBg : undefined}
+                          fontSize={cellFontSize}
+                          px={{ base: 1, md: 4 }}
                         >
                           {rating ? rating.toFixed(1) : "N/A"}
-                          {isBest && (
-                            <Badge colorScheme="green" ml={2} fontSize="xs">
+                          {isBest && showBadge && (
+                            <Badge colorScheme="green" ml={1} fontSize="2xs">
                               Best
                             </Badge>
                           )}
