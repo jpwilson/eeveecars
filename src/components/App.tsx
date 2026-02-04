@@ -11,11 +11,13 @@ import CarDetail from "../pages/CarDetailPage";
 import Layouts from "../pages/Layouts";
 import ModelDetails from "./ModelDetails";
 import PeoplePage from "../pages/PeoplePage";
+import AboutPage from "../pages/AboutPage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<RootLayout />}>
       <Route index element={<HomePage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/car_detail/:id" element={<CarDetail />} />
       <Route path="/model_detail/:make_model_slug" element={<ModelDetails />} />
       <Route path="/people" element={<PeoplePage />} />
