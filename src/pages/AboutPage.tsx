@@ -18,6 +18,11 @@ import {
   useDisclosure,
   Show,
   Hide,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Button,
 } from "@chakra-ui/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
@@ -28,40 +33,73 @@ import {
   FaNewspaper,
   FaBolt,
   FaBars,
+  FaPalette,
+  FaChevronDown,
 } from "react-icons/fa";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
 const MotionText = motion(Text);
 
-// Hero image - the futuristic EV with digital pattern
 const HERO_IMAGE = "/pub_assets/hero-ev.png";
 
-// Slightly darker green-tinted theme
-const colors = {
-  bg: "#e0ebe0",
-  bgGradient: "linear-gradient(180deg, #e8f0e8 0%, #dce8dc 30%, #d0e0d0 70%, #dce8dc 100%)",
-  card: "rgba(255, 255, 255, 0.6)",
-  cardHover: "rgba(255, 255, 255, 0.85)",
-  border: "rgba(34, 197, 94, 0.2)",
-  borderHover: "rgba(34, 197, 94, 0.5)",
-  text: "#1a2e1a",
-  textSecondary: "rgba(26, 46, 26, 0.65)",
-  accent: "#16a34a",
-  accentGlow: "rgba(22, 163, 74, 0.25)",
+// Theme definitions
+const themes = {
+  green: {
+    name: "EV Green",
+    bg: "#e0ebe0",
+    bgGradient: "linear-gradient(180deg, #e8f0e8 0%, #dce8dc 30%, #d0e0d0 70%, #dce8dc 100%)",
+    card: "rgba(255, 255, 255, 0.6)",
+    cardHover: "rgba(255, 255, 255, 0.85)",
+    border: "rgba(34, 197, 94, 0.2)",
+    borderHover: "rgba(34, 197, 94, 0.5)",
+    text: "#1a2e1a",
+    textSecondary: "rgba(26, 46, 26, 0.65)",
+    accent: "#16a34a",
+    accentGlow: "rgba(22, 163, 74, 0.25)",
+    navBg: "rgba(232, 240, 232, 0.9)",
+    overlayGradient: "linear-gradient(180deg, rgba(232,240,232,0.6) 0%, rgba(220,232,220,0.75) 40%, rgba(224,235,224,0.9) 100%)",
+    drawerBg: "#e8f0e8",
+    shineColor: "rgba(34,197,94,0.15)",
+  },
+  blue: {
+    name: "Electric Blue",
+    bg: "#e0e8f0",
+    bgGradient: "linear-gradient(180deg, #e8f0f8 0%, #dce4f0 30%, #d0dce8 70%, #dce4f0 100%)",
+    card: "rgba(255, 255, 255, 0.6)",
+    cardHover: "rgba(255, 255, 255, 0.85)",
+    border: "rgba(0, 212, 255, 0.2)",
+    borderHover: "rgba(0, 212, 255, 0.5)",
+    text: "#1a2230",
+    textSecondary: "rgba(26, 34, 48, 0.65)",
+    accent: "#00d4ff",
+    accentGlow: "rgba(0, 212, 255, 0.25)",
+    navBg: "rgba(232, 240, 248, 0.9)",
+    overlayGradient: "linear-gradient(180deg, rgba(232,240,248,0.6) 0%, rgba(220,228,240,0.75) 40%, rgba(224,232,240,0.9) 100%)",
+    drawerBg: "#e8f0f8",
+    shineColor: "rgba(0,212,255,0.15)",
+  },
+  red: {
+    name: "Tron Red",
+    bg: "#f0e0e0",
+    bgGradient: "linear-gradient(180deg, #f8e8e8 0%, #f0dce0 30%, #e8d0d4 70%, #f0dce0 100%)",
+    card: "rgba(255, 255, 255, 0.6)",
+    cardHover: "rgba(255, 255, 255, 0.85)",
+    border: "rgba(255, 51, 102, 0.2)",
+    borderHover: "rgba(255, 51, 102, 0.5)",
+    text: "#2e1a1a",
+    textSecondary: "rgba(46, 26, 26, 0.65)",
+    accent: "#ff3366",
+    accentGlow: "rgba(255, 51, 102, 0.25)",
+    navBg: "rgba(248, 232, 232, 0.9)",
+    overlayGradient: "linear-gradient(180deg, rgba(248,232,232,0.6) 0%, rgba(240,220,224,0.75) 40%, rgba(240,224,228,0.9) 100%)",
+    drawerBg: "#f8e8e8",
+    shineColor: "rgba(255,51,102,0.15)",
+  },
 };
 
-// Glassmorphism with green tint
-const glassStyle = {
-  background: colors.card,
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: `1px solid ${colors.border}`,
-  borderRadius: "24px",
-  position: "relative" as const,
-  overflow: "hidden" as const,
-};
+type ThemeKey = keyof typeof themes;
 
 // Animation variants
 const fadeInUp = {
@@ -81,7 +119,6 @@ const staggerContainer = {
   },
 };
 
-// Dramatic hover with glass shine effect
 const cardHover = {
   scale: 1.05,
   y: -12,
@@ -94,7 +131,6 @@ const statHover = {
   transition: { duration: 0.2, ease: "easeOut" },
 };
 
-// Nav links
 const navLinks = [
   { label: "Database", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
@@ -102,7 +138,13 @@ const navLinks = [
   { label: "Insights", to: "/", icon: FaNewspaper },
 ];
 
-function NavBar() {
+interface NavBarProps {
+  colors: typeof themes.green;
+  currentTheme: ThemeKey;
+  onThemeChange: (theme: ThemeKey) => void;
+}
+
+function NavBar({ colors, currentTheme, onThemeChange }: NavBarProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -112,68 +154,108 @@ function NavBar() {
       left={0}
       right={0}
       zIndex={100}
-      bg="rgba(232, 240, 232, 0.9)"
+      bg={colors.navBg}
       backdropFilter="blur(20px)"
       borderBottom={`1px solid ${colors.border}`}
     >
       <Container maxW="7xl">
         <Flex justify="space-between" align="center" py={4}>
-          <ChakraLink
-            as={RouterLink}
-            to="/about"
-            _hover={{ textDecoration: "none" }}
-          >
+          <ChakraLink as={RouterLink} to="/about" _hover={{ textDecoration: "none" }}>
             <HStack spacing={2}>
               <Icon as={FaBolt} color={colors.accent} boxSize={6} />
-              <Text
-                fontSize="xl"
-                fontWeight="700"
-                color={colors.text}
-                letterSpacing="-0.02em"
-              >
+              <Text fontSize="xl" fontWeight="700" color={colors.text} letterSpacing="-0.02em">
                 EV Lineup
               </Text>
             </HStack>
           </ChakraLink>
 
-          {/* Desktop Nav */}
-          <Show above="md">
-            <HStack spacing={8}>
-              {navLinks.map((link) => (
-                <ChakraLink
-                  key={link.label}
-                  as={RouterLink}
-                  to={link.to}
-                  color={colors.textSecondary}
-                  fontWeight="500"
-                  fontSize="sm"
-                  _hover={{ color: colors.accent }}
-                  transition="color 0.2s"
+          <HStack spacing={4}>
+            {/* Theme Selector */}
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<FaChevronDown />}
+                leftIcon={<FaPalette />}
+                size="sm"
+                variant="ghost"
+                color={colors.text}
+                _hover={{ bg: colors.card }}
+              >
+                <Hide below="md">{themes[currentTheme].name}</Hide>
+              </MenuButton>
+              <MenuList bg={colors.drawerBg} borderColor={colors.border}>
+                <MenuItem
+                  onClick={() => onThemeChange("green")}
+                  bg={currentTheme === "green" ? colors.card : "transparent"}
+                  _hover={{ bg: colors.card }}
                 >
-                  {link.label}
-                </ChakraLink>
-              ))}
-            </HStack>
-          </Show>
+                  <HStack>
+                    <Box w={3} h={3} borderRadius="full" bg="#16a34a" />
+                    <Text>EV Green</Text>
+                  </HStack>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => onThemeChange("blue")}
+                  bg={currentTheme === "blue" ? colors.card : "transparent"}
+                  _hover={{ bg: colors.card }}
+                >
+                  <HStack>
+                    <Box w={3} h={3} borderRadius="full" bg="#00d4ff" />
+                    <Text>Electric Blue</Text>
+                  </HStack>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => onThemeChange("red")}
+                  bg={currentTheme === "red" ? colors.card : "transparent"}
+                  _hover={{ bg: colors.card }}
+                >
+                  <HStack>
+                    <Box w={3} h={3} borderRadius="full" bg="#ff3366" />
+                    <Text>Tron Red</Text>
+                  </HStack>
+                </MenuItem>
+              </MenuList>
+            </Menu>
 
-          {/* Mobile Hamburger */}
-          <Hide above="md">
-            <IconButton
-              aria-label="Open menu"
-              icon={<FaBars />}
-              variant="ghost"
-              color={colors.text}
-              onClick={onOpen}
-              _hover={{ bg: colors.card }}
-            />
-          </Hide>
+            {/* Desktop Nav */}
+            <Show above="md">
+              <HStack spacing={8}>
+                {navLinks.map((link) => (
+                  <ChakraLink
+                    key={link.label}
+                    as={RouterLink}
+                    to={link.to}
+                    color={colors.textSecondary}
+                    fontWeight="500"
+                    fontSize="sm"
+                    _hover={{ color: colors.accent }}
+                    transition="color 0.2s"
+                  >
+                    {link.label}
+                  </ChakraLink>
+                ))}
+              </HStack>
+            </Show>
+
+            {/* Mobile Hamburger */}
+            <Hide above="md">
+              <IconButton
+                aria-label="Open menu"
+                icon={<FaBars />}
+                variant="ghost"
+                color={colors.text}
+                onClick={onOpen}
+                _hover={{ bg: colors.card }}
+              />
+            </Hide>
+          </HStack>
         </Flex>
       </Container>
 
       {/* Mobile Drawer */}
       <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
-        <DrawerOverlay bg="rgba(0,0,0,0.6)" />
-        <DrawerContent bg="#e8f0e8" borderLeft={`1px solid ${colors.border}`}>
+        <DrawerOverlay bg="rgba(0,0,0,0.4)" />
+        <DrawerContent bg={colors.drawerBg} borderLeft={`1px solid ${colors.border}`}>
           <DrawerCloseButton color={colors.text} />
           <DrawerBody pt={16}>
             <VStack spacing={6} align="stretch">
@@ -185,12 +267,7 @@ function NavBar() {
                   onClick={onClose}
                   _hover={{ textDecoration: "none" }}
                 >
-                  <HStack
-                    p={4}
-                    borderRadius="12px"
-                    _hover={{ bg: colors.card }}
-                    transition="background 0.2s"
-                  >
+                  <HStack p={4} borderRadius="12px" _hover={{ bg: colors.card }} transition="background 0.2s">
                     <Icon as={link.icon} color={colors.accent} boxSize={5} />
                     <Text color={colors.text} fontWeight="500" fontSize="lg">
                       {link.label}
@@ -212,13 +289,19 @@ interface FeatureCardProps {
   description: string;
   linkText: string;
   linkTo: string;
+  colors: typeof themes.green;
 }
 
-function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCardProps) {
+function FeatureCard({ icon, title, description, linkText, linkTo, colors }: FeatureCardProps) {
   return (
     <ChakraLink as={RouterLink} to={linkTo} _hover={{ textDecoration: "none" }}>
       <MotionBox
-        sx={glassStyle}
+        bg={colors.card}
+        backdropFilter="blur(20px)"
+        border={`1px solid ${colors.border}`}
+        borderRadius="24px"
+        position="relative"
+        overflow="hidden"
         p={8}
         height="100%"
         cursor="pointer"
@@ -231,7 +314,7 @@ function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCard
           left: "-100%",
           width: "100%",
           height: "100%",
-          background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.15), transparent)",
+          background: `linear-gradient(90deg, transparent, ${colors.shineColor}, transparent)`,
           transition: "left 0.5s ease",
         }}
         _hover={{
@@ -253,14 +336,7 @@ function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCard
           </Text>
           <HStack color={colors.accent} fontWeight="600" spacing={2}>
             <Text>{linkText}</Text>
-            <MotionBox
-              as="span"
-              initial={{ x: 0 }}
-              whileHover={{ x: 5 }}
-              transition={{ duration: 0.2 }}
-            >
-              →
-            </MotionBox>
+            <Text>→</Text>
           </HStack>
         </VStack>
       </MotionBox>
@@ -271,12 +347,18 @@ function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCard
 interface StatCardProps {
   value: string;
   label: string;
+  colors: typeof themes.green;
 }
 
-function StatCard({ value, label }: StatCardProps) {
+function StatCard({ value, label, colors }: StatCardProps) {
   return (
     <MotionBox
-      sx={glassStyle}
+      bg={colors.card}
+      backdropFilter="blur(20px)"
+      border={`1px solid ${colors.border}`}
+      borderRadius="24px"
+      position="relative"
+      overflow="hidden"
       p={6}
       textAlign="center"
       variants={fadeInUp}
@@ -288,7 +370,7 @@ function StatCard({ value, label }: StatCardProps) {
         left: "-100%",
         width: "100%",
         height: "100%",
-        background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.15), transparent)",
+        background: `linear-gradient(90deg, transparent, ${colors.shineColor}, transparent)`,
         transition: "left 0.4s ease",
       }}
       _hover={{
@@ -315,6 +397,9 @@ function StatCard({ value, label }: StatCardProps) {
 }
 
 function AboutPage() {
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>("green");
+  const colors = themes[currentTheme];
+
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -322,7 +407,7 @@ function AboutPage() {
   });
 
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "40%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.15, 0.2, 0.1, 0.05]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.25, 0.35, 0.15, 0.08]);
   const heroScale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 1.08, 1.15]);
 
   return (
@@ -333,8 +418,9 @@ function AboutPage() {
       position="relative"
       overflow="hidden"
       fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+      transition="background 0.5s ease"
     >
-      <NavBar />
+      <NavBar colors={colors} currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
 
       {/* Hero Background Image */}
       <MotionBox
@@ -353,9 +439,8 @@ function AboutPage() {
           alt=""
           width="100%"
           height="100%"
-          objectFit="cover"
+          objectFit="contain"
           objectPosition="center"
-          filter="saturate(0.8) brightness(0.6)"
         />
       </MotionBox>
 
@@ -366,9 +451,10 @@ function AboutPage() {
         left={0}
         right={0}
         bottom={0}
-        bg="linear-gradient(180deg, rgba(232,240,232,0.6) 0%, rgba(220,232,220,0.75) 40%, rgba(224,235,224,0.9) 100%)"
+        bg={colors.overlayGradient}
         pointerEvents="none"
         zIndex={1}
+        transition="background 0.5s ease"
       />
 
       <Container maxW="6xl" pt={32} pb={20} position="relative" zIndex={2}>
@@ -386,6 +472,7 @@ function AboutPage() {
               textTransform="uppercase"
               letterSpacing="0.2em"
               mb={4}
+              transition="color 0.3s"
             >
               The Electric Vehicle Platform
             </Text>
@@ -431,10 +518,10 @@ function AboutPage() {
           mb={20}
         >
           <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-            <StatCard value="400+" label="Electric Vehicles" />
-            <StatCard value="30+" label="Manufacturers" />
-            <StatCard value="50+" label="Specs Tracked" />
-            <StatCard value="100+" label="Industry Leaders" />
+            <StatCard value="400+" label="Electric Vehicles" colors={colors} />
+            <StatCard value="30+" label="Manufacturers" colors={colors} />
+            <StatCard value="50+" label="Specs Tracked" colors={colors} />
+            <StatCard value="100+" label="Industry Leaders" colors={colors} />
           </SimpleGrid>
         </MotionBox>
 
@@ -453,6 +540,7 @@ function AboutPage() {
               description="Every spec, every model, every variant. From the Tesla Model 3 to the Rimac Nevera. The most comprehensive EV database ever built."
               linkText="Explore Database"
               linkTo="/"
+              colors={colors}
             />
             <FeatureCard
               icon={FaUsers}
@@ -460,6 +548,7 @@ function AboutPage() {
               description="Meet the visionaries driving the EV revolution. CEOs, founders, engineers, and journalists shaping the future."
               linkText="Meet the Leaders"
               linkTo="/people"
+              colors={colors}
             />
             <FeatureCard
               icon={FaStore}
@@ -467,6 +556,7 @@ function AboutPage() {
               description="Buy, sell, and discover electric vehicles. Connect with verified dealers and private sellers near you."
               linkText="View Listings"
               linkTo="/"
+              colors={colors}
             />
             <FeatureCard
               icon={FaNewspaper}
@@ -474,13 +564,17 @@ function AboutPage() {
               description="Stay informed with EV news, in-depth comparisons, buying guides, and industry analysis from our team."
               linkText="Read Articles"
               linkTo="/"
+              colors={colors}
             />
           </SimpleGrid>
         </MotionBox>
 
         {/* Our Story */}
         <MotionBox
-          sx={glassStyle}
+          bg={colors.card}
+          backdropFilter="blur(20px)"
+          border={`1px solid ${colors.border}`}
+          borderRadius="24px"
           p={{ base: 8, md: 12 }}
           initial="hidden"
           whileInView="visible"
@@ -505,7 +599,7 @@ function AboutPage() {
               research any EV, compare specs side-by-side, and make informed decisions. No
               dealership pressure, no hidden agendas—just the data you need.
             </Text>
-            <Text color="rgba(255,255,255,0.5)" fontSize="md" fontStyle="italic">
+            <Text color={colors.textSecondary} fontSize="md" fontStyle="italic" opacity={0.7}>
               Founded in 2024 by EV enthusiasts, for EV enthusiasts.
             </Text>
           </VStack>
