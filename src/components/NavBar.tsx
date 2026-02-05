@@ -3,6 +3,7 @@ import {
   Box,
   Heading,
   Text,
+  HStack,
   IconButton,
   Drawer,
   DrawerBody,
@@ -22,7 +23,7 @@ import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
 
 interface Props {
-  onSearch: (searchText: string) => void;
+  onSearch?: (searchText: string) => void;
 }
 
 const NavBar = ({ onSearch }: Props) => {
@@ -62,13 +63,32 @@ const NavBar = ({ onSearch }: Props) => {
         </Link>
       </Flex>
 
-      <Box flex="1" mx={{ base: 2, md: 3 }}>
-        <SearchInput onSearch={onSearch} />
-      </Box>
+      {onSearch && (
+        <Box flex="1" mx={{ base: 2, md: 3 }}>
+          <SearchInput onSearch={onSearch} />
+        </Box>
+      )}
 
-      {/* Color mode switch - desktop only */}
+      {/* Desktop nav links + color mode */}
       <Show above="md">
-        <ColorModeSwitch />
+        <HStack spacing={{ md: 4, lg: 6 }} ml={onSearch ? 0 : "auto"} flexShrink={0}>
+          <Link to="/">
+            <Text fontWeight="500" fontSize="sm" whiteSpace="nowrap" _hover={{ color: "lightgreen" }} transition="color 0.2s">
+              Home
+            </Text>
+          </Link>
+          <Link to="/people">
+            <Text fontWeight="500" fontSize="sm" whiteSpace="nowrap" _hover={{ color: "lightgreen" }} transition="color 0.2s">
+              People
+            </Text>
+          </Link>
+          <Link to="/about">
+            <Text fontWeight="500" fontSize="sm" whiteSpace="nowrap" _hover={{ color: "lightgreen" }} transition="color 0.2s">
+              About
+            </Text>
+          </Link>
+          <ColorModeSwitch />
+        </HStack>
       </Show>
 
       {/* Mobile menu drawer */}
