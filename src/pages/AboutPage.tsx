@@ -35,21 +35,21 @@ const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
 const MotionText = motion(Text);
 
-// Hero image
-const HERO_IMAGE = "/pub_assets/hero-ev.jpg";
+// Hero image - the futuristic EV with digital pattern
+const HERO_IMAGE = "/pub_assets/hero-ev.png";
 
-// Dark green-tinted theme (matching main site)
+// Light green-tinted theme (90% lighter)
 const colors = {
-  bg: "#0d1f0d",
-  bgGradient: "linear-gradient(180deg, #0a1a0a 0%, #0d1f0d 30%, #112211 70%, #0a1a0a 100%)",
-  card: "rgba(20, 40, 20, 0.6)",
-  cardHover: "rgba(30, 60, 30, 0.8)",
-  border: "rgba(34, 197, 94, 0.2)",
-  borderHover: "rgba(34, 197, 94, 0.5)",
-  text: "#FFFFFF",
-  textSecondary: "rgba(255, 255, 255, 0.7)",
-  accent: "#22c55e",
-  accentGlow: "rgba(34, 197, 94, 0.3)",
+  bg: "#f5f9f5",
+  bgGradient: "linear-gradient(180deg, #f8fbf8 0%, #f0f5f0 30%, #e8f0e8 70%, #f0f5f0 100%)",
+  card: "rgba(255, 255, 255, 0.7)",
+  cardHover: "rgba(255, 255, 255, 0.9)",
+  border: "rgba(34, 197, 94, 0.15)",
+  borderHover: "rgba(34, 197, 94, 0.4)",
+  text: "#1a2e1a",
+  textSecondary: "rgba(26, 46, 26, 0.7)",
+  accent: "#16a34a",
+  accentGlow: "rgba(22, 163, 74, 0.2)",
 };
 
 // Glassmorphism with green tint
@@ -112,7 +112,7 @@ function NavBar() {
       left={0}
       right={0}
       zIndex={100}
-      bg="rgba(10, 26, 10, 0.8)"
+      bg="rgba(248, 251, 248, 0.85)"
       backdropFilter="blur(20px)"
       borderBottom={`1px solid ${colors.border}`}
     >
@@ -173,7 +173,7 @@ function NavBar() {
       {/* Mobile Drawer */}
       <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
         <DrawerOverlay bg="rgba(0,0,0,0.6)" />
-        <DrawerContent bg={colors.bg} borderLeft={`1px solid ${colors.border}`}>
+        <DrawerContent bg="#f8fbf8" borderLeft={`1px solid ${colors.border}`}>
           <DrawerCloseButton color={colors.text} />
           <DrawerBody pt={16}>
             <VStack spacing={6} align="stretch">
@@ -231,7 +231,7 @@ function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCard
           left: "-100%",
           width: "100%",
           height: "100%",
-          background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.15), transparent)",
           transition: "left 0.5s ease",
         }}
         _hover={{
@@ -366,7 +366,7 @@ function AboutPage() {
         left={0}
         right={0}
         bottom={0}
-        bg="linear-gradient(180deg, rgba(10,26,10,0.7) 0%, rgba(13,31,13,0.85) 40%, rgba(13,31,13,0.95) 100%)"
+        bg="linear-gradient(180deg, rgba(248,251,248,0.7) 0%, rgba(240,245,240,0.85) 40%, rgba(245,249,245,0.95) 100%)"
         pointerEvents="none"
         zIndex={1}
       />
