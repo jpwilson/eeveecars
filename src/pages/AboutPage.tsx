@@ -18,11 +18,6 @@ import {
   useDisclosure,
   Show,
   Hide,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Button,
 } from "@chakra-ui/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
@@ -33,10 +28,8 @@ import {
   FaNewspaper,
   FaBolt,
   FaBars,
-  FaPalette,
-  FaChevronDown,
 } from "react-icons/fa";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
@@ -44,62 +37,30 @@ const MotionText = motion(Text);
 
 const HERO_IMAGE = "/pub_assets/hero-ev.png";
 
-// Theme definitions
-const themes = {
-  green: {
-    name: "EV Green",
-    bg: "#e0ebe0",
-    bgGradient: "linear-gradient(180deg, #e8f0e8 0%, #dce8dc 30%, #d0e0d0 70%, #dce8dc 100%)",
-    card: "rgba(255, 255, 255, 0.6)",
-    cardHover: "rgba(255, 255, 255, 0.85)",
-    border: "rgba(34, 197, 94, 0.2)",
-    borderHover: "rgba(34, 197, 94, 0.5)",
-    text: "#1a2e1a",
-    textSecondary: "rgba(26, 46, 26, 0.65)",
-    accent: "#16a34a",
-    accentGlow: "rgba(22, 163, 74, 0.25)",
-    navBg: "rgba(232, 240, 232, 0.9)",
-    overlayGradient: "linear-gradient(180deg, rgba(232,240,232,0.6) 0%, rgba(220,232,220,0.75) 40%, rgba(224,235,224,0.9) 100%)",
-    drawerBg: "#e8f0e8",
-    shineColor: "rgba(34,197,94,0.15)",
-  },
-  blue: {
-    name: "Electric Blue",
-    bg: "#e0e8f0",
-    bgGradient: "linear-gradient(180deg, #e8f0f8 0%, #dce4f0 30%, #d0dce8 70%, #dce4f0 100%)",
-    card: "rgba(255, 255, 255, 0.6)",
-    cardHover: "rgba(255, 255, 255, 0.85)",
-    border: "rgba(0, 212, 255, 0.2)",
-    borderHover: "rgba(0, 212, 255, 0.5)",
-    text: "#1a2230",
-    textSecondary: "rgba(26, 34, 48, 0.65)",
-    accent: "#00d4ff",
-    accentGlow: "rgba(0, 212, 255, 0.25)",
-    navBg: "rgba(232, 240, 248, 0.9)",
-    overlayGradient: "linear-gradient(180deg, rgba(232,240,248,0.6) 0%, rgba(220,228,240,0.75) 40%, rgba(224,232,240,0.9) 100%)",
-    drawerBg: "#e8f0f8",
-    shineColor: "rgba(0,212,255,0.15)",
-  },
-  red: {
-    name: "Tron Red",
-    bg: "#f0e0e0",
-    bgGradient: "linear-gradient(180deg, #f8e8e8 0%, #f0dce0 30%, #e8d0d4 70%, #f0dce0 100%)",
-    card: "rgba(255, 255, 255, 0.6)",
-    cardHover: "rgba(255, 255, 255, 0.85)",
-    border: "rgba(255, 51, 102, 0.2)",
-    borderHover: "rgba(255, 51, 102, 0.5)",
-    text: "#2e1a1a",
-    textSecondary: "rgba(46, 26, 26, 0.65)",
-    accent: "#ff3366",
-    accentGlow: "rgba(255, 51, 102, 0.25)",
-    navBg: "rgba(248, 232, 232, 0.9)",
-    overlayGradient: "linear-gradient(180deg, rgba(248,232,232,0.6) 0%, rgba(240,220,224,0.75) 40%, rgba(240,224,228,0.9) 100%)",
-    drawerBg: "#f8e8e8",
-    shineColor: "rgba(255,51,102,0.15)",
-  },
-};
+// Merged theme: Blue/gray backgrounds + Green accents
+const colors = {
+  // Blue/gray backgrounds (from Electric Blue theme)
+  bg: "#e0e8f0",
+  bgGradient: "linear-gradient(180deg, #e8f0f8 0%, #dce4f0 30%, #d0dce8 70%, #dce4f0 100%)",
+  navBg: "rgba(232, 240, 248, 0.9)",
+  overlayGradient: "linear-gradient(180deg, rgba(232,240,248,0.6) 0%, rgba(220,228,240,0.75) 40%, rgba(224,232,240,0.9) 100%)",
+  drawerBg: "#e8f0f8",
 
-type ThemeKey = keyof typeof themes;
+  // Cards (same white glassmorphism)
+  card: "rgba(255, 255, 255, 0.6)",
+  cardHover: "rgba(255, 255, 255, 0.85)",
+
+  // Green accents (from EV Green theme)
+  accent: "#16a34a",
+  accentGlow: "rgba(22, 163, 74, 0.25)",
+  border: "rgba(34, 197, 94, 0.2)",
+  borderHover: "rgba(34, 197, 94, 0.5)",
+  shineColor: "rgba(34,197,94,0.15)",
+
+  // Text colors (neutral dark)
+  text: "#1a2230",
+  textSecondary: "rgba(26, 34, 48, 0.65)",
+};
 
 // Animation variants
 const fadeInUp = {
@@ -138,13 +99,7 @@ const navLinks = [
   { label: "Insights", to: "/", icon: FaNewspaper },
 ];
 
-interface NavBarProps {
-  colors: typeof themes.green;
-  currentTheme: ThemeKey;
-  onThemeChange: (theme: ThemeKey) => void;
-}
-
-function NavBar({ colors, currentTheme, onThemeChange }: NavBarProps) {
+function NavBar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
@@ -170,53 +125,6 @@ function NavBar({ colors, currentTheme, onThemeChange }: NavBarProps) {
           </ChakraLink>
 
           <HStack spacing={4}>
-            {/* Theme Selector */}
-            <Menu>
-              <MenuButton
-                as={Button}
-                rightIcon={<FaChevronDown />}
-                leftIcon={<FaPalette />}
-                size="sm"
-                variant="ghost"
-                color={colors.text}
-                _hover={{ bg: colors.card }}
-              >
-                <Hide below="md">{themes[currentTheme].name}</Hide>
-              </MenuButton>
-              <MenuList bg={colors.drawerBg} borderColor={colors.border}>
-                <MenuItem
-                  onClick={() => onThemeChange("green")}
-                  bg={currentTheme === "green" ? colors.card : "transparent"}
-                  _hover={{ bg: colors.card }}
-                >
-                  <HStack>
-                    <Box w={3} h={3} borderRadius="full" bg="#16a34a" />
-                    <Text>EV Green</Text>
-                  </HStack>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => onThemeChange("blue")}
-                  bg={currentTheme === "blue" ? colors.card : "transparent"}
-                  _hover={{ bg: colors.card }}
-                >
-                  <HStack>
-                    <Box w={3} h={3} borderRadius="full" bg="#00d4ff" />
-                    <Text>Electric Blue</Text>
-                  </HStack>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => onThemeChange("red")}
-                  bg={currentTheme === "red" ? colors.card : "transparent"}
-                  _hover={{ bg: colors.card }}
-                >
-                  <HStack>
-                    <Box w={3} h={3} borderRadius="full" bg="#ff3366" />
-                    <Text>Tron Red</Text>
-                  </HStack>
-                </MenuItem>
-              </MenuList>
-            </Menu>
-
             {/* Desktop Nav */}
             <Show above="md">
               <HStack spacing={8}>
@@ -289,10 +197,9 @@ interface FeatureCardProps {
   description: string;
   linkText: string;
   linkTo: string;
-  colors: typeof themes.green;
 }
 
-function FeatureCard({ icon, title, description, linkText, linkTo, colors }: FeatureCardProps) {
+function FeatureCard({ icon, title, description, linkText, linkTo }: FeatureCardProps) {
   return (
     <ChakraLink as={RouterLink} to={linkTo} _hover={{ textDecoration: "none" }}>
       <MotionBox
@@ -347,10 +254,9 @@ function FeatureCard({ icon, title, description, linkText, linkTo, colors }: Fea
 interface StatCardProps {
   value: string;
   label: string;
-  colors: typeof themes.green;
 }
 
-function StatCard({ value, label, colors }: StatCardProps) {
+function StatCard({ value, label }: StatCardProps) {
   return (
     <MotionBox
       bg={colors.card}
@@ -397,9 +303,6 @@ function StatCard({ value, label, colors }: StatCardProps) {
 }
 
 function AboutPage() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>("green");
-  const colors = themes[currentTheme];
-
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -418,9 +321,8 @@ function AboutPage() {
       position="relative"
       overflow="hidden"
       fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
-      transition="background 0.5s ease"
     >
-      <NavBar colors={colors} currentTheme={currentTheme} onThemeChange={setCurrentTheme} />
+      <NavBar />
 
       {/* Hero Background Image */}
       <MotionBox
@@ -454,7 +356,6 @@ function AboutPage() {
         bg={colors.overlayGradient}
         pointerEvents="none"
         zIndex={1}
-        transition="background 0.5s ease"
       />
 
       <Container maxW="6xl" pt={32} pb={20} position="relative" zIndex={2}>
@@ -472,7 +373,6 @@ function AboutPage() {
               textTransform="uppercase"
               letterSpacing="0.2em"
               mb={4}
-              transition="color 0.3s"
             >
               The Electric Vehicle Platform
             </Text>
@@ -518,10 +418,10 @@ function AboutPage() {
           mb={20}
         >
           <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-            <StatCard value="400+" label="Electric Vehicles" colors={colors} />
-            <StatCard value="30+" label="Manufacturers" colors={colors} />
-            <StatCard value="50+" label="Specs Tracked" colors={colors} />
-            <StatCard value="100+" label="Industry Leaders" colors={colors} />
+            <StatCard value="400+" label="Electric Vehicles" />
+            <StatCard value="30+" label="Manufacturers" />
+            <StatCard value="50+" label="Specs Tracked" />
+            <StatCard value="100+" label="Industry Leaders" />
           </SimpleGrid>
         </MotionBox>
 
@@ -540,7 +440,6 @@ function AboutPage() {
               description="Every spec, every model, every variant. From the Tesla Model 3 to the Rimac Nevera. The most comprehensive EV database ever built."
               linkText="Explore Database"
               linkTo="/"
-              colors={colors}
             />
             <FeatureCard
               icon={FaUsers}
@@ -548,7 +447,6 @@ function AboutPage() {
               description="Meet the visionaries driving the EV revolution. CEOs, founders, engineers, and journalists shaping the future."
               linkText="Meet the Leaders"
               linkTo="/people"
-              colors={colors}
             />
             <FeatureCard
               icon={FaStore}
@@ -556,7 +454,6 @@ function AboutPage() {
               description="Buy, sell, and discover electric vehicles. Connect with verified dealers and private sellers near you."
               linkText="View Listings"
               linkTo="/"
-              colors={colors}
             />
             <FeatureCard
               icon={FaNewspaper}
@@ -564,7 +461,6 @@ function AboutPage() {
               description="Stay informed with EV news, in-depth comparisons, buying guides, and industry analysis from our team."
               linkText="Read Articles"
               linkTo="/"
-              colors={colors}
             />
           </SimpleGrid>
         </MotionBox>

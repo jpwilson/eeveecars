@@ -92,6 +92,9 @@ const NavBar = ({ onSearch }: Props) => {
                   <Link to="/" onClick={onClose}>
                     <Text _hover={{ color: "lightgreen" }}>Home</Text>
                   </Link>
+                  <Link to="/about" onClick={onClose}>
+                    <Text _hover={{ color: "lightgreen" }}>About</Text>
+                  </Link>
                   <Link to="/people" onClick={onClose}>
                     <Text _hover={{ color: "lightgreen" }}>People</Text>
                   </Link>
