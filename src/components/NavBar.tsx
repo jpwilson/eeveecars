@@ -31,17 +31,6 @@ const NavBar = ({ onSearch }: Props) => {
 
   return (
     <Flex justifyContent="space-between" padding={{ base: "10px", md: "14px" }} align="center">
-      {/* Hamburger menu - mobile only */}
-      <Hide above="md">
-        <IconButton
-          aria-label="Open menu"
-          icon={<HamburgerIcon boxSize={6} />}
-          variant="ghost"
-          onClick={onOpen}
-          mr={2}
-        />
-      </Hide>
-
       <Flex align="center" minW={{ base: "auto", md: "200px" }}>
         <Link to="/">
           <Heading color={"lightgreen"} ml={{ base: 0, md: 3 }} fontSize={{ base: "xl", md: "2xl" }}>
@@ -91,8 +80,19 @@ const NavBar = ({ onSearch }: Props) => {
         </HStack>
       </Show>
 
+      {/* Hamburger menu - mobile only, right side */}
+      <Hide above="md">
+        <IconButton
+          aria-label="Open menu"
+          icon={<HamburgerIcon boxSize={6} />}
+          variant="ghost"
+          onClick={onOpen}
+          ml={2}
+        />
+      </Hide>
+
       {/* Mobile menu drawer */}
-      <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
