@@ -3,6 +3,7 @@ import { useParams, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   Collapse,
+  Flex,
   Image,
   Text,
   VStack,
@@ -10,8 +11,15 @@ import {
   Grid,
   GridItem,
   Button,
+  Icon,
   Link,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalBody,
   useBreakpointValue,
+  useDisclosure,
   Heading,
   Table,
   Thead,
@@ -21,11 +29,15 @@ import {
   Td,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { FaSortUp, FaSortDown, FaSort, FaSearchPlus } from "react-icons/fa";
 import useModelDetails, {
   ModelDetailsResponse as ModelDetailsType,
 } from "../hooks/useModelDetails";
 import { formatPrice } from "../utils/formatPrice";
 import NavBar from "./NavBar";
+
+type VariantSortField = "submodel" | "current_price" | "acceleration_0_60" | "top_speed" | "epa_range";
+type SortDir = "asc" | "desc";
 
 const ModelDetails: React.FC = () => {
   const { make_model_slug } = useParams<{ make_model_slug: string }>();
@@ -35,6 +47,25 @@ const ModelDetails: React.FC = () => {
 
   const [showMore, setShowMore] = useState(false);
   const handleToggle = () => setShowMore(!showMore);
+
+  const [variantSortField, setVariantSortField] = useState<VariantSortField>("current_price");
+  const [variantSortDir, setVariantSortDir] = useState<SortDir>("asc");
+
+  const { isOpen: isLightboxOpen, onOpen: onLightboxOpen, onClose: onLightboxClose } = useDisclosure();
+
+  const handleVariantSort = (field: VariantSortField) => {
+    if (variantSortField === field) {
+      setVariantSortDir(variantSortDir === "asc" ? "desc" : "asc");
+    } else {
+      setVariantSortField(field);
+      setVariantSortDir(field === "submodel" ? "asc" : "asc");
+    }
+  };
+
+  const getVariantSortIcon = (field: VariantSortField) => {
+    if (variantSortField !== field) return FaSort;
+    return variantSortDir === "asc" ? FaSortUp : FaSortDown;
+  };
 
   const imageSize = useBreakpointValue({
     base: "100%",
@@ -80,7 +111,55 @@ const ModelDetails: React.FC = () => {
     make_details,
   } = modelDetails;
 
-  submodels.sort((a, b) => a.current_price - b.current_price);
+  const sortedSubmodels = [...submodels].sort((a, b) => {
+    const mult = variantSortDir === "asc" ? 1 : -1;
+    if (variantSortField === "submodel") {
+      return a.submodel.localeCompare(b.submodel) * mult;
+    }
+    const valA = (a[variantSortField] as number) ?? 0;
+    const valB = (b[variantSortField] as number) ?? 0;
+    return (valA - valB) * mult;
+  });
+
+  const isSortable = submodels.length > 1;
+
+  const VariantSortHeader = ({
+    field,
+    children,
+    isNumeric,
+  }: {
+    field: VariantSortField;
+    children: React.ReactNode;
+    isNumeric?: boolean;
+  }) => (
+    <Th
+      cursor={isSortable ? "pointer" : "default"}
+      onClick={isSortable ? () => handleVariantSort(field) : undefined}
+      _hover={isSortable ? { color: "#16a34a" } : {}}
+      transition="color 0.2s"
+      isNumeric={isNumeric}
+      fontSize="xs"
+      color={isSortable && variantSortField === field ? "#16a34a" : undefined}
+      fontWeight={isSortable && variantSortField === field ? "700" : "600"}
+      borderColor={tableBorderColor}
+      whiteSpace="nowrap"
+    >
+      <Flex
+        align="center"
+        justify={isNumeric ? "flex-end" : "flex-start"}
+        gap={1}
+      >
+        {children}
+        {isSortable && (
+          <Icon
+            as={getVariantSortIcon(field)}
+            boxSize={3}
+            opacity={variantSortField === field ? 1 : 0.3}
+          />
+        )}
+      </Flex>
+    </Th>
+  );
 
   return (
     <Box minH="100vh">
@@ -140,6 +219,10 @@ const ModelDetails: React.FC = () => {
                 borderColor={borderColor}
                 bg={cardBg}
                 backdropFilter="blur(16px)"
+                cursor="pointer"
+                position="relative"
+                role="group"
+                onClick={onLightboxOpen}
               >
                 <Image
                   src={image_url}
@@ -149,6 +232,21 @@ const ModelDetails: React.FC = () => {
                   objectFit="contain"
                   w="100%"
                 />
+                <Flex
+                  position="absolute"
+                  bottom={3}
+                  right={3}
+                  bg="blackAlpha.600"
+                  borderRadius="full"
+                  p={2}
+                  opacity={0}
+                  _groupHover={{ opacity: 0.8 }}
+                  transition="opacity 0.2s"
+                  align="center"
+                  justify="center"
+                >
+                  <Icon as={FaSearchPlus} color="white" boxSize={4} />
+                </Flex>
               </Box>
             </GridItem>
             <GridItem>
@@ -191,6 +289,7 @@ const ModelDetails: React.FC = () => {
                     Note:{" "}
                   </Text>
                   Click on submodels for detailed info
+                  {isSortable && " — click column headers to sort"}
                 </Text>
 
                 {/* Variants table with glassmorphism container */}
@@ -207,25 +306,25 @@ const ModelDetails: React.FC = () => {
                   <Table size="sm">
                     <Thead>
                       <Tr bg={tableHeaderBg}>
-                        <Th borderColor={tableBorderColor} fontSize="xs">
+                        <VariantSortHeader field="submodel">
                           Submodel
-                        </Th>
-                        <Th borderColor={tableBorderColor} fontSize="xs" isNumeric>
+                        </VariantSortHeader>
+                        <VariantSortHeader field="current_price" isNumeric>
                           Price
-                        </Th>
-                        <Th borderColor={tableBorderColor} fontSize="xs" isNumeric>
+                        </VariantSortHeader>
+                        <VariantSortHeader field="acceleration_0_60" isNumeric>
                           0-60
-                        </Th>
-                        <Th borderColor={tableBorderColor} fontSize="xs" isNumeric>
+                        </VariantSortHeader>
+                        <VariantSortHeader field="top_speed" isNumeric>
                           Top Speed
-                        </Th>
-                        <Th borderColor={tableBorderColor} fontSize="xs" isNumeric>
+                        </VariantSortHeader>
+                        <VariantSortHeader field="epa_range" isNumeric>
                           Range
-                        </Th>
+                        </VariantSortHeader>
                       </Tr>
                     </Thead>
                     <Tbody>
-                      {submodels.map(
+                      {sortedSubmodels.map(
                         (submodel: ModelDetailsType["submodels"][number]) => (
                           <Tr
                             key={submodel.id}
@@ -267,6 +366,23 @@ const ModelDetails: React.FC = () => {
           </Grid>
         </VStack>
       </Box>
+
+      {/* Image lightbox modal */}
+      <Modal isOpen={isLightboxOpen} onClose={onLightboxClose} size="6xl" isCentered>
+        <ModalOverlay bg="blackAlpha.800" />
+        <ModalContent bg="transparent" boxShadow="none" maxW="90vw">
+          <ModalCloseButton color="white" size="lg" top={2} right={2} zIndex={2} />
+          <ModalBody p={0} display="flex" alignItems="center" justifyContent="center">
+            <Image
+              src={image_url}
+              alt={`${make_name} ${model}`}
+              maxH="85vh"
+              maxW="100%"
+              objectFit="contain"
+            />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

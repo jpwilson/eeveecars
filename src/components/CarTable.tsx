@@ -106,7 +106,7 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
 
   if (isLoading) {
     return (
-      <Box mx={{ base: 3, md: 4 }} mb={4}>
+      <Box mx={{ base: 4, md: 10 }} mb={4}>
         {[...Array(8)].map((_, i) => (
           <Skeleton key={i} height="40px" mb={2} borderRadius="8px" />
         ))}
@@ -163,7 +163,7 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
 
   return (
     <Box
-      mx={{ base: 2, md: 4 }}
+      mx={{ base: 4, md: 10 }}
       mb={4}
       bg={tableBg}
       backdropFilter="blur(16px)"
@@ -173,8 +173,14 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
       overflow="hidden"
       boxShadow="0 2px 12px rgba(0, 0, 0, 0.04)"
     >
-      <Box overflowX="auto">
-        <Table size="sm">
+      <Box overflowX="auto" css={{
+        "&::-webkit-scrollbar": { height: "6px" },
+        "&::-webkit-scrollbar-thumb": {
+          background: "rgba(0,0,0,0.15)",
+          borderRadius: "4px",
+        },
+      }}>
+        <Table size="sm" minW="700px">
           <Thead>
             <Tr bg={headerBg}>
               <SortHeader field="name">Name</SortHeader>

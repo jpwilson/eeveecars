@@ -180,9 +180,9 @@ function HomePage() {
             <HStack
               spacing={2}
               flexWrap="wrap"
-              mx={{ base: 3, md: 4 }}
-              mb={3}
-              mt={2}
+              mx={{ base: 4, md: 10 }}
+              mb={1}
+              mt={4}
             >
               {/* Brands button - mobile only */}
               <Hide above="lg">
@@ -206,47 +206,48 @@ function HomePage() {
                 </Button>
               </Hide>
 
+              {/* Order By only in cards view */}
               {viewMode === "cards" && (
-                <>
-                  <SortSelector onSortChange={handleSortChange} />
-                  <FeatureSelector
-                    onSelectFeature={handleSelectFeature}
-                    selectedBucketName={selectedFeature?.bucketName ?? null}
-                    selectedFeatureName={selectedFeature?.featureName ?? null}
-                  />
-
-                  {selectedFeature && (
-                    <Button
-                      size={buttonSize}
-                      onClick={() => setSelectedFeature(null)}
-                      bg="transparent"
-                      color="orange.500"
-                      border="1px solid"
-                      borderColor="orange.200"
-                      borderRadius="10px"
-                      fontWeight="500"
-                      fontSize="sm"
-                      _hover={{ bg: "orange.50", borderColor: "orange.300" }}
-                    >
-                      {clearButtonText}
-                    </Button>
-                  )}
-
-                  <Button
-                    {...toolbarBtnStyle}
-                    onClick={toggleCompareMode}
-                    bg={isCompareMode ? "green.500" : btnBg}
-                    color={isCompareMode ? "white" : textColor}
-                    borderColor={isCompareMode ? "green.500" : btnBorder}
-                    _hover={{
-                      bg: isCompareMode ? "green.600" : hoverBg,
-                      borderColor: "green.400",
-                    }}
-                  >
-                    {isCompareMode ? "Exit Compare" : "Compare"}
-                  </Button>
-                </>
+                <SortSelector onSortChange={handleSortChange} />
               )}
+
+              {/* Feature Filter + Compare in both views */}
+              <FeatureSelector
+                onSelectFeature={handleSelectFeature}
+                selectedBucketName={selectedFeature?.bucketName ?? null}
+                selectedFeatureName={selectedFeature?.featureName ?? null}
+              />
+
+              {selectedFeature && (
+                <Button
+                  size={buttonSize}
+                  onClick={() => setSelectedFeature(null)}
+                  bg="transparent"
+                  color="orange.500"
+                  border="1px solid"
+                  borderColor="orange.200"
+                  borderRadius="10px"
+                  fontWeight="500"
+                  fontSize="sm"
+                  _hover={{ bg: "orange.50", borderColor: "orange.300" }}
+                >
+                  {clearButtonText}
+                </Button>
+              )}
+
+              <Button
+                {...toolbarBtnStyle}
+                onClick={toggleCompareMode}
+                bg={isCompareMode ? "green.500" : btnBg}
+                color={isCompareMode ? "white" : textColor}
+                borderColor={isCompareMode ? "green.500" : btnBorder}
+                _hover={{
+                  bg: isCompareMode ? "green.600" : hoverBg,
+                  borderColor: "green.400",
+                }}
+              >
+                {isCompareMode ? "Exit Compare" : "Compare"}
+              </Button>
 
               {/* View toggle */}
               <Button

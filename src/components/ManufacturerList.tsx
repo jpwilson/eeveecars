@@ -1,6 +1,6 @@
 import {
   Box,
-  VStack,
+  HStack,
   Image,
   List,
   ListItem,
@@ -83,11 +83,12 @@ const ManufacturerList = ({
           const isSelected = make.id === selectedMake?.id;
           return (
             <ListItem key={make.id}>
-              <VStack
+              <HStack
                 as="button"
                 w="full"
                 py={1.5}
-                spacing={0.5}
+                px={2}
+                spacing={2}
                 borderRadius="10px"
                 bg={isSelected ? selectedBg : "transparent"}
                 border="1px solid"
@@ -95,27 +96,29 @@ const ManufacturerList = ({
                 onClick={() => onSelectMake(make)}
                 _hover={{ bg: isSelected ? selectedBg : hoverBg }}
                 transition="all 0.2s"
+                justify="center"
               >
                 <Image
                   bg="white"
                   border="1px solid"
                   borderColor="gray.200"
-                  width="34px"
-                  height="34px"
-                  borderRadius="8px"
+                  width="28px"
+                  height="28px"
+                  borderRadius="6px"
                   p={0.5}
                   src={make.lrg_logo_img_url}
                   objectFit="contain"
+                  flexShrink={0}
                 />
                 <Text
                   fontWeight={isSelected ? "600" : "400"}
-                  fontSize="xs"
+                  fontSize="sm"
                   color={isSelected ? "#16a34a" : textColor}
                   noOfLines={1}
                 >
                   {make.name}
                 </Text>
-              </VStack>
+              </HStack>
             </ListItem>
           );
         })}
