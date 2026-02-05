@@ -129,8 +129,19 @@ const CarDetails = () => {
         <Text fontSize="4xl" fontWeight="bold">
           {make_name} {model} {submodel}
         </Text>
-        <Link as={RouterLink} to={`/model_detail/${make_model_slug}`}>
-          <Button colorScheme="blue">Back to all {model} models</Button>
+        <Link as={RouterLink} to={`/model_detail/${make_model_slug}`} _hover={{ textDecoration: "none" }}>
+          <Button
+            size="sm"
+            bg="white"
+            color="#16a34a"
+            border="1px solid"
+            borderColor="rgba(22, 163, 74, 0.25)"
+            borderRadius="10px"
+            fontWeight="500"
+            _hover={{ bg: "rgba(22, 163, 74, 0.06)", borderColor: "green.400" }}
+          >
+            Back to all {model} models
+          </Button>
         </Link>
       </HStack>
       <Grid

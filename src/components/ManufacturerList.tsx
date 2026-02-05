@@ -1,6 +1,6 @@
 import {
   Box,
-  HStack,
+  VStack,
   Image,
   List,
   ListItem,
@@ -35,6 +35,10 @@ const ManufacturerList = ({
   );
   const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
   const dividerColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const containerBorder = useColorModeValue(
+    "rgba(22, 163, 74, 0.08)",
+    "rgba(22, 163, 74, 0.15)"
+  );
 
   if (error) return null;
   if (isLoading) return <Spinner color="green.500" />;
@@ -49,13 +53,16 @@ const ManufacturerList = ({
     }) ?? [];
 
   return (
-    <Box>
+    <Box
+      borderRight="1px solid"
+      borderColor={containerBorder}
+      pr={2}
+    >
       <List spacing={0.5}>
         <ListItem>
           <Box
             as="button"
             w="full"
-            px={3}
             py={2}
             borderRadius="10px"
             bg={!selectedMake ? selectedBg : "transparent"}
@@ -67,7 +74,7 @@ const ManufacturerList = ({
             onClick={() => onSelectMake(null)}
             _hover={{ bg: !selectedMake ? selectedBg : hoverBg }}
             transition="all 0.2s"
-            textAlign="left"
+            textAlign="center"
           >
             All EVs
           </Box>
@@ -76,11 +83,11 @@ const ManufacturerList = ({
           const isSelected = make.id === selectedMake?.id;
           return (
             <ListItem key={make.id}>
-              <HStack
+              <VStack
                 as="button"
                 w="full"
-                px={2}
                 py={1.5}
+                spacing={0.5}
                 borderRadius="10px"
                 bg={isSelected ? selectedBg : "transparent"}
                 border="1px solid"
@@ -88,7 +95,6 @@ const ManufacturerList = ({
                 onClick={() => onSelectMake(make)}
                 _hover={{ bg: isSelected ? selectedBg : hoverBg }}
                 transition="all 0.2s"
-                spacing={2.5}
               >
                 <Image
                   bg="white"
@@ -103,13 +109,13 @@ const ManufacturerList = ({
                 />
                 <Text
                   fontWeight={isSelected ? "600" : "400"}
-                  fontSize="sm"
+                  fontSize="xs"
                   color={isSelected ? "#16a34a" : textColor}
                   noOfLines={1}
                 >
                   {make.name}
                 </Text>
-              </HStack>
+              </VStack>
             </ListItem>
           );
         })}

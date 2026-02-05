@@ -22,9 +22,10 @@ interface SortSelectorProps {
 
 const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
   const btnBg = useColorModeValue("white", "gray.700");
-  const btnBorder = useColorModeValue("gray.200", "gray.600");
+  const btnBorder = useColorModeValue("rgba(22, 163, 74, 0.25)", "rgba(22, 163, 74, 0.4)");
   const textColor = useColorModeValue("gray.700", "gray.200");
-  const hoverBg = useColorModeValue("gray.50", "gray.600");
+  const hoverBg = useColorModeValue("rgba(22, 163, 74, 0.06)", "rgba(22, 163, 74, 0.15)");
+  const menuBorder = useColorModeValue("gray.200", "gray.600");
 
   const sortOptions: SortOptionItem[] = [
     {
@@ -81,12 +82,12 @@ const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
         borderColor={btnBorder}
         borderRadius="10px"
         fontWeight="500"
-        _hover={{ borderColor: "green.300", bg: hoverBg }}
-        _active={{ borderColor: "green.400" }}
+        _hover={{ borderColor: "green.400", bg: hoverBg }}
+        _active={{ borderColor: "green.500" }}
       >
         Order by
       </MenuButton>
-      <MenuList borderRadius="12px" boxShadow="lg" border="1px solid" borderColor={btnBorder}>
+      <MenuList borderRadius="12px" boxShadow="lg" border="1px solid" borderColor={menuBorder}>
         {sortOptions.map((option) => (
           <MenuItem
             key={option.label}
