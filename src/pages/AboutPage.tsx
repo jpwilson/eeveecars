@@ -38,18 +38,18 @@ const MotionText = motion(Text);
 // Hero image - the futuristic EV with digital pattern
 const HERO_IMAGE = "/pub_assets/hero-ev.png";
 
-// Light green-tinted theme (90% lighter)
+// Slightly darker green-tinted theme
 const colors = {
-  bg: "#f5f9f5",
-  bgGradient: "linear-gradient(180deg, #f8fbf8 0%, #f0f5f0 30%, #e8f0e8 70%, #f0f5f0 100%)",
-  card: "rgba(255, 255, 255, 0.7)",
-  cardHover: "rgba(255, 255, 255, 0.9)",
-  border: "rgba(34, 197, 94, 0.15)",
-  borderHover: "rgba(34, 197, 94, 0.4)",
+  bg: "#e0ebe0",
+  bgGradient: "linear-gradient(180deg, #e8f0e8 0%, #dce8dc 30%, #d0e0d0 70%, #dce8dc 100%)",
+  card: "rgba(255, 255, 255, 0.6)",
+  cardHover: "rgba(255, 255, 255, 0.85)",
+  border: "rgba(34, 197, 94, 0.2)",
+  borderHover: "rgba(34, 197, 94, 0.5)",
   text: "#1a2e1a",
-  textSecondary: "rgba(26, 46, 26, 0.7)",
+  textSecondary: "rgba(26, 46, 26, 0.65)",
   accent: "#16a34a",
-  accentGlow: "rgba(22, 163, 74, 0.2)",
+  accentGlow: "rgba(22, 163, 74, 0.25)",
 };
 
 // Glassmorphism with green tint
@@ -112,7 +112,7 @@ function NavBar() {
       left={0}
       right={0}
       zIndex={100}
-      bg="rgba(248, 251, 248, 0.85)"
+      bg="rgba(232, 240, 232, 0.9)"
       backdropFilter="blur(20px)"
       borderBottom={`1px solid ${colors.border}`}
     >
@@ -173,7 +173,7 @@ function NavBar() {
       {/* Mobile Drawer */}
       <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
         <DrawerOverlay bg="rgba(0,0,0,0.6)" />
-        <DrawerContent bg="#f8fbf8" borderLeft={`1px solid ${colors.border}`}>
+        <DrawerContent bg="#e8f0e8" borderLeft={`1px solid ${colors.border}`}>
           <DrawerCloseButton color={colors.text} />
           <DrawerBody pt={16}>
             <VStack spacing={6} align="stretch">
@@ -366,7 +366,7 @@ function AboutPage() {
         left={0}
         right={0}
         bottom={0}
-        bg="linear-gradient(180deg, rgba(248,251,248,0.7) 0%, rgba(240,245,240,0.85) 40%, rgba(245,249,245,0.95) 100%)"
+        bg="linear-gradient(180deg, rgba(232,240,232,0.6) 0%, rgba(220,232,220,0.75) 40%, rgba(224,235,224,0.9) 100%)"
         pointerEvents="none"
         zIndex={1}
       />
