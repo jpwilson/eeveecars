@@ -1,13 +1,13 @@
 import {
-  Card,
-  CardBody,
+  Box,
   VStack,
   Heading,
   Image,
   Text,
   Checkbox,
-  Box,
+  HStack,
   useToast,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { Car } from "../hooks/useCars";
 import CarScore from "./CarScore";
@@ -32,6 +32,33 @@ const CarCard = ({ car }: Props) => {
 
   const selected = isCarSelected(car.id);
 
+  const cardBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.7)",
+    "rgba(45, 55, 72, 0.8)"
+  );
+  const cardHoverBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.92)",
+    "rgba(45, 55, 72, 0.95)"
+  );
+  const borderColor = useColorModeValue(
+    "rgba(34, 197, 94, 0.12)",
+    "rgba(34, 197, 94, 0.25)"
+  );
+  const borderHoverColor = useColorModeValue(
+    "rgba(34, 197, 94, 0.35)",
+    "rgba(34, 197, 94, 0.5)"
+  );
+  const textColor = useColorModeValue("gray.800", "gray.100");
+  const subTextColor = useColorModeValue("gray.500", "gray.400");
+  const shadowBase = useColorModeValue(
+    "0 2px 12px rgba(0, 0, 0, 0.05)",
+    "0 2px 12px rgba(0, 0, 0, 0.3)"
+  );
+  const shadowHover = useColorModeValue(
+    "0 12px 40px rgba(22, 163, 74, 0.1)",
+    "0 12px 40px rgba(22, 163, 74, 0.2)"
+  );
+
   const handleCheckboxChange = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -53,25 +80,44 @@ const CarCard = ({ car }: Props) => {
   };
 
   const cardContent = (
-    <>
-      <Box position="relative">
+    <Box
+      bg={cardBg}
+      backdropFilter="blur(16px)"
+      border="1px solid"
+      borderColor={selected ? "green.500" : borderColor}
+      borderRadius="16px"
+      overflow="hidden"
+      boxShadow={shadowBase}
+      transition="all 0.3s ease"
+      _hover={{
+        transform: "translateY(-4px)",
+        boxShadow: shadowHover,
+        borderColor: selected ? "green.500" : borderHoverColor,
+        bg: cardHoverBg,
+      }}
+      cursor="pointer"
+      position="relative"
+    >
+      <Box position="relative" overflow="hidden">
         <Image
           src={car.image_url}
-          height="200px"
+          height="180px"
           width="full"
           objectFit="cover"
           opacity={isCompareMode && selected ? 0.8 : 1}
+          transition="transform 0.4s ease"
         />
         {isCompareMode && (
           <Box
             position="absolute"
-            top={2}
-            right={2}
+            top={3}
+            right={3}
             onClick={handleCheckboxChange}
             cursor="pointer"
             bg={selected ? "green.500" : "whiteAlpha.900"}
-            borderRadius="md"
+            borderRadius="8px"
             p={1}
+            boxShadow="0 2px 8px rgba(0,0,0,0.15)"
           >
             <Checkbox
               isChecked={selected}
@@ -81,59 +127,59 @@ const CarCard = ({ car }: Props) => {
             />
           </Box>
         )}
-        {isCompareMode && selected && (
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            border="3px solid"
-            borderColor="green.500"
-            pointerEvents="none"
-          />
-        )}
       </Box>
-      <CardBody>
-        <Heading fontSize={"2xl"}>
+
+      <Box p={5}>
+        <Heading
+          fontSize="lg"
+          fontWeight="600"
+          color={textColor}
+          letterSpacing="-0.01em"
+          mb={3}
+          noOfLines={1}
+        >
           {car.make_name} {car.model}
         </Heading>
-        <VStack justifyContent="space-between" padding="10px">
-          <Text fontSize="xs" fontWeight="bold">
-            Price est: {formatPrice(car.current_price)}
-          </Text>
-          <Text fontSize="xs" fontWeight="bold">
-            Range: {car.epa_range} mi
-          </Text>
-          <Text fontSize="xs" fontWeight="bold">
-            Avg rating: <CarScore score={car.average_rating} />
-          </Text>
+        <VStack spacing={2} align="stretch">
+          <HStack justify="space-between">
+            <Text fontSize="xs" color={subTextColor} fontWeight="500">
+              Price est.
+            </Text>
+            <Text fontSize="sm" fontWeight="600" color={textColor}>
+              {formatPrice(car.current_price)}
+            </Text>
+          </HStack>
+          <HStack justify="space-between">
+            <Text fontSize="xs" color={subTextColor} fontWeight="500">
+              Range
+            </Text>
+            <Text fontSize="sm" fontWeight="600" color={textColor}>
+              {car.epa_range} mi
+            </Text>
+          </HStack>
+          <HStack justify="space-between">
+            <Text fontSize="xs" color={subTextColor} fontWeight="500">
+              Rating
+            </Text>
+            <CarScore score={car.average_rating} />
+          </HStack>
         </VStack>
-      </CardBody>
-    </>
+      </Box>
+    </Box>
   );
 
-  // In compare mode, clicking the card toggles selection instead of navigating
   if (isCompareMode) {
     return (
-      <Card
-        cursor="pointer"
-        onClick={handleCheckboxChange}
-        _hover={{ transform: "scale(1.02)", transition: "transform 0.2s" }}
-        border={selected ? "3px solid" : "none"}
-        borderColor={selected ? "green.500" : "transparent"}
-      >
+      <Box role="group" onClick={handleCheckboxChange}>
         {cardContent}
-      </Card>
+      </Box>
     );
   }
 
   return (
-    <Card>
-      <Link to={`model_detail/${car.make_model_slug}`}>
-        {cardContent}
-      </Link>
-    </Card>
+    <Box role="group">
+      <Link to={`model_detail/${car.make_model_slug}`}>{cardContent}</Link>
+    </Box>
   );
 };
 

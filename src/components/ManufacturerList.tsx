@@ -1,88 +1,126 @@
 import {
-  Button,
+  Box,
   HStack,
   Image,
   List,
   ListItem,
   Spinner,
   Text,
-  ColorMode,
-  useColorMode,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import useMakes, { Make } from "../hooks/useMakes";
+import ColorModeSwitch from "./ColorModeSwitch";
 
 interface Props {
   onSelectMake: (make: Make | null) => void;
   selectedMake: Make | null;
+  showDarkModeToggle?: boolean;
 }
 
-const ManufacturerList = ({ selectedMake, onSelectMake }: Props) => {
+const ManufacturerList = ({
+  selectedMake,
+  onSelectMake,
+  showDarkModeToggle = false,
+}: Props) => {
   const { data, isLoading, error } = useMakes();
-  const { colorMode } = useColorMode();
+
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const selectedBg = useColorModeValue(
+    "rgba(22, 163, 74, 0.1)",
+    "rgba(22, 163, 74, 0.2)"
+  );
+  const selectedBorder = useColorModeValue(
+    "rgba(22, 163, 74, 0.3)",
+    "rgba(22, 163, 74, 0.4)"
+  );
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
+  const dividerColor = useColorModeValue("gray.200", "whiteAlpha.200");
 
   if (error) return null;
+  if (isLoading) return <Spinner color="green.500" />;
 
-  if (isLoading) return <Spinner />;
-  // Sort the data alphabetically by the 'name' property
   const sortedData =
     data?.sort((a: Make, b: Make) => {
-      // Prioritize Tesla
       if (a.name === "Tesla") return -1;
       if (b.name === "Tesla") return 1;
-
-      // Prioritize Rivian
       if (a.name === "Rivian") return -1;
       if (b.name === "Rivian") return 1;
-
-      // Alphabetical order for the rest
       return a.name.localeCompare(b.name);
     }) ?? [];
+
   return (
-    <List>
-      <ListItem paddingY="6px">
-        <Button fontSize="lg" onClick={() => onSelectMake(null)}>
-          All EVs
-        </Button>
-      </ListItem>
-      {sortedData.map((make) => (
-        <ListItem
-          key={make.id}
-          paddingY="6px"
-          onClick={() => onSelectMake(make)}
-        >
-          <HStack>
-            <Image
-              backgroundColor="#F5F5F5" // light gray background, this will be visible in spaces not covered by the image
-              borderColor="#1A202D" // black border color
-              border="1px" // thin border width
-              width={"52px"}
-              height={"52px"}
-              borderRadius={8}
-              p={1}
-              src={make.lrg_logo_img_url}
-              //   objectFit="cover"
-              objectFit="contain"
-              // to help with the background:
-            />
-            <Button
-              fontWeight={make.id === selectedMake?.id ? "bold" : "normal"}
-              backgroundColor={
-                colorMode === "light"
-                  ? make.id === selectedMake?.id
-                    ? "blue.200"
-                    : "#EDF2F7"
-                  : make.id === selectedMake?.id
-                  ? "blue.500"
-                  : "#313640"
-              }
-              fontSize="lg"
-            >
-              {make.name}
-            </Button>
-          </HStack>
+    <Box>
+      <List spacing={0.5}>
+        <ListItem>
+          <Box
+            as="button"
+            w="full"
+            px={3}
+            py={2}
+            borderRadius="10px"
+            bg={!selectedMake ? selectedBg : "transparent"}
+            border="1px solid"
+            borderColor={!selectedMake ? selectedBorder : "transparent"}
+            fontWeight={!selectedMake ? "600" : "500"}
+            fontSize="sm"
+            color={!selectedMake ? "#16a34a" : textColor}
+            onClick={() => onSelectMake(null)}
+            _hover={{ bg: !selectedMake ? selectedBg : hoverBg }}
+            transition="all 0.2s"
+            textAlign="left"
+          >
+            All EVs
+          </Box>
         </ListItem>
-      ))}
-    </List>
+        {sortedData.map((make) => {
+          const isSelected = make.id === selectedMake?.id;
+          return (
+            <ListItem key={make.id}>
+              <HStack
+                as="button"
+                w="full"
+                px={2}
+                py={1.5}
+                borderRadius="10px"
+                bg={isSelected ? selectedBg : "transparent"}
+                border="1px solid"
+                borderColor={isSelected ? selectedBorder : "transparent"}
+                onClick={() => onSelectMake(make)}
+                _hover={{ bg: isSelected ? selectedBg : hoverBg }}
+                transition="all 0.2s"
+                spacing={2.5}
+              >
+                <Image
+                  bg="white"
+                  border="1px solid"
+                  borderColor="gray.200"
+                  width="34px"
+                  height="34px"
+                  borderRadius="8px"
+                  p={0.5}
+                  src={make.lrg_logo_img_url}
+                  objectFit="contain"
+                />
+                <Text
+                  fontWeight={isSelected ? "600" : "400"}
+                  fontSize="sm"
+                  color={isSelected ? "#16a34a" : textColor}
+                  noOfLines={1}
+                >
+                  {make.name}
+                </Text>
+              </HStack>
+            </ListItem>
+          );
+        })}
+      </List>
+
+      {showDarkModeToggle && (
+        <Box mt={6} pt={4} borderTop="1px solid" borderColor={dividerColor}>
+          <ColorModeSwitch />
+        </Box>
+      )}
+    </Box>
   );
 };
 

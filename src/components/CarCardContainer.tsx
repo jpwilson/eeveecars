@@ -6,11 +6,7 @@ interface Props {
 }
 
 const CarCardContainer = ({ children }: Props) => {
-  return (
-    <Box borderRadius={10} overflow={"hidden"}>
-      {children}
-    </Box>
-  );
+  return <Box>{children}</Box>;
 };
 
 export default CarCardContainer;

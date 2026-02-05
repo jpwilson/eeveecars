@@ -4,10 +4,8 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
-  VStack,
+  useColorModeValue,
 } from "@chakra-ui/react";
-
-import { ArrowUpIcon, ArrowDownIcon } from "@chakra-ui/icons";
 
 import { BsChevronDown } from "react-icons/bs";
 
@@ -23,46 +21,51 @@ interface SortSelectorProps {
 }
 
 const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
+  const btnBg = useColorModeValue("white", "gray.700");
+  const btnBorder = useColorModeValue("gray.200", "gray.600");
+  const textColor = useColorModeValue("gray.700", "gray.200");
+  const hoverBg = useColorModeValue("gray.50", "gray.600");
+
   const sortOptions: SortOptionItem[] = [
     {
-      label: "Price (lowest first) ↑",
+      label: "Price (lowest first)",
       value: { field: "current_price", direction: "asc" },
     },
     {
-      label: "Price (highest first) ↓",
+      label: "Price (highest first)",
       value: { field: "current_price", direction: "desc" },
     },
     {
-      label: "Range (worst first) ↑",
+      label: "Range (shortest first)",
       value: { field: "epa_range", direction: "asc" },
     },
     {
-      label: "Range (best first) ↓",
+      label: "Range (longest first)",
       value: { field: "epa_range", direction: "desc" },
     },
     {
-      label: "0-60 (fastest first) ↑",
+      label: "0-60 (fastest first)",
       value: { field: "acceleration_0_60", direction: "asc" },
     },
     {
-      label: "0-60 (slowest first) ↓",
+      label: "0-60 (slowest first)",
       value: { field: "acceleration_0_60", direction: "desc" },
     },
     {
-      label: "Top Speed (fastest first) ↑",
+      label: "Top Speed (fastest first)",
       value: { field: "top_speed", direction: "desc" },
     },
     {
-      label: "Top Speed (slowest first) ↓",
+      label: "Top Speed (slowest first)",
       value: { field: "top_speed", direction: "asc" },
     },
     {
-      label: "Rating (worst first) ↑",
-      value: { field: "average_rating", direction: "asc" },
+      label: "Rating (highest first)",
+      value: { field: "average_rating", direction: "desc" },
     },
     {
-      label: "Rating (best first) ↓",
-      value: { field: "average_rating", direction: "desc" },
+      label: "Rating (lowest first)",
+      value: { field: "average_rating", direction: "asc" },
     },
   ];
 
@@ -71,16 +74,25 @@ const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
       <MenuButton
         as={Button}
         rightIcon={<BsChevronDown />}
-        color="blue.500"
-        fontWeight="bold"
+        size="sm"
+        bg={btnBg}
+        color={textColor}
+        border="1px solid"
+        borderColor={btnBorder}
+        borderRadius="10px"
+        fontWeight="500"
+        _hover={{ borderColor: "green.300", bg: hoverBg }}
+        _active={{ borderColor: "green.400" }}
       >
         Order by
       </MenuButton>
-      <MenuList>
+      <MenuList borderRadius="12px" boxShadow="lg" border="1px solid" borderColor={btnBorder}>
         {sortOptions.map((option) => (
           <MenuItem
             key={option.label}
             onClick={() => onSortChange(option.value)}
+            fontSize="sm"
+            _hover={{ bg: "green.50", color: "green.700" }}
           >
             {option.label}
           </MenuItem>

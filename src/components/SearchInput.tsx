@@ -4,6 +4,7 @@ import {
   InputLeftElement,
   InputRightElement,
   IconButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useRef, useState, ChangeEvent } from "react";
 import { BsSearch, BsX } from "react-icons/bs";
@@ -16,9 +17,13 @@ const SearchInput = ({ onSearch }: Props) => {
   const [value, setValue] = useState("");
   const ref = useRef<HTMLInputElement>(null);
 
+  const inputBg = useColorModeValue("white", "gray.700");
+  const inputBorder = useColorModeValue("gray.200", "gray.600");
+  const placeholderColor = useColorModeValue("gray.400", "gray.500");
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
-    onSearch(event.target.value); // This triggers the search in the parent component
+    onSearch(event.target.value);
   };
 
   const handleClearSearch = () => {
@@ -28,14 +33,19 @@ const SearchInput = ({ onSearch }: Props) => {
   };
 
   return (
-    <InputGroup>
+    <InputGroup size="sm">
       <InputLeftElement pointerEvents="none" children={<BsSearch />} />
       <Input
         ref={ref}
         value={value}
-        borderRadius={20}
+        borderRadius="10px"
         placeholder="Search EV makes, models and submodels"
-        variant="filled"
+        bg={inputBg}
+        border="1px solid"
+        borderColor={inputBorder}
+        _hover={{ borderColor: "green.300" }}
+        _focus={{ borderColor: "green.400", boxShadow: "0 0 0 1px #16a34a" }}
+        _placeholder={{ color: placeholderColor }}
         onChange={handleInputChange}
       />
       {value && (
@@ -43,7 +53,8 @@ const SearchInput = ({ onSearch }: Props) => {
           <IconButton
             aria-label="Clear search"
             icon={<BsX />}
-            size="sm"
+            size="xs"
+            variant="ghost"
             onClick={handleClearSearch}
           />
         </InputRightElement>
@@ -53,34 +64,3 @@ const SearchInput = ({ onSearch }: Props) => {
 };
 
 export default SearchInput;
-
-// const SearchInput = ({ onSearch }: Props) => {
-//   const ref = useRef<HTMLInputElement>(null);
-
-//   const handleInputChange = (event) => {
-//     const currentText = event.target.value;
-//     onSearch(currentText); // Assuming onSearch updates the search state in your parent component
-//   };
-
-//   return (
-//     <form
-//       onSubmit={(event) => {
-//         event.preventDefault();
-//         if (ref.current) onSearch(ref.current.value);
-//       }}
-//     >
-//       <InputGroup>
-//         <InputLeftElement children={<BsSearch />} />
-//         <Input
-//           ref={ref}
-//           borderRadius={20}
-//           placeholder="Search EV makes, models and submodels"
-//           variant="filled"
-//           onChange={handleInputChange} // Add this line
-//         />
-//       </InputGroup>
-//     </form>
-//   );
-// };
-
-// export default SearchInput;

@@ -170,7 +170,7 @@ function PeoplePage() {
               key={categoryTag}
               borderRadius="full"
               variant="solid"
-              colorScheme="blue"
+              colorScheme="green"
               alignSelf="flex-start" // This will align the tag to the left
             >
               <TagLabel>{categoryTag}</TagLabel>
