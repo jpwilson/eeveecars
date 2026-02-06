@@ -27,6 +27,7 @@ const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.E
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
   { label: "Insights", to: "/insights", icon: FaNewspaper },
+  { label: "About", to: "/about", icon: FaBolt },
 ];
 
 interface Props {
