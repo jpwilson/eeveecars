@@ -163,24 +163,25 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
 
   return (
     <Box
-      mx={{ base: 4, md: 10 }}
+      mx={{ base: 2, md: 10 }}
       mb={4}
       bg={tableBg}
       backdropFilter="blur(16px)"
       borderRadius="16px"
       border="1px solid"
       borderColor={borderColor}
-      overflow="hidden"
       boxShadow="0 2px 12px rgba(0, 0, 0, 0.04)"
-    >
-      <Box overflowX="auto" css={{
+      overflowX="auto"
+      css={{
+        WebkitOverflowScrolling: "touch",
         "&::-webkit-scrollbar": { height: "6px" },
         "&::-webkit-scrollbar-thumb": {
           background: "rgba(0,0,0,0.15)",
           borderRadius: "4px",
         },
-      }}>
-        <Table size="sm" minW="700px">
+      }}
+    >
+        <Table size="sm" minW="800px">
           <Thead>
             <Tr bg={headerBg}>
               <SortHeader field="name">Name</SortHeader>
@@ -254,7 +255,6 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
             ))}
           </Tbody>
         </Table>
-      </Box>
     </Box>
   );
 };

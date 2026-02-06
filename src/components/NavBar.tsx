@@ -20,7 +20,14 @@ import { HamburgerIcon } from "@chakra-ui/icons";
 import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
-import { FaBolt } from "react-icons/fa";
+import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper } from "react-icons/fa";
+
+const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType }[] = [
+  { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
+  { label: "People", to: "/people", icon: FaUsers },
+  { label: "Marketplace", to: "/marketplace", icon: FaStore },
+  { label: "Insights", to: "/insights", icon: FaNewspaper },
+];
 
 interface Props {
   onSearch?: (searchText: string) => void;
@@ -32,6 +39,7 @@ const NavBar = ({ onSearch }: Props) => {
   const navBg = useColorModeValue("rgba(240, 244, 248, 0.85)", "rgba(26, 32, 44, 0.85)");
   const borderColor = useColorModeValue("rgba(34, 197, 94, 0.15)", "rgba(34, 197, 94, 0.3)");
   const textColor = useColorModeValue("gray.700", "gray.200");
+  const navLinkColor = useColorModeValue("rgba(26, 34, 48, 0.65)", "gray.400");
   const logoColor = useColorModeValue("#16a34a", "#4ec77f");
   const hoverColor = "#16a34a";
   const drawerBg = useColorModeValue("white", "gray.800");
@@ -76,43 +84,21 @@ const NavBar = ({ onSearch }: Props) => {
 
         {/* Desktop nav links */}
         <Show above="md">
-          <HStack spacing={{ md: 5, lg: 7 }} flexShrink={0}>
-            <Link to="/">
-              <Text
-                fontWeight="500"
-                fontSize="sm"
-                color={textColor}
-                whiteSpace="nowrap"
-                _hover={{ color: hoverColor }}
-                transition="color 0.2s"
-              >
-                Home
-              </Text>
-            </Link>
-            <Link to="/people">
-              <Text
-                fontWeight="500"
-                fontSize="sm"
-                color={textColor}
-                whiteSpace="nowrap"
-                _hover={{ color: hoverColor }}
-                transition="color 0.2s"
-              >
-                People
-              </Text>
-            </Link>
-            <Link to="/about">
-              <Text
-                fontWeight="500"
-                fontSize="sm"
-                color={textColor}
-                whiteSpace="nowrap"
-                _hover={{ color: hoverColor }}
-                transition="color 0.2s"
-              >
-                About
-              </Text>
-            </Link>
+          <HStack spacing={{ md: 5, lg: 8 }} flexShrink={0}>
+            {navLinks.map((link) => (
+              <Link key={link.label} to={link.to}>
+                <Text
+                  fontWeight="500"
+                  fontSize="sm"
+                  color={navLinkColor}
+                  whiteSpace="nowrap"
+                  _hover={{ color: hoverColor }}
+                  transition="color 0.2s"
+                >
+                  {link.label}
+                </Text>
+              </Link>
+            ))}
           </HStack>
         </Show>
 
@@ -136,39 +122,23 @@ const NavBar = ({ onSearch }: Props) => {
             <DrawerCloseButton color={textColor} />
             <DrawerBody pt={16}>
               <VStack spacing={2} align="stretch">
-                <Link to="/" onClick={onClose}>
-                  <Box
-                    px={4}
-                    py={3}
-                    borderRadius="12px"
-                    _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
-                    transition="background 0.2s"
-                  >
-                    <Text fontWeight="500" color={textColor}>Home</Text>
-                  </Box>
-                </Link>
-                <Link to="/people" onClick={onClose}>
-                  <Box
-                    px={4}
-                    py={3}
-                    borderRadius="12px"
-                    _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
-                    transition="background 0.2s"
-                  >
-                    <Text fontWeight="500" color={textColor}>People</Text>
-                  </Box>
-                </Link>
-                <Link to="/about" onClick={onClose}>
-                  <Box
-                    px={4}
-                    py={3}
-                    borderRadius="12px"
-                    _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
-                    transition="background 0.2s"
-                  >
-                    <Text fontWeight="500" color={textColor}>About</Text>
-                  </Box>
-                </Link>
+                {navLinks.map((link) => (
+                  <Link key={link.label} to={link.to} onClick={onClose}>
+                    <HStack
+                      px={4}
+                      py={3}
+                      borderRadius="12px"
+                      _hover={{ bg: useColorModeValue("gray.100", "whiteAlpha.100") }}
+                      transition="background 0.2s"
+                      spacing={3}
+                    >
+                      <Icon as={link.icon} color={logoColor} boxSize={5} />
+                      <Text fontWeight="500" color={textColor} fontSize="lg">
+                        {link.mobileLabel || link.label}
+                      </Text>
+                    </HStack>
+                  </Link>
+                ))}
               </VStack>
 
               {/* Dark mode toggle at the bottom of drawer */}

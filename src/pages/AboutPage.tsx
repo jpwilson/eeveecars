@@ -92,11 +92,11 @@ const statHover = {
   transition: { duration: 0.2, ease: "easeOut" },
 };
 
-const navLinks = [
-  { label: "Database", to: "/", icon: FaCar },
+const navLinks: { label: string; desktopLabel?: string; to: string; icon: React.ElementType }[] = [
+  { label: "Database", desktopLabel: "Home", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
-  { label: "Marketplace", to: "/", icon: FaStore },
-  { label: "Insights", to: "/", icon: FaNewspaper },
+  { label: "Marketplace", to: "/marketplace", icon: FaStore },
+  { label: "Insights", to: "/insights", icon: FaNewspaper },
 ];
 
 function NavBar() {
@@ -139,7 +139,7 @@ function NavBar() {
                     _hover={{ color: colors.accent }}
                     transition="color 0.2s"
                   >
-                    {link.label}
+                    {link.desktopLabel || link.label}
                   </ChakraLink>
                 ))}
               </HStack>
@@ -453,14 +453,14 @@ function AboutPage() {
               title="Marketplace"
               description="Buy, sell, and discover electric vehicles. Connect with verified dealers and private sellers near you."
               linkText="View Listings"
-              linkTo="/"
+              linkTo="/marketplace"
             />
             <FeatureCard
               icon={FaNewspaper}
               title="Insights"
               description="Stay informed with EV news, in-depth comparisons, buying guides, and industry analysis from our team."
               linkText="Read Articles"
-              linkTo="/"
+              linkTo="/insights"
             />
           </SimpleGrid>
         </MotionBox>

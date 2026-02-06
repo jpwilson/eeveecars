@@ -12,6 +12,8 @@ import Layouts from "../pages/Layouts";
 import ModelDetails from "./ModelDetails";
 import PeoplePage from "../pages/PeoplePage";
 import AboutPage from "../pages/AboutPage";
+import MarketplacePage from "../pages/MarketplacePage";
+import InsightsPage from "../pages/InsightsPage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -21,6 +23,8 @@ const router = createBrowserRouter(
       <Route path="/car_detail/:id" element={<CarDetail />} />
       <Route path="/model_detail/:make_model_slug" element={<ModelDetails />} />
       <Route path="/people" element={<PeoplePage />} />
+      <Route path="/marketplace" element={<MarketplacePage />} />
+      <Route path="/insights" element={<InsightsPage />} />
       <Route path="/layout_test" element={<Layouts />} />
     </Route>
   )

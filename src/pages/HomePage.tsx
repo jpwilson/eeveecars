@@ -181,8 +181,8 @@ function HomePage() {
               spacing={2}
               flexWrap="wrap"
               mx={{ base: 4, md: 10 }}
-              mb={1}
-              mt={4}
+              mb={5}
+              mt={5}
             >
               {/* Brands button - mobile only */}
               <Hide above="lg">
