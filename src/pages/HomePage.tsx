@@ -175,7 +175,7 @@ function HomePage() {
             </GridItem>
           </Show>
 
-          <GridItem area="main">
+          <GridItem area="main" minW={0}>
             {/* Toolbar — no background card */}
             <HStack
               spacing={2}

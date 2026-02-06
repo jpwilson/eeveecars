@@ -181,7 +181,7 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
         },
       }}
     >
-        <Table size="sm" minW="800px">
+        <Table size="sm" minW="900px">
           <Thead>
             <Tr bg={headerBg}>
               <SortHeader field="name">Name</SortHeader>
