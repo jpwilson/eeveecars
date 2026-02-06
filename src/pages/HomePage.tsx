@@ -1,11 +1,17 @@
 import {
   Box,
   Button,
+  Flex,
   Grid,
   GridItem,
   Show,
   Hide,
   HStack,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  Wrap,
+  WrapItem,
   useBreakpointValue,
   useDisclosure,
   useColorModeValue,
@@ -27,23 +33,17 @@ import CarTable from "../components/CarTable";
 import ManufacturerList from "../components/ManufacturerList";
 import { useState } from "react";
 import { Make } from "../hooks/useMakes";
-import FeatureSelector from "../components/FeatureSelector";
+import FeatureSelector, { formatBucketLabel } from "../components/FeatureSelector";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
+import { SelectedFeature } from "../hooks/useCars";
 import { useCompare } from "../contexts/CompareContext";
 import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
 
-interface SelectedFeatureBucket {
-  featureName: string;
-  bucketName: string;
-  carIds: number[];
-}
-
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
-  const [selectedFeature, setSelectedFeature] =
-    useState<SelectedFeatureBucket | null>(null);
+  const [selectedFeatures, setSelectedFeatures] = useState<SelectedFeature[]>([]);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   const [sortOption, setSortOption] = useState<SortOption>({
@@ -62,8 +62,8 @@ function HomePage() {
 
   const buttonSize = useBreakpointValue({ base: "sm", md: "sm" });
   const clearButtonText = useBreakpointValue({
-    base: "Clear",
-    md: "Clear Filter",
+    base: "Clear All",
+    md: "Clear All",
   });
 
   // Colors
@@ -89,12 +89,31 @@ function HomePage() {
     setSearchTerm(text);
   };
 
-  const handleSelectFeature = (
+  const handleToggleFeature = (
     featureName: string,
     bucketName: string,
     carIds: number[]
   ) => {
-    setSelectedFeature({ featureName, bucketName, carIds });
+    setSelectedFeatures((prev) => {
+      const exists = prev.some(
+        (f) => f.featureName === featureName && f.bucketName === bucketName
+      );
+      if (exists) {
+        return prev.filter(
+          (f) => !(f.featureName === featureName && f.bucketName === bucketName)
+        );
+      }
+      if (prev.length >= 6) return prev;
+      return [...prev, { featureName, bucketName, carIds }];
+    });
+  };
+
+  const handleRemoveFeature = (featureName: string, bucketName: string) => {
+    setSelectedFeatures((prev) =>
+      prev.filter(
+        (f) => !(f.featureName === featureName && f.bucketName === bucketName)
+      )
+    );
   };
 
   // Shared button style
@@ -213,15 +232,14 @@ function HomePage() {
 
               {/* Feature Filter + Compare in both views */}
               <FeatureSelector
-                onSelectFeature={handleSelectFeature}
-                selectedBucketName={selectedFeature?.bucketName ?? null}
-                selectedFeatureName={selectedFeature?.featureName ?? null}
+                selectedFeatures={selectedFeatures}
+                onToggleFeature={handleToggleFeature}
               />
 
-              {selectedFeature && (
+              {selectedFeatures.length > 0 && (
                 <Button
                   size={buttonSize}
-                  onClick={() => setSelectedFeature(null)}
+                  onClick={() => setSelectedFeatures([])}
                   bg="transparent"
                   color="orange.500"
                   border="1px solid"
@@ -261,16 +279,41 @@ function HomePage() {
               </Button>
             </HStack>
 
+            {/* Active filter tags */}
+            {selectedFeatures.length > 0 && (
+              <Wrap mx={{ base: 4, md: 10 }} mb={3} spacing={2}>
+                {selectedFeatures.map((f) => (
+                  <WrapItem key={`${f.featureName}-${f.bucketName}`}>
+                    <Tag
+                      size="sm"
+                      borderRadius="full"
+                      variant="subtle"
+                      colorScheme="green"
+                      px={3}
+                      py={1}
+                    >
+                      <TagLabel fontSize="xs">
+                        {formatBucketLabel(f.featureName, f.bucketName)}
+                      </TagLabel>
+                      <TagCloseButton
+                        onClick={() => handleRemoveFeature(f.featureName, f.bucketName)}
+                      />
+                    </Tag>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            )}
+
             {viewMode === "cards" ? (
               <CarGrid
-                selectedFeature={selectedFeature}
+                selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 sortOption={sortOption}
                 searchTerm={searchTerm}
               />
             ) : (
               <CarTable
-                selectedFeature={selectedFeature}
+                selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 searchTerm={searchTerm}
               />

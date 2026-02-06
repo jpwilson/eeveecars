@@ -22,7 +22,7 @@ import CarScore from "./CarScore";
 
 interface Props {
   selectedMake: Make | null;
-  selectedFeature: SelectedFeature | null;
+  selectedFeatures: SelectedFeature[];
   searchTerm: string;
 }
 
@@ -37,10 +37,10 @@ type SortField =
 
 type SortDir = "asc" | "desc";
 
-const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
+const CarTable = ({ selectedMake, selectedFeatures, searchTerm }: Props) => {
   const { data, error, isLoading } = useCars(
     selectedMake,
-    selectedFeature,
+    selectedFeatures,
     searchTerm
   );
 
@@ -171,10 +171,13 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
       border="1px solid"
       borderColor={borderColor}
       boxShadow="0 2px 12px rgba(0, 0, 0, 0.04)"
-      overflowX="auto"
+      overflow="auto"
       css={{
         WebkitOverflowScrolling: "touch",
-        "&::-webkit-scrollbar": { height: "6px" },
+        "@media (hover: hover) and (pointer: fine)": {
+          maxHeight: "calc(100vh - 200px)",
+        },
+        "&::-webkit-scrollbar": { height: "6px", width: "6px" },
         "&::-webkit-scrollbar-thumb": {
           background: "rgba(0,0,0,0.15)",
           borderRadius: "4px",
@@ -182,7 +185,7 @@ const CarTable = ({ selectedMake, selectedFeature, searchTerm }: Props) => {
       }}
     >
         <Table size="sm" minW="900px">
-          <Thead>
+          <Thead position="sticky" top={0} zIndex={1}>
             <Tr bg={headerBg}>
               <SortHeader field="name">Name</SortHeader>
               <SortHeader field="current_price" isNumeric>

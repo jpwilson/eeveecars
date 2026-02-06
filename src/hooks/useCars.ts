@@ -27,34 +27,46 @@ export interface SelectedFeature {
     carIds: number[];
   }
 
-const useCars = (selectedMake?: Make | null, selectedFeature?: SelectedFeature | null, searchTerm?: string) => {
+const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string) => {
     const { data, error, isLoading } = useData<Car>('/cars/model-reps');
 
     let filteredCars = data;
 
     if (searchTerm) {
-      filteredCars = filteredCars.filter(car => 
+      filteredCars = filteredCars.filter(car =>
         car.make_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
         car.submodel.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (`${car.make_name} ${car.model}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
     (`${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
     (`${car.make_name} ${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase())
-        // ... any other fields you want to search by
-        // TODO - add ability to search for people and companies--- 26 Nov 2023
       );
     }
-
-    //TODO add filtering by multiple features.... 17 Nov 2023
-
 
   if (selectedMake) {
     filteredCars = filteredCars.filter(car => selectedMake.car_id_list.includes(car.id));
   }
 
-  // Further filter by feature if selected
-  if (selectedFeature) {
-    filteredCars = filteredCars.filter(car => selectedFeature.carIds.includes(car.id));
+  // Multi-feature filtering: union within same category, intersection across categories
+  if (selectedFeatures && selectedFeatures.length > 0) {
+    // Group by featureName
+    const grouped = new Map<string, Set<number>>();
+    for (const feat of selectedFeatures) {
+      if (!grouped.has(feat.featureName)) {
+        grouped.set(feat.featureName, new Set());
+      }
+      const set = grouped.get(feat.featureName)!;
+      for (const id of feat.carIds) {
+        set.add(id);
+      }
+    }
+    // Intersect across categories
+    filteredCars = filteredCars.filter(car => {
+      for (const carIdSet of grouped.values()) {
+        if (!carIdSet.has(car.id)) return false;
+      }
+      return true;
+    });
   }
 
   return { data: filteredCars, error, isLoading };
