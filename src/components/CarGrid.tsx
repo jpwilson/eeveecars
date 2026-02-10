@@ -116,7 +116,7 @@ const MODEL_POPULARITY: Record<string, number> = {
 
 // Fallback brand rank for models not in the map
 const BRAND_FALLBACK: Record<string, number> = {
-  Tesla: 60, Chevrolet: 61, Ford: 62, Hyundai: 63, BMW: 64,
+  Tesla: 60, Chevrolet: 55, Ford: 62, Hyundai: 63, BMW: 64,
   KIA: 65, Mercedes: 66, Rivian: 67, Cadillac: 68, VW: 69,
   Toyota: 70, Nissan: 71, Volvo: 72, Polestar: 73, Lucid: 74,
   Genesis: 75, Subaru: 76, GMC: 77, Porsche: 78, Audi: 79,

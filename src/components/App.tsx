@@ -15,6 +15,7 @@ import AboutPage from "../pages/AboutPage";
 import MarketplacePage from "../pages/MarketplacePage";
 import InsightsPage from "../pages/InsightsPage";
 import ManufacturerPage from "../pages/ManufacturerPage";
+import AdminPage from "../pages/AdminPage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -27,6 +28,7 @@ const router = createBrowserRouter(
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/insights" element={<InsightsPage />} />
       <Route path="/manufacturer/:make_name" element={<ManufacturerPage />} />
+      <Route path="/admin" element={<AdminPage />} />
       <Route path="/layout_test" element={<Layouts />} />
     </Route>
   )
