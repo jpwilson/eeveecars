@@ -32,9 +32,10 @@ export function formatBucketLabel(featureName: string, bucketName: string): stri
   }
 
   if (featureName === "acceleration") {
-    if (parts[0] === "under") return `Under ${parts[1]}s`;
-    if (parts[0] === "over") return `Over ${parts[1]}s`;
-    return `${parts[0]} – ${parts[1]}s`;
+    // Bucket names already end in "s" (e.g., "under_2s", "2_3s")
+    if (parts[0] === "under") return `Under ${parts[1]}`;
+    if (parts[0] === "over") return `Over ${parts[1]}`;
+    return `${parts[0]} – ${parts[1]}`;
   }
 
   if (featureName === "top_speed") {
