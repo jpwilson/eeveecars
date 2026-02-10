@@ -47,11 +47,12 @@ function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<SelectedFeature[]>([]);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [hideDiscontinued, setHideDiscontinued] = useState(false);
+  const [showDiscontinuedCars, setShowDiscontinuedCars] = useState(false);
+  const [showComingSoonCars, setShowComingSoonCars] = useState(false);
 
   const [sortOption, setSortOption] = useState<SortOption>({
     field: "current_price",
-    direction: "desc",
+    direction: "asc",
   });
 
   const { isCompareMode, toggleCompareMode } = useCompare();
@@ -193,6 +194,10 @@ function HomePage() {
                 selectedMake={selectedMake}
                 onSelectMake={setSelectedMake}
                 showDarkModeToggle={true}
+                showDiscontinuedCars={showDiscontinuedCars}
+                onToggleDiscontinuedCars={setShowDiscontinuedCars}
+                showComingSoonCars={showComingSoonCars}
+                onToggleComingSoonCars={setShowComingSoonCars}
               />
             </GridItem>
           </Show>
@@ -268,22 +273,6 @@ function HomePage() {
                 }}
               >
                 {isCompareMode ? "Exit Compare" : "Compare"}
-              </Button>
-
-              {/* Hide discontinued toggle */}
-              <Button
-                {...toolbarBtnStyle}
-                onClick={() => setHideDiscontinued(!hideDiscontinued)}
-                bg={hideDiscontinued ? "green.500" : btnBg}
-                color={hideDiscontinued ? "white" : textColor}
-                borderColor={hideDiscontinued ? "green.500" : btnBorder}
-                _hover={{
-                  bg: hideDiscontinued ? "green.600" : hoverBg,
-                  borderColor: "green.400",
-                }}
-                fontSize="xs"
-              >
-                {hideDiscontinued ? "Show All" : "Hide Discontinued"}
               </Button>
 
               {/* View toggle */}
@@ -363,14 +352,16 @@ function HomePage() {
                 selectedMake={selectedMake}
                 sortOption={sortOption}
                 searchTerm={searchTerm}
-                hideDiscontinued={hideDiscontinued}
+                showDiscontinuedCars={showDiscontinuedCars}
+                showComingSoonCars={showComingSoonCars}
               />
             ) : (
               <CarTable
                 selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 searchTerm={searchTerm}
-                hideDiscontinued={hideDiscontinued}
+                showDiscontinuedCars={showDiscontinuedCars}
+                showComingSoonCars={showComingSoonCars}
               />
             )}
           </GridItem>
@@ -398,6 +389,10 @@ function HomePage() {
               selectedMake={selectedMake}
               onSelectMake={handleMobileSelectMake}
               showDarkModeToggle={true}
+              showDiscontinuedCars={showDiscontinuedCars}
+              onToggleDiscontinuedCars={setShowDiscontinuedCars}
+              showComingSoonCars={showComingSoonCars}
+              onToggleComingSoonCars={setShowComingSoonCars}
             />
           </DrawerBody>
         </DrawerContent>

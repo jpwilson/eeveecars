@@ -13,7 +13,8 @@ interface Props {
   selectedFeatures: SelectedFeature[];
   sortOption: SortOption;
   searchTerm: string;
-  hideDiscontinued?: boolean;
+  showDiscontinuedCars?: boolean;
+  showComingSoonCars?: boolean;
 }
 
 const CarGrid = ({
@@ -21,13 +22,15 @@ const CarGrid = ({
   selectedFeatures,
   sortOption,
   searchTerm,
-  hideDiscontinued,
+  showDiscontinuedCars,
+  showComingSoonCars,
 }: Props) => {
   const { data, error, isLoading } = useCars(
     selectedMake,
     selectedFeatures,
     searchTerm,
-    hideDiscontinued
+    showDiscontinuedCars,
+    showComingSoonCars
   );
   const skeletons = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

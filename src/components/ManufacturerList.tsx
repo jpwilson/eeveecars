@@ -7,6 +7,7 @@ import {
   List,
   ListItem,
   Spinner,
+  Switch,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -18,6 +19,10 @@ interface Props {
   onSelectMake: (make: Make | null) => void;
   selectedMake: Make | null;
   showDarkModeToggle?: boolean;
+  showDiscontinuedCars?: boolean;
+  onToggleDiscontinuedCars?: (show: boolean) => void;
+  showComingSoonCars?: boolean;
+  onToggleComingSoonCars?: (show: boolean) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -30,6 +35,10 @@ const ManufacturerList = ({
   selectedMake,
   onSelectMake,
   showDarkModeToggle = false,
+  showDiscontinuedCars = false,
+  onToggleDiscontinuedCars,
+  showComingSoonCars = false,
+  onToggleComingSoonCars,
 }: Props) => {
   const { data, isLoading, error } = useMakes();
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -136,7 +145,9 @@ const ManufacturerList = ({
     brands: Make[],
     isOpen: boolean,
     toggle: () => void,
-    dimmed: boolean
+    dimmed: boolean,
+    showInFeed?: boolean,
+    onToggleFeed?: (show: boolean) => void
   ) => (
     <Box mt={3} pt={3} borderTop="1px solid" borderColor={dividerColor}>
       <HStack
@@ -157,6 +168,24 @@ const ManufacturerList = ({
         </Text>
       </HStack>
       <Collapse in={isOpen} animateOpacity>
+        {onToggleFeed && (
+          <HStack
+            px={3}
+            py={1.5}
+            justify="space-between"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Text fontSize="xs" color={dimmedTextColor}>
+              Show in feed
+            </Text>
+            <Switch
+              size="sm"
+              colorScheme="green"
+              isChecked={showInFeed}
+              onChange={(e) => onToggleFeed(e.target.checked)}
+            />
+          </HStack>
+        )}
         <List spacing={0.5} mt={1}>
           {brands.map((make) => renderBrandItem(make, dimmed))}
         </List>
@@ -201,7 +230,9 @@ const ManufacturerList = ({
           comingSoonBrands,
           showComingSoon,
           () => setShowComingSoon(!showComingSoon),
-          true
+          true,
+          showComingSoonCars,
+          onToggleComingSoonCars
         )}
 
       {/* Discontinued section */}
@@ -211,7 +242,9 @@ const ManufacturerList = ({
           defunctBrands,
           showDefunct,
           () => setShowDefunct(!showDefunct),
-          true
+          true,
+          showDiscontinuedCars,
+          onToggleDiscontinuedCars
         )}
 
       {showDarkModeToggle && (

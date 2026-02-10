@@ -24,7 +24,8 @@ interface Props {
   selectedMake: Make | null;
   selectedFeatures: SelectedFeature[];
   searchTerm: string;
-  hideDiscontinued?: boolean;
+  showDiscontinuedCars?: boolean;
+  showComingSoonCars?: boolean;
 }
 
 type SortField =
@@ -38,12 +39,13 @@ type SortField =
 
 type SortDir = "asc" | "desc";
 
-const CarTable = ({ selectedMake, selectedFeatures, searchTerm, hideDiscontinued }: Props) => {
+const CarTable = ({ selectedMake, selectedFeatures, searchTerm, showDiscontinuedCars, showComingSoonCars }: Props) => {
   const { data, error, isLoading } = useCars(
     selectedMake,
     selectedFeatures,
     searchTerm,
-    hideDiscontinued
+    showDiscontinuedCars,
+    showComingSoonCars
   );
 
   const [sortField, setSortField] = useState<SortField>("current_price");

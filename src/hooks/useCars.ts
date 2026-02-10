@@ -29,15 +29,23 @@ export interface SelectedFeature {
     carIds: number[];
   }
 
-const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string, hideDiscontinued?: boolean) => {
+const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string, showDiscontinuedCars?: boolean, showComingSoonCars?: boolean) => {
     const { data, error, isLoading } = useData<Car>('/cars/model-reps');
 
     let filteredCars = data;
 
-    if (hideDiscontinued) {
+    // Filter out discontinued cars unless toggle is on
+    if (!showDiscontinuedCars) {
       filteredCars = filteredCars.filter(car =>
         car.production_availability !== false &&
         car.availability_desc !== "discontinued"
+      );
+    }
+
+    // Filter out unreleased/coming-soon cars unless toggle is on
+    if (!showComingSoonCars) {
+      filteredCars = filteredCars.filter(car =>
+        car.availability_desc !== "Not yet released"
       );
     }
 
