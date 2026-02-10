@@ -14,10 +14,12 @@ export interface Car {
     customer_and_critic_rating: number;
     average_rating: number;
     epa_range: number;
-    acceleration_0_60: number; 
-    top_speed: number; 
+    acceleration_0_60: number;
+    top_speed: number;
     make_model_slug: string;
     vehicle_class: string;
+    production_availability?: boolean;
+    availability_desc?: string;
 }
 
 // Add an interface for SelectedFeature to detail the expected shape
@@ -27,10 +29,17 @@ export interface SelectedFeature {
     carIds: number[];
   }
 
-const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string) => {
+const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string, hideDiscontinued?: boolean) => {
     const { data, error, isLoading } = useData<Car>('/cars/model-reps');
 
     let filteredCars = data;
+
+    if (hideDiscontinued) {
+      filteredCars = filteredCars.filter(car =>
+        car.production_availability !== false &&
+        car.availability_desc !== "discontinued"
+      );
+    }
 
     if (searchTerm) {
       filteredCars = filteredCars.filter(car =>

@@ -47,6 +47,7 @@ function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
   const [selectedFeatures, setSelectedFeatures] = useState<SelectedFeature[]>([]);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [hideDiscontinued, setHideDiscontinued] = useState(false);
 
   const [sortOption, setSortOption] = useState<SortOption>({
     field: "current_price",
@@ -269,6 +270,22 @@ function HomePage() {
                 {isCompareMode ? "Exit Compare" : "Compare"}
               </Button>
 
+              {/* Hide discontinued toggle */}
+              <Button
+                {...toolbarBtnStyle}
+                onClick={() => setHideDiscontinued(!hideDiscontinued)}
+                bg={hideDiscontinued ? "green.500" : btnBg}
+                color={hideDiscontinued ? "white" : textColor}
+                borderColor={hideDiscontinued ? "green.500" : btnBorder}
+                _hover={{
+                  bg: hideDiscontinued ? "green.600" : hoverBg,
+                  borderColor: "green.400",
+                }}
+                fontSize="xs"
+              >
+                {hideDiscontinued ? "Show All" : "Hide Discontinued"}
+              </Button>
+
               {/* View toggle */}
               <Button
                 {...toolbarBtnStyle}
@@ -346,12 +363,14 @@ function HomePage() {
                 selectedMake={selectedMake}
                 sortOption={sortOption}
                 searchTerm={searchTerm}
+                hideDiscontinued={hideDiscontinued}
               />
             ) : (
               <CarTable
                 selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 searchTerm={searchTerm}
+                hideDiscontinued={hideDiscontinued}
               />
             )}
           </GridItem>

@@ -20,7 +20,11 @@ interface Props {
   showDarkModeToggle?: boolean;
 }
 
-const DEFUNCT_STATUSES = ["defunct", "acquired"];
+const STATUS_COLORS: Record<string, string> = {
+  defunct: "red.400",
+  acquired: "orange.400",
+  "pre-production": "blue.400",
+};
 
 const ManufacturerList = ({
   selectedMake,
@@ -28,6 +32,7 @@ const ManufacturerList = ({
   showDarkModeToggle = false,
 }: Props) => {
   const { data, isLoading, error } = useMakes();
+  const [showComingSoon, setShowComingSoon] = useState(false);
   const [showDefunct, setShowDefunct] = useState(false);
 
   const textColor = useColorModeValue("gray.700", "gray.200");
@@ -45,7 +50,7 @@ const ManufacturerList = ({
     "rgba(22, 163, 74, 0.08)",
     "rgba(22, 163, 74, 0.15)"
   );
-  const defunctTextColor = useColorModeValue("gray.400", "gray.500");
+  const dimmedTextColor = useColorModeValue("gray.400", "gray.500");
 
   if (error) return null;
   if (isLoading) return <Spinner color="green.500" />;
@@ -61,14 +66,18 @@ const ManufacturerList = ({
 
   const allBrands = data ?? [];
   const activeBrands = sortBrands(
-    allBrands.filter((m) => !DEFUNCT_STATUSES.includes(m.status ?? "active"))
+    allBrands.filter((m) => (m.status ?? "active") === "active")
+  );
+  const comingSoonBrands = sortBrands(
+    allBrands.filter((m) => m.status === "pre-production")
   );
   const defunctBrands = sortBrands(
-    allBrands.filter((m) => DEFUNCT_STATUSES.includes(m.status ?? "active"))
+    allBrands.filter((m) => m.status === "defunct" || m.status === "acquired")
   );
 
   const renderBrandItem = (make: Make, dimmed = false) => {
     const isSelected = make.id === selectedMake?.id;
+    const statusColor = STATUS_COLORS[make.status ?? ""];
     return (
       <ListItem key={make.id}>
         <HStack
@@ -103,15 +112,57 @@ const ManufacturerList = ({
           <Text
             fontWeight={isSelected ? "600" : "400"}
             fontSize="sm"
-            color={isSelected ? "#16a34a" : dimmed ? defunctTextColor : textColor}
+            color={isSelected ? "#16a34a" : dimmed ? dimmedTextColor : textColor}
             noOfLines={1}
           >
             {make.name}
           </Text>
+          {statusColor && (
+            <Box
+              boxSize="6px"
+              borderRadius="full"
+              bg={statusColor}
+              flexShrink={0}
+              title={make.status}
+            />
+          )}
         </HStack>
       </ListItem>
     );
   };
+
+  const renderCollapsibleSection = (
+    label: string,
+    brands: Make[],
+    isOpen: boolean,
+    toggle: () => void,
+    dimmed: boolean
+  ) => (
+    <Box mt={3} pt={3} borderTop="1px solid" borderColor={dividerColor}>
+      <HStack
+        as="button"
+        w="full"
+        py={1.5}
+        px={2}
+        spacing={2}
+        borderRadius="8px"
+        _hover={{ bg: hoverBg }}
+        transition="all 0.2s"
+        onClick={toggle}
+        justify="center"
+      >
+        <Box as={isOpen ? FaChevronDown : FaChevronRight} boxSize={2.5} color={dimmedTextColor} />
+        <Text fontSize="xs" fontWeight="500" color={dimmedTextColor}>
+          {label} ({brands.length})
+        </Text>
+      </HStack>
+      <Collapse in={isOpen} animateOpacity>
+        <List spacing={0.5} mt={1}>
+          {brands.map((make) => renderBrandItem(make, dimmed))}
+        </List>
+      </Collapse>
+    </Box>
+  );
 
   return (
     <Box
@@ -143,33 +194,25 @@ const ManufacturerList = ({
         {activeBrands.map((make) => renderBrandItem(make))}
       </List>
 
-      {/* Discontinued brands section */}
-      {defunctBrands.length > 0 && (
-        <Box mt={3} pt={3} borderTop="1px solid" borderColor={dividerColor}>
-          <HStack
-            as="button"
-            w="full"
-            py={1.5}
-            px={2}
-            spacing={2}
-            borderRadius="8px"
-            _hover={{ bg: hoverBg }}
-            transition="all 0.2s"
-            onClick={() => setShowDefunct(!showDefunct)}
-            justify="center"
-          >
-            <Box as={showDefunct ? FaChevronDown : FaChevronRight} boxSize={2.5} color={defunctTextColor} />
-            <Text fontSize="xs" fontWeight="500" color={defunctTextColor}>
-              Discontinued ({defunctBrands.length})
-            </Text>
-          </HStack>
-          <Collapse in={showDefunct} animateOpacity>
-            <List spacing={0.5} mt={1}>
-              {defunctBrands.map((make) => renderBrandItem(make, true))}
-            </List>
-          </Collapse>
-        </Box>
-      )}
+      {/* Coming Soon section */}
+      {comingSoonBrands.length > 0 &&
+        renderCollapsibleSection(
+          "Coming Soon",
+          comingSoonBrands,
+          showComingSoon,
+          () => setShowComingSoon(!showComingSoon),
+          true
+        )}
+
+      {/* Discontinued section */}
+      {defunctBrands.length > 0 &&
+        renderCollapsibleSection(
+          "Discontinued",
+          defunctBrands,
+          showDefunct,
+          () => setShowDefunct(!showDefunct),
+          true
+        )}
 
       {showDarkModeToggle && (
         <Box mt={6} pt={4} borderTop="1px solid" borderColor={dividerColor}>
