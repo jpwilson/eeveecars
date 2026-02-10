@@ -8,6 +8,47 @@ import { Make } from "../hooks/useMakes";
 import { FaSadTear } from "react-icons/fa";
 import { SortOption } from "../types/types";
 
+// Rough US EV market popularity ranking by brand (based on sales volume)
+// Lower number = more popular/higher sales. Brands not listed default to 99.
+const BRAND_POPULARITY: Record<string, number> = {
+  Tesla: 1,
+  Chevrolet: 2,
+  Ford: 3,
+  Hyundai: 4,
+  BMW: 5,
+  KIA: 6,
+  "Mercedes-Benz": 7,
+  Mercedes: 7,
+  Rivian: 8,
+  Cadillac: 9,
+  VW: 10,
+  Volkswagen: 10,
+  Toyota: 11,
+  Nissan: 12,
+  Volvo: 13,
+  Polestar: 14,
+  Lucid: 15,
+  Genesis: 16,
+  Subaru: 17,
+  GMC: 18,
+  Porsche: 19,
+  Audi: 20,
+  Mini: 21,
+  Jaguar: 22,
+  Lexus: 23,
+  Mazda: 24,
+  "Rolls-Royce": 25,
+  Rimac: 26,
+  BYD: 30,
+  NIO: 31,
+  XPeng: 32,
+  Geely: 33,
+  Renault: 34,
+  "Citroën": 35,
+  Fisker: 90,
+  Canoo: 91,
+};
+
 interface Props {
   selectedMake: Make | null;
   selectedFeatures: SelectedFeature[];
@@ -45,19 +86,26 @@ const CarGrid = ({
         a.vehicle_class !== "Semi-Truck" &&
         b.vehicle_class === "Semi-Truck"
       ) {
-        return -1; // 'a' should come before 'b'
+        return -1;
       } else if (
         a.vehicle_class === "Semi-Truck" &&
         b.vehicle_class !== "Semi-Truck"
       ) {
-        return 1; // 'a' should come after 'b'
+        return 1;
+      }
+
+      // Popularity sort: by brand rank, then by price within same brand
+      if (sortOption.field === "popularity") {
+        const rankA = BRAND_POPULARITY[a.make_name] ?? 99;
+        const rankB = BRAND_POPULARITY[b.make_name] ?? 99;
+        if (rankA !== rankB) return rankA - rankB;
+        return (a.current_price ?? 0) - (b.current_price ?? 0);
       }
 
       let valueA = a[sortOption.field];
       let valueB = b[sortOption.field];
       const sortMultiplier = sortOption.direction === "asc" ? 1 : -1;
 
-      // Treat null as 0 for sorting purposes
       valueA = valueA === null ? 0 : valueA;
       valueB = valueB === null ? 0 : valueB;
 
@@ -66,14 +114,6 @@ const CarGrid = ({
       } else if (typeof valueA === "string" && typeof valueB === "string") {
         return valueA.localeCompare(valueB) * sortMultiplier;
       } else {
-        console.error(
-          "Trying to sort on incompatible or non-numeric/string fields",
-          {
-            valueA,
-            valueB,
-            sortOption,
-          }
-        );
         return 0;
       }
     });

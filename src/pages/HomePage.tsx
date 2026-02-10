@@ -52,7 +52,7 @@ function HomePage() {
   const [showComingSoonCars, setShowComingSoonCars] = useState(false);
 
   const [sortOption, setSortOption] = useState<SortOption>({
-    field: "current_price",
+    field: "popularity",
     direction: "asc",
   });
 

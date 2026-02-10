@@ -29,6 +29,10 @@ const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
 
   const sortOptions: SortOptionItem[] = [
     {
+      label: "Popularity",
+      value: { field: "popularity", direction: "asc" },
+    },
+    {
       label: "Price (lowest first)",
       value: { field: "current_price", direction: "asc" },
     },

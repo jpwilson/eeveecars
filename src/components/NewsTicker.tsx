@@ -123,7 +123,7 @@ const NewsTicker = () => {
       <HStack
         spacing={0}
         display="inline-flex"
-        animation={`${scroll} ${news.length * 4}s linear infinite`}
+        animation={`${scroll} ${news.length * 8}s linear infinite`}
         _hover={{ animationPlayState: "paused" }}
       >
         {tickerItems.map((item, i) => (
