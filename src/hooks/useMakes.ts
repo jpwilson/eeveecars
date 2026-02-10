@@ -15,6 +15,11 @@ export interface Make {
     unionized?: boolean;
     lrg_logo_img_url: string;
     car_id_list: number[];
+    status?: string;
+    status_details?: string;
+    description?: string;
+    website_url?: string;
+    country?: string;
   }
   
 
