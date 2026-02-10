@@ -41,6 +41,7 @@ import { SelectedFeature } from "../hooks/useCars";
 import { useCompare } from "../contexts/CompareContext";
 import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
+import NewsTicker from "../components/NewsTicker";
 import { makeNameToSlug } from "../utils/makeSlug";
 
 function HomePage() {
@@ -159,6 +160,7 @@ function HomePage() {
 
       <Box position="relative" zIndex={1}>
         <NavBar onSearch={handleSearch} />
+        <NewsTicker />
 
         <Grid
           templateAreas={{
