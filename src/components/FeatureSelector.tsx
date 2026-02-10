@@ -69,6 +69,9 @@ const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
   const hoverBg = useColorModeValue("rgba(22, 163, 74, 0.06)", "rgba(22, 163, 74, 0.15)");
   const popBg = useColorModeValue("white", "gray.700");
   const popBorder = useColorModeValue("gray.200", "gray.600");
+  const accordionHoverBg = useColorModeValue("green.50", "rgba(22, 163, 74, 0.15)");
+  const accordionExpandedBg = useColorModeValue("green.50", "rgba(22, 163, 74, 0.12)");
+  const itemHoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
 
   if (isLoading) return null;
   if (error) return null;
@@ -123,7 +126,7 @@ const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
         borderColor={popBorder}
         bg={popBg}
       >
-        <PopoverBody p={2}>
+        <PopoverBody p={2} maxH="60vh" overflowY="auto">
           <Accordion allowMultiple defaultIndex={[0]}>
             {Object.entries(features).map(([featureName, featureValues]) => (
               <AccordionItem key={featureName} border="none">
@@ -131,10 +134,10 @@ const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
                   px={3}
                   py={2}
                   borderRadius="8px"
-                  _hover={{ bg: "green.50" }}
-                  _expanded={{ bg: "green.50" }}
+                  _hover={{ bg: accordionHoverBg }}
+                  _expanded={{ bg: accordionExpandedBg }}
                 >
-                  <Box flex="1" textAlign="left" fontWeight="600" fontSize="sm">
+                  <Box flex="1" textAlign="left" fontWeight="600" fontSize="sm" color={textColor}>
                     {formatFeatureName(featureName)}
                   </Box>
                   <AccordionIcon />
@@ -150,7 +153,7 @@ const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
                           px={3}
                           py={1.5}
                           borderRadius="6px"
-                          _hover={{ bg: disabled ? "transparent" : "gray.50" }}
+                          _hover={{ bg: disabled ? "transparent" : itemHoverBg }}
                           opacity={disabled ? 0.45 : 1}
                           cursor={disabled ? "not-allowed" : "pointer"}
                           onClick={() => {

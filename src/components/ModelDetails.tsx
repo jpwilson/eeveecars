@@ -34,6 +34,7 @@ import useModelDetails, {
   ModelDetailsResponse as ModelDetailsType,
 } from "../hooks/useModelDetails";
 import { formatPrice } from "../utils/formatPrice";
+import { makeNameToSlug } from "../utils/makeSlug";
 import NavBar from "./NavBar";
 
 type VariantSortField = "submodel" | "current_price" | "acceleration_0_60" | "top_speed" | "epa_range";
@@ -168,11 +169,11 @@ const ModelDetails: React.FC = () => {
         <VStack align="stretch" spacing={6}>
           <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
             <HStack>
-              {make_details?.lrg_logo_img_url && model_webpage && (
-                <a
-                  href={model_webpage}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {make_details?.lrg_logo_img_url && (
+                <Link
+                  as={RouterLink}
+                  to={`/manufacturer/${makeNameToSlug(make_name)}`}
+                  _hover={{ textDecoration: "none" }}
                 >
                   <Image
                     src={make_details.lrg_logo_img_url}
@@ -180,30 +181,52 @@ const ModelDetails: React.FC = () => {
                     boxSize="50px"
                     objectFit="contain"
                     mr={4}
+                    cursor="pointer"
+                    _hover={{ opacity: 0.8 }}
+                    transition="opacity 0.2s"
                   />
-                </a>
+                </Link>
               )}
               <Heading fontSize={{ base: "2xl", md: "4xl" }} color={textColor}>
                 {make_name} {model}
               </Heading>
             </HStack>
-            <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>
-              <Button
-                size="sm"
-                bg="white"
-                color="#16a34a"
-                border="1px solid"
-                borderColor="rgba(22, 163, 74, 0.25)"
-                borderRadius="10px"
-                fontWeight="500"
-                _hover={{
-                  bg: "rgba(22, 163, 74, 0.06)",
-                  borderColor: "green.400",
-                }}
-              >
-                Back to results
-              </Button>
-            </Link>
+            <HStack spacing={2}>
+              <Link as={RouterLink} to={`/manufacturer/${makeNameToSlug(make_name)}`} _hover={{ textDecoration: "none" }}>
+                <Button
+                  size="sm"
+                  bg="white"
+                  color="#16a34a"
+                  border="1px solid"
+                  borderColor="rgba(22, 163, 74, 0.25)"
+                  borderRadius="10px"
+                  fontWeight="500"
+                  _hover={{
+                    bg: "rgba(22, 163, 74, 0.06)",
+                    borderColor: "green.400",
+                  }}
+                >
+                  {make_name}
+                </Button>
+              </Link>
+              <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>
+                <Button
+                  size="sm"
+                  bg="white"
+                  color="#16a34a"
+                  border="1px solid"
+                  borderColor="rgba(22, 163, 74, 0.25)"
+                  borderRadius="10px"
+                  fontWeight="500"
+                  _hover={{
+                    bg: "rgba(22, 163, 74, 0.06)",
+                    borderColor: "green.400",
+                  }}
+                >
+                  Back to results
+                </Button>
+              </Link>
+            </HStack>
           </HStack>
 
           <Grid

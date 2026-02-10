@@ -20,8 +20,9 @@ import { FaArrowLeft, FaGlobe, FaMapMarkerAlt, FaCalendarAlt, FaIndustry } from 
 import NavBar from "../components/NavBar";
 import CarCard from "../components/CarCard";
 import CarCardContainer from "../components/CarCardContainer";
-import useManufacturerDetail from "../hooks/useManufacturerDetail";
+import useMakes from "../hooks/useMakes";
 import useCars from "../hooks/useCars";
+import { makeNameMatchesSlug } from "../utils/makeSlug";
 
 const statusColors: Record<string, string> = {
   active: "green",
@@ -31,9 +32,14 @@ const statusColors: Record<string, string> = {
 };
 
 function ManufacturerPage() {
-  const { make_id } = useParams<{ make_id: string }>();
-  const { make, error, isLoading } = useManufacturerDetail(make_id ?? "0");
-  const { data: cars, isLoading: carsLoading } = useCars(make ?? null);
+  const { make_name } = useParams<{ make_name: string }>();
+  const { data: allMakes, isLoading, error } = useMakes();
+
+  const make = allMakes?.find((m) =>
+    makeNameMatchesSlug(m.name, make_name ?? "")
+  ) ?? null;
+
+  const { data: cars, isLoading: carsLoading } = useCars(make);
 
   const cardBg = useColorModeValue(
     "rgba(255, 255, 255, 0.75)",
@@ -146,18 +152,37 @@ function ManufacturerPage() {
               align={{ base: "center", md: "flex-start" }}
               gap={5}
             >
-              {/* Logo */}
-              <Image
-                src={make.lrg_logo_img_url}
-                alt={make.name}
-                boxSize={{ base: "80px", md: "100px" }}
-                objectFit="contain"
-                bg="white"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius="12px"
-                p={2}
-              />
+              {/* Logo — links to company website if available */}
+              {make.website_url ? (
+                <Link href={make.website_url} isExternal>
+                  <Image
+                    src={make.lrg_logo_img_url}
+                    alt={make.name}
+                    boxSize={{ base: "80px", md: "100px" }}
+                    objectFit="contain"
+                    bg="white"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="12px"
+                    p={2}
+                    cursor="pointer"
+                    _hover={{ borderColor: "#16a34a" }}
+                    transition="border-color 0.2s"
+                  />
+                </Link>
+              ) : (
+                <Image
+                  src={make.lrg_logo_img_url}
+                  alt={make.name}
+                  boxSize={{ base: "80px", md: "100px" }}
+                  objectFit="contain"
+                  bg="white"
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="12px"
+                  p={2}
+                />
+              )}
 
               {/* Info */}
               <VStack align={{ base: "center", md: "flex-start" }} spacing={2} flex={1}>

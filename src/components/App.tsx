@@ -26,7 +26,7 @@ const router = createBrowserRouter(
       <Route path="/people" element={<PeoplePage />} />
       <Route path="/marketplace" element={<MarketplacePage />} />
       <Route path="/insights" element={<InsightsPage />} />
-      <Route path="/manufacturer/:make_id" element={<ManufacturerPage />} />
+      <Route path="/manufacturer/:make_name" element={<ManufacturerPage />} />
       <Route path="/layout_test" element={<Layouts />} />
     </Route>
   )

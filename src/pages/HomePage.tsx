@@ -27,6 +27,7 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { FaThList, FaTh } from "react-icons/fa";
+import { Link as RouterLink } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import CarGrid from "../components/CarGrid";
 import CarTable from "../components/CarTable";
@@ -40,6 +41,7 @@ import { SelectedFeature } from "../hooks/useCars";
 import { useCompare } from "../contexts/CompareContext";
 import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
+import { makeNameToSlug } from "../utils/makeSlug";
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -277,6 +279,40 @@ function HomePage() {
               >
                 {viewMode === "cards" ? "List" : "Cards"}
               </Button>
+
+              {/* Brand page link — shown when a brand is selected (desktop) */}
+              <Show above="lg">
+                {selectedMake && (
+                  <Box ml="auto">
+                    <RouterLink to={`/manufacturer/${makeNameToSlug(selectedMake.name)}`} style={{ textDecoration: "none" }}>
+                      <HStack
+                        spacing={2}
+                        px={3}
+                        py={1}
+                        borderRadius="10px"
+                        border="1px solid"
+                        borderColor={btnBorder}
+                        bg={btnBg}
+                        _hover={{ borderColor: "green.400", bg: hoverBg }}
+                        transition="all 0.2s"
+                        cursor="pointer"
+                      >
+                        <Image
+                          src={selectedMake.lrg_logo_img_url}
+                          alt={selectedMake.name}
+                          boxSize="20px"
+                          objectFit="contain"
+                          bg="white"
+                          borderRadius="4px"
+                        />
+                        <Text fontSize="sm" fontWeight="500" color="#16a34a">
+                          {selectedMake.name}
+                        </Text>
+                      </HStack>
+                    </RouterLink>
+                  </Box>
+                )}
+              </Show>
             </HStack>
 
             {/* Active filter tags */}
