@@ -55,14 +55,20 @@ const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[
     }
 
     if (searchTerm) {
-      filteredCars = filteredCars.filter(car =>
-        car.make_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        car.submodel.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (`${car.make_name} ${car.model}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (`${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (`${car.make_name} ${car.model} ${car.submodel}`).toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      filteredCars = filteredCars.filter(car => {
+        const makeName = (car.make_name ?? "").toLowerCase();
+        const model = (car.model ?? "").toLowerCase();
+        const submodel = (car.submodel ?? "").toLowerCase();
+        return (
+          makeName.includes(term) ||
+          model.includes(term) ||
+          submodel.includes(term) ||
+          `${makeName} ${model}`.includes(term) ||
+          `${model} ${submodel}`.includes(term) ||
+          `${makeName} ${model} ${submodel}`.includes(term)
+        );
+      });
     }
 
   if (selectedMake) {

@@ -129,6 +129,22 @@ const updateLog: UpdateEntry[] = [
     summary: "Added Chevrolet make and Equinox EV ($34,995, 319mi range). New brand and best-selling affordable EV.",
     changes: [{ field: "current_price", oldValue: null, newValue: 34995 }, { field: "epa_range", oldValue: null, newValue: 319 }],
   },
+  {
+    id: "archive-001",
+    date: "2026-02-11",
+    model: "System",
+    type: "system",
+    summary: "Archived 10 previous-generation cars and created new generation records (IDs 203-212). Tesla Model Y/3, Rivian R1T/R1S, Hyundai Ioniq 5/Kona, KIA EV6/Niro, Porsche Taycan/Macan.",
+    changes: [],
+  },
+  {
+    id: "fix-001",
+    date: "2026-02-11",
+    model: "System",
+    type: "system",
+    summary: "Fixed make_name on new generation cars 203-212. Set Canoo and Fisker cars to discontinued status.",
+    changes: [],
+  },
 ];
 
 export default updateLog;

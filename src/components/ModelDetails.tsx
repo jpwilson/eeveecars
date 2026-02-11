@@ -172,12 +172,12 @@ const ModelDetails: React.FC = () => {
               {make_details?.lrg_logo_img_url && (
                 <Link
                   as={RouterLink}
-                  to={`/manufacturer/${makeNameToSlug(make_name)}`}
+                  to={`/manufacturer/${makeNameToSlug(make_name ?? "")}`}
                   _hover={{ textDecoration: "none" }}
                 >
                   <Image
                     src={make_details.lrg_logo_img_url}
-                    alt={`${make_name} logo`}
+                    alt={`${make_name ?? ""} logo`}
                     boxSize="50px"
                     objectFit="contain"
                     mr={4}
@@ -192,7 +192,7 @@ const ModelDetails: React.FC = () => {
               </Heading>
             </HStack>
             <HStack spacing={2}>
-              <Link as={RouterLink} to={`/manufacturer/${makeNameToSlug(make_name)}`} _hover={{ textDecoration: "none" }}>
+              <Link as={RouterLink} to={`/manufacturer/${makeNameToSlug(make_name ?? "")}`} _hover={{ textDecoration: "none" }}>
                 <Button
                   size="sm"
                   bg="white"
@@ -206,7 +206,7 @@ const ModelDetails: React.FC = () => {
                     borderColor: "green.400",
                   }}
                 >
-                  {make_name}
+                  {make_name ?? "Brand"}
                 </Button>
               </Link>
               <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>

@@ -39,7 +39,8 @@ function ManufacturerPage() {
     makeNameMatchesSlug(m.name, make_name ?? "")
   ) ?? null;
 
-  const { data: cars, isLoading: carsLoading } = useCars(make);
+  // Fetch all cars for this make, including discontinued and coming soon
+  const { data: cars, isLoading: carsLoading } = useCars(make, null, "", true, true);
 
   const cardBg = useColorModeValue(
     "rgba(255, 255, 255, 0.75)",
@@ -308,11 +309,7 @@ function ManufacturerPage() {
             )}
           </Box>
 
-          {/* Cars section */}
-          <Heading size="md" color={textColor} mb={4}>
-            {make.name} Electric Vehicles
-          </Heading>
-
+          {/* Cars sections */}
           {carsLoading ? (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={3}>
               {[1, 2, 3].map((i) => (
@@ -320,13 +317,69 @@ function ManufacturerPage() {
               ))}
             </SimpleGrid>
           ) : cars && cars.length > 0 ? (
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
-              {cars.map((car) => (
-                <CarCardContainer key={car.id}>
-                  <CarCard car={car} />
-                </CarCardContainer>
-              ))}
-            </SimpleGrid>
+            (() => {
+              const currentCars = cars.filter(
+                (c) => c.availability_desc !== "discontinued" && c.availability_desc !== "Not yet released"
+              );
+              const comingSoonCars = cars.filter(
+                (c) => c.availability_desc === "Not yet released"
+              );
+              const discontinuedCars = cars.filter(
+                (c) => c.availability_desc === "discontinued"
+              );
+
+              return (
+                <>
+                  {currentCars.length > 0 && (
+                    <Box mb={6}>
+                      <Heading size="md" color={textColor} mb={4}>
+                        {make.status === "defunct" ? `${make.name} Vehicles` : `Current ${make.name} EVs`}
+                      </Heading>
+                      <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
+                        {currentCars.map((car) => (
+                          <CarCardContainer key={car.id}>
+                            <CarCard car={car} />
+                          </CarCardContainer>
+                        ))}
+                      </SimpleGrid>
+                    </Box>
+                  )}
+                  {comingSoonCars.length > 0 && (
+                    <Box mb={6}>
+                      <Heading size="md" color={textColor} mb={4}>
+                        Coming Soon
+                      </Heading>
+                      <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
+                        {comingSoonCars.map((car) => (
+                          <CarCardContainer key={car.id}>
+                            <CarCard car={car} />
+                          </CarCardContainer>
+                        ))}
+                      </SimpleGrid>
+                    </Box>
+                  )}
+                  {discontinuedCars.length > 0 && (
+                    <Box mb={6}>
+                      <Heading size="sm" color={subTextColor} mb={4}>
+                        Discontinued
+                      </Heading>
+                      <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={3}>
+                        {discontinuedCars.map((car) => (
+                          <CarCardContainer key={car.id}>
+                            <CarCard car={car} />
+                          </CarCardContainer>
+                        ))}
+                      </SimpleGrid>
+                    </Box>
+                  )}
+                  {currentCars.length === 0 && comingSoonCars.length === 0 && discontinuedCars.length === 0 && (
+                    <Text color={subTextColor}>
+                      No electric vehicles found for {make.name}.
+                    </Text>
+                  )}
+                </>
+              );
+            })()
           ) : (
             <Text color={subTextColor}>
               No electric vehicles found for {make.name}.

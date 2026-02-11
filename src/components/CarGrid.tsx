@@ -172,10 +172,10 @@ const CarGrid = ({
 
       // Popularity sort: model-level ranking, interleaved across brands
       if (sortOption.field === "popularity") {
-        const keyA = `${a.make_name}|${a.model}`;
-        const keyB = `${b.make_name}|${b.model}`;
-        const rankA = MODEL_POPULARITY[keyA] ?? (BRAND_FALLBACK[a.make_name] ?? 95);
-        const rankB = MODEL_POPULARITY[keyB] ?? (BRAND_FALLBACK[b.make_name] ?? 95);
+        const keyA = `${a.make_name ?? ""}|${a.model}`;
+        const keyB = `${b.make_name ?? ""}|${b.model}`;
+        const rankA = MODEL_POPULARITY[keyA] ?? (BRAND_FALLBACK[a.make_name ?? ""] ?? 95);
+        const rankB = MODEL_POPULARITY[keyB] ?? (BRAND_FALLBACK[b.make_name ?? ""] ?? 95);
         return rankA - rankB;
       }
 
