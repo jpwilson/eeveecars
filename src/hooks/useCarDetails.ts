@@ -3,6 +3,7 @@ import useSingleData from "./useSingleData";
 
 export interface CarDetails {
   id: string;
+  make_id: number;
   make_name: string;
   model: string;
   submodel: string;
@@ -10,7 +11,7 @@ export interface CarDetails {
   average_rating: number;
   battery_capacity: number;
   battery_max_charging_speed: number;
-  bidirectional_details: boolean;
+  bidirectional_details: Record<string, unknown>;
   car_description: string;
   carmodel_first_released: string;
   chargers: string[];
@@ -29,9 +30,8 @@ export interface CarDetails {
   reviews: { description: string; url: string }[];
   top_speed: number;
   torque: number;
-  towing_details: number;
+  towing_details: Record<string, unknown>;
   trim_first_released: string;
-  // range_combined_mid: number;
   vehicle_class: string;
 }
 

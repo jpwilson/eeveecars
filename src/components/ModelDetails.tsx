@@ -387,6 +387,116 @@ const ModelDetails: React.FC = () => {
               </VStack>
             </GridItem>
           </Grid>
+
+          {/* Previous Generations */}
+          {modelDetails.previous_generations &&
+            modelDetails.previous_generations.length > 0 && (
+              <Box mt={4}>
+                <Heading size="md" color={textColor} mb={4}>
+                  Previous Generations
+                </Heading>
+                {modelDetails.previous_generations.map((gen) => (
+                  <Box
+                    key={gen.generation || "earlier"}
+                    mb={4}
+                    bg={cardBg}
+                    backdropFilter="blur(16px)"
+                    borderRadius="16px"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    overflow="hidden"
+                    boxShadow="0 2px 12px rgba(0, 0, 0, 0.04)"
+                  >
+                    <Box px={4} py={3} bg={tableHeaderBg}>
+                      <HStack spacing={3}>
+                        {gen.image_url && (
+                          <Image
+                            src={gen.image_url}
+                            boxSize="40px"
+                            objectFit="contain"
+                            borderRadius="6px"
+                          />
+                        )}
+                        <Text fontWeight="600" color={subTextColor} fontSize="sm">
+                          {gen.generation || "Earlier Generation"}
+                        </Text>
+                      </HStack>
+                    </Box>
+                    <Table size="sm">
+                      <Thead>
+                        <Tr bg={tableHeaderBg}>
+                          <Th fontSize="xs" borderColor={tableBorderColor}>
+                            Submodel
+                          </Th>
+                          <Th fontSize="xs" borderColor={tableBorderColor} isNumeric>
+                            Price
+                          </Th>
+                          <Th fontSize="xs" borderColor={tableBorderColor} isNumeric>
+                            0-60
+                          </Th>
+                          <Th fontSize="xs" borderColor={tableBorderColor} isNumeric>
+                            Top Speed
+                          </Th>
+                          <Th fontSize="xs" borderColor={tableBorderColor} isNumeric>
+                            Range
+                          </Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {gen.submodels.map((sub) => (
+                          <Tr
+                            key={sub.id}
+                            _hover={{ bg: rowHoverBg }}
+                            transition="background 0.15s"
+                          >
+                            <Td borderColor={tableBorderColor}>
+                              <Link
+                                as={RouterLink}
+                                to={`/car_detail/${sub.id}`}
+                                color={linkColor}
+                                fontWeight="500"
+                                fontSize="sm"
+                                _hover={{ textDecoration: "underline" }}
+                              >
+                                {sub.submodel}
+                              </Link>
+                            </Td>
+                            <Td
+                              borderColor={tableBorderColor}
+                              isNumeric
+                              fontSize="sm"
+                            >
+                              {formatPrice(sub.current_price)}
+                            </Td>
+                            <Td
+                              borderColor={tableBorderColor}
+                              isNumeric
+                              fontSize="sm"
+                            >
+                              {sub.acceleration_0_60}s
+                            </Td>
+                            <Td
+                              borderColor={tableBorderColor}
+                              isNumeric
+                              fontSize="sm"
+                            >
+                              {sub.top_speed} mph
+                            </Td>
+                            <Td
+                              borderColor={tableBorderColor}
+                              isNumeric
+                              fontSize="sm"
+                            >
+                              {sub.epa_range} mi
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
+                ))}
+              </Box>
+            )}
         </VStack>
       </Box>
 

@@ -34,6 +34,11 @@ const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[
 
     let filteredCars = data;
 
+    // Always filter out previous generation cars from the main feed
+    filteredCars = filteredCars.filter(car =>
+      car.availability_desc !== "previous_generation"
+    );
+
     // Filter out discontinued cars unless toggle is on
     if (!showDiscontinuedCars) {
       filteredCars = filteredCars.filter(car =>

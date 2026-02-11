@@ -123,7 +123,7 @@ const updateLog: UpdateEntry[] = [
   {
     id: "batch-010",
     date: "2026-02-10",
-    carId: 7,
+    carId: 202,
     model: "Chevrolet Equinox EV",
     type: "new_model",
     summary: "Added Chevrolet make and Equinox EV ($34,995, 319mi range). New brand and best-selling affordable EV.",

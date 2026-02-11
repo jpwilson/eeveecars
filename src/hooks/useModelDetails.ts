@@ -11,7 +11,14 @@ export interface Submodel {
   acceleration_0_60: number;
   top_speed: number;
   epa_range: number;
-  // ... other submodel specific details
+  generation?: string | null;
+  availability_desc?: string | null;
+}
+
+export interface PreviousGeneration {
+  generation: string | null;
+  image_url: string | null;
+  submodels: Submodel[];
 }
 
 export interface ModelDetailsResponse {
@@ -28,17 +35,16 @@ export interface ModelDetailsResponse {
     current_price: number;
     customer_and_critic_rating: number;
     average_rating: number;
-    // range_combined_mid: number;
     epa_range: number;
     top_speed: number;
     model_webpage: string;
-  
-    model_description: string; // This is the new field for the model's description
+    model_description: string;
     make_model_slug: string;
-    submodels: Submodel[]; // Array of Submodel objects
+    submodels: Submodel[];
   };
   submodels: Submodel[];
   make_details: Make;
+  previous_generations?: PreviousGeneration[];
 }
 
 
