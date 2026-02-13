@@ -145,6 +145,46 @@ const updateLog: UpdateEntry[] = [
     summary: "Fixed make_name on new generation cars 203-212. Set Canoo and Fisker cars to discontinued status.",
     changes: [],
   },
+  {
+    id: "infra-001",
+    date: "2026-02-12",
+    model: "System",
+    type: "system",
+    summary: "Added admin vehicle editor with authentication gate. Dual API key security: read key (public) + admin key (runtime entry, sessionStorage). 10 form sections covering 60+ fields with dirty tracking and save.",
+    changes: [],
+  },
+  {
+    id: "infra-002",
+    date: "2026-02-12",
+    model: "System",
+    type: "system",
+    summary: "Migrated database from Heroku Postgres to Supabase Postgres. 212 cars, 35 makes, 40 people imported and verified. Using transaction pooler (port 6543) with NullPool for serverless compatibility.",
+    changes: [],
+  },
+  {
+    id: "infra-003",
+    date: "2026-02-12",
+    model: "System",
+    type: "system",
+    summary: "Set up Supabase Storage for car image uploads. Created 'car-images' bucket with RLS policies (public read, authenticated write). Admin editor supports primary image + gallery uploads organized by make/model folders.",
+    changes: [],
+  },
+  {
+    id: "infra-004",
+    date: "2026-02-12",
+    model: "System",
+    type: "system",
+    summary: "Migrated FastAPI backend from Heroku ($20/mo) to Vercel serverless (free). Python 3.12, NullPool for connection management, CORS updated for new origin. Backend now at ev-backend-three.vercel.app.",
+    changes: [],
+  },
+  {
+    id: "infra-005",
+    date: "2026-02-12",
+    model: "System",
+    type: "system",
+    summary: "Full infrastructure now on Vercel + Supabase. Frontend: Vercel (Node 24.x). Backend API: Vercel (FastAPI serverless). Database: Supabase Postgres. Image storage: Supabase Storage. Heroku decommissioned.",
+    changes: [],
+  },
 ];
 
 export default updateLog;
