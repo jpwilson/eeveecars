@@ -23,6 +23,9 @@ import CarCardContainer from "../components/CarCardContainer";
 import useMakes from "../hooks/useMakes";
 import useCars from "../hooks/useCars";
 import { makeNameMatchesSlug } from "../utils/makeSlug";
+import Footer from "../components/Footer";
+import SEO from "../components/SEO";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 const statusColors: Record<string, string> = {
   active: "green",
@@ -97,7 +100,13 @@ function ManufacturerPage() {
   const statusColor = statusColors[make.status ?? "active"] ?? "gray";
 
   return (
-    <Box minH="100vh" position="relative" overflow="hidden">
+    <Box minH="100vh" position="relative" overflow="hidden" display="flex" flexDirection="column">
+      <SEO
+        title={make.name}
+        description={`Explore all ${make.name} electric vehicles. ${make.description || `View specs, prices, and compare ${make.name} EV models.`}`}
+        image={make.lrg_logo_img_url}
+        url={`/manufacturer/${make_name}`}
+      />
       {/* Subtle background */}
       <Box
         position="fixed"
@@ -112,11 +121,12 @@ function ManufacturerPage() {
       >
         <Image
           src="/pub_assets/hero-ev.png"
-          alt=""
+          alt="Electric vehicle background"
           width="100%"
           height="100%"
           objectFit="contain"
           objectPosition="center"
+          loading="lazy"
         />
       </Box>
 
@@ -124,6 +134,8 @@ function ManufacturerPage() {
         <NavBar />
 
         <Box maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
+          <Breadcrumbs items={[{ label: make.name }]} />
+
           {/* Back button */}
           <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>
             <Button
@@ -387,6 +399,7 @@ function ManufacturerPage() {
           )}
         </Box>
       </Box>
+      <Footer />
     </Box>
   );
 }

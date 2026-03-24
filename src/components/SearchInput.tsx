@@ -38,6 +38,7 @@ const SearchInput = ({ onSearch }: Props) => {
       <Input
         ref={ref}
         value={value}
+        aria-label="Search electric vehicles"
         borderRadius="10px"
         placeholder="Search EV makes, models and submodels"
         bg={inputBg}

@@ -47,6 +47,8 @@ const NavBar = ({ onSearch }: Props) => {
 
   return (
     <Box
+      as="nav"
+      aria-label="Main navigation"
       bg={navBg}
       backdropFilter="blur(20px)"
       borderBottom={`1px solid ${borderColor}`}

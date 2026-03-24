@@ -25,6 +25,8 @@ import {
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 import usePeople, { Person } from "../hooks/usePeople";
 
 // Helper function to format roles by company
@@ -152,9 +154,14 @@ function PeoplePage() {
   );
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" minH="100vh">
+      <SEO
+        title="People in the EV Industry"
+        description="Meet the visionaries driving the EV revolution. CEOs, founders, engineers, and journalists shaping the future of electric vehicles."
+        url="/people"
+      />
       <NavBar onSearch={() => {}} />
-      <Box padding={5}>
+      <Box padding={5} flex="1">
         <Heading as="h1" size="xl" marginBottom={5}>
           People in EV Industry
         </Heading>
@@ -244,6 +251,7 @@ function PeoplePage() {
           </Table>
         )}
       </Box>
+      <Footer />
     </Box>
   );
 }

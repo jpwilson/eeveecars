@@ -41,6 +41,10 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import NavBar from "./NavBar";
+import Footer from "./Footer";
+import SEO from "./SEO";
+import Breadcrumbs from "./Breadcrumbs";
+import ShareButtons from "./ShareButtons";
 
 const CarDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -108,10 +112,25 @@ const CarDetails = () => {
   const logoUrl = make?.lrg_logo_img_url;
   const makeSlug = makeNameToSlug(car.make_name);
 
+  const carTitle = `${car.make_name} ${car.model} ${car.submodel}`;
+  const carDescription = `${carTitle} — ${formatPrice(car.current_price)}, ${car.epa_range} mi range, ${car.acceleration_0_60}s 0-60 mph. View full specs and compare.`;
+
   return (
-    <Box minH="100vh">
+    <Box minH="100vh" display="flex" flexDirection="column">
+      <SEO
+        title={carTitle}
+        description={carDescription}
+        image={car.image_url}
+        url={`/car_detail/${id}`}
+        type="product"
+      />
       <NavBar />
-      <Box maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
+      <Box maxW="1200px" mx="auto" p={{ base: 4, md: 6 }} flex="1">
+        <Breadcrumbs items={[
+          { label: car.make_name, to: `/manufacturer/${makeSlug}` },
+          { label: car.model, to: `/model_detail/${car.make_model_slug}` },
+          { label: car.submodel },
+        ]} />
         <VStack align="stretch" spacing={6}>
           {/* Header: Logo + Name + Navigation */}
           <HStack
@@ -242,6 +261,7 @@ const CarDetails = () => {
                   maxH={{ base: "auto", md: "400px" }}
                   objectFit="contain"
                   w="100%"
+                  loading="lazy"
                 />
                 <Flex
                   position="absolute"
@@ -631,6 +651,16 @@ const CarDetails = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      {/* Share buttons */}
+      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} pb={6}>
+        <ShareButtons
+          url={`https://www.evlineup.com/car_detail/${id}`}
+          title={carTitle}
+          description={carDescription}
+        />
+      </Box>
+      <Footer />
     </Box>
   );
 };

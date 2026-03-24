@@ -30,6 +30,8 @@ import {
   FaBars,
 } from "react-icons/fa";
 import { useRef } from "react";
+import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const MotionBox = motion(Box);
 const MotionHeading = motion(Heading);
@@ -322,6 +324,11 @@ function AboutPage() {
       overflow="hidden"
       fontFamily="'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
     >
+      <SEO
+        title="About"
+        description="EV Lineup is the most comprehensive electric vehicle database. Research any EV, compare specs side-by-side, and make informed decisions."
+        url="/about"
+      />
       <NavBar />
 
       {/* Hero Background Image */}
@@ -530,6 +537,9 @@ function AboutPage() {
           </ChakraLink>
         </MotionBox>
       </Container>
+      <Box position="relative" zIndex={2}>
+        <Footer />
+      </Box>
     </Box>
   );
 }

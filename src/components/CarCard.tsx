@@ -101,9 +101,11 @@ const CarCard = ({ car }: Props) => {
       <Box position="relative" overflow="hidden">
         <Image
           src={car.image_url}
+          alt={`${car.make_name} ${car.model}`}
           height="180px"
           width="full"
           objectFit="cover"
+          loading="lazy"
           opacity={isCompareMode && selected ? 0.8 : 1}
           transition="transform 0.4s ease"
         />

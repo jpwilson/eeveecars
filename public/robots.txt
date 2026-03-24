@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /layout_test
+
+Sitemap: https://www.evlineup.com/sitemap.xml

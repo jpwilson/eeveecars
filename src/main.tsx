@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./components/App";
 import theme from "./theme";
 import "./index.css";
@@ -8,11 +9,13 @@ import { CompareProvider } from "./contexts/CompareContext";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <ChakraProvider theme={theme}>
-      <ColorModeScript initialColorMode={theme.config.initialColorMode} />
-      <CompareProvider>
-        <App />
-      </CompareProvider>
-    </ChakraProvider>
+    <HelmetProvider>
+      <ChakraProvider theme={theme}>
+        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
+        <CompareProvider>
+          <App />
+        </CompareProvider>
+      </ChakraProvider>
+    </HelmetProvider>
   </React.StrictMode>
 );

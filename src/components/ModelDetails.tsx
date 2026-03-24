@@ -36,6 +36,10 @@ import useModelDetails, {
 import { formatPrice } from "../utils/formatPrice";
 import { makeNameToSlug } from "../utils/makeSlug";
 import NavBar from "./NavBar";
+import Footer from "./Footer";
+import SEO from "./SEO";
+import Breadcrumbs from "./Breadcrumbs";
+import ShareButtons from "./ShareButtons";
 
 type VariantSortField = "submodel" | "current_price" | "acceleration_0_60" | "top_speed" | "epa_range";
 type SortDir = "asc" | "desc";
@@ -162,10 +166,23 @@ const ModelDetails: React.FC = () => {
     </Th>
   );
 
+  const modelTitle = `${make_name} ${model}`;
+  const modelDescription = `Compare all ${make_name} ${model} variants — prices, range, acceleration, and specs side-by-side. ${submodels.length} variant${submodels.length !== 1 ? "s" : ""} available.`;
+
   return (
-    <Box minH="100vh">
+    <Box minH="100vh" display="flex" flexDirection="column">
+      <SEO
+        title={modelTitle}
+        description={modelDescription}
+        image={image_url}
+        url={`/model_detail/${make_model_slug}`}
+      />
       <NavBar />
-      <Box maxW="1200px" mx="auto" p={{ base: 4, md: 6 }}>
+      <Box maxW="1200px" mx="auto" p={{ base: 4, md: 6 }} flex="1">
+        <Breadcrumbs items={[
+          { label: make_name ?? "", to: `/manufacturer/${makeNameToSlug(make_name ?? "")}` },
+          { label: model ?? "" },
+        ]} />
         <VStack align="stretch" spacing={6}>
           <HStack justify="space-between" align="center" flexWrap="wrap" gap={3}>
             <HStack>
@@ -516,6 +533,15 @@ const ModelDetails: React.FC = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
+
+      <Box maxW="1200px" mx="auto" px={{ base: 4, md: 6 }} pb={6}>
+        <ShareButtons
+          url={`https://www.evlineup.com/model_detail/${make_model_slug}`}
+          title={modelTitle}
+          description={modelDescription}
+        />
+      </Box>
+      <Footer />
     </Box>
   );
 };

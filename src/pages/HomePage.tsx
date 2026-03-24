@@ -42,6 +42,8 @@ import { useCompare } from "../contexts/CompareContext";
 import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
 import NewsTicker from "../components/NewsTicker";
+import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 import { makeNameToSlug } from "../utils/makeSlug";
 
 function HomePage() {
@@ -135,7 +137,12 @@ function HomePage() {
   };
 
   return (
-    <Box minH="100vh" position="relative" overflow="hidden">
+    <Box minH="100vh" position="relative" overflow="hidden" display="flex" flexDirection="column">
+      <SEO
+        title="EV Database"
+        description="Browse 400+ electric vehicles. Compare prices, range, acceleration, and 50+ specs side-by-side. Find the perfect EV for you."
+        url="/"
+      />
       {/* Subtle hero EV background image */}
       <Box
         position="fixed"
@@ -150,11 +157,12 @@ function HomePage() {
       >
         <Image
           src="/pub_assets/hero-ev.png"
-          alt=""
+          alt="Electric vehicle background"
           width="100%"
           height="100%"
           objectFit="contain"
           objectPosition="center"
+          loading="lazy"
         />
       </Box>
 
@@ -372,6 +380,7 @@ function HomePage() {
 
       <CompareBar />
       <ComparisonModal />
+      <Footer />
 
       {/* Mobile brands drawer */}
       <Drawer isOpen={isBrandsOpen} placement="left" onClose={onBrandsClose}>
