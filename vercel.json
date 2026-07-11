@@ -13,6 +13,6 @@
       "source": "/manufacturer/:slug",
       "destination": "/api/prerender?page=make&slug=:slug"
     },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/app.html" }
   ]
 }

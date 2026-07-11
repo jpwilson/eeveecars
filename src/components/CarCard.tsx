@@ -101,6 +101,8 @@ const CarCard = ({ car }: Props) => {
       <Box position="relative" overflow="hidden">
         <Image
           src={car.image_url}
+          alt={`${car.make_name} ${car.model}`}
+          loading="lazy"
           height="180px"
           width="full"
           objectFit="cover"

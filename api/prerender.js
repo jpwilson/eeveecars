@@ -27,7 +27,9 @@ async function fetchWithTimeout(url, ms = 6000) {
 
 async function getTemplate(host) {
   if (templateCache) return templateCache;
-  const res = await fetchWithTimeout(`https://${host}/index.html`);
+  // The SPA shell is built as app.html (renamed from index.html) so the
+  // filesystem never wins over the "/" rewrite to this function.
+  const res = await fetchWithTimeout(`https://${host}/app.html`);
   if (!res.ok) throw new Error(`template fetch ${res.status}`);
   templateCache = await res.text();
   return templateCache;
@@ -309,7 +311,7 @@ async function buildMakePage(slug) {
 }
 
 async function buildHomePage() {
-  const res = await fetchWithTimeout(`${API_BASE}/cars/model-reps`);
+  const res = await fetchWithTimeout(`${API_BASE}/cars/cards`);
   if (!res.ok) return null;
   const cars = await res.json();
   const top = cars.slice(0, 30);

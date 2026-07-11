@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
@@ -8,20 +9,23 @@ import {
 
 import RootLayout from "../layouts/RootLayout";
 import HomePage from "../pages/HomePage";
-import CarDetail from "../pages/CarDetailPage";
-import Layouts from "../pages/Layouts";
-import ModelDetails from "./ModelDetails";
-import PeoplePage from "../pages/PeoplePage";
-import AboutPage from "../pages/AboutPage";
-import MarketplacePage from "../pages/MarketplacePage";
-import ManufacturerPage from "../pages/ManufacturerPage";
-import AdminPage from "../pages/AdminPage";
-import AuthCallbackPage from "../pages/AuthCallbackPage";
-import ResetPasswordPage from "../pages/ResetPasswordPage";
-import DashboardPage from "../pages/DashboardPage";
-import PrivacyPage from "../pages/PrivacyPage";
-import TermsPage from "../pages/TermsPage";
-import AdvertisePage from "../pages/AdvertisePage";
+
+// Route-level code splitting: HomePage stays eager (the landing view);
+// everything else loads on demand, keeping the main chunk small.
+const CarDetail = lazy(() => import("../pages/CarDetailPage"));
+const Layouts = lazy(() => import("../pages/Layouts"));
+const ModelDetails = lazy(() => import("./ModelDetails"));
+const PeoplePage = lazy(() => import("../pages/PeoplePage"));
+const AboutPage = lazy(() => import("../pages/AboutPage"));
+const MarketplacePage = lazy(() => import("../pages/MarketplacePage"));
+const ManufacturerPage = lazy(() => import("../pages/ManufacturerPage"));
+const AdminPage = lazy(() => import("../pages/AdminPage"));
+const AuthCallbackPage = lazy(() => import("../pages/AuthCallbackPage"));
+const ResetPasswordPage = lazy(() => import("../pages/ResetPasswordPage"));
+const DashboardPage = lazy(() => import("../pages/DashboardPage"));
+const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
+const TermsPage = lazy(() => import("../pages/TermsPage"));
+const AdvertisePage = lazy(() => import("../pages/AdvertisePage"));
 
 const router = createBrowserRouter(
   createRoutesFromElements(

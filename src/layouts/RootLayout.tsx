@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { Center, Spinner } from "@chakra-ui/react";
 import GoogleAnalytics from "../components/GoogleAnalytics";
 import { Analytics } from "@vercel/analytics/react";
 import Footer from "../components/Footer";
@@ -14,7 +16,15 @@ export default function RootLayout() {
     <div>
       <Analytics />
       <GoogleAnalytics />
-      <Outlet />
+      <Suspense
+        fallback={
+          <Center minH="60vh">
+            <Spinner size="xl" color="green.500" thickness="4px" />
+          </Center>
+        }
+      >
+        <Outlet />
+      </Suspense>
       {showFooter && <Footer />}
     </div>
   );
