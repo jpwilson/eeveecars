@@ -4,6 +4,15 @@
       "source": "/sitemap.xml",
       "destination": "https://ev-backend-three.vercel.app/sitemap.xml"
     },
+    { "source": "/", "destination": "/api/prerender?page=home" },
+    {
+      "source": "/model_detail/:slug",
+      "destination": "/api/prerender?page=model&slug=:slug"
+    },
+    {
+      "source": "/manufacturer/:slug",
+      "destination": "/api/prerender?page=make&slug=:slug"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
