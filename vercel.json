@@ -13,6 +13,14 @@
       "source": "/manufacturer/:slug",
       "destination": "/api/prerender?page=make&slug=:slug"
     },
+    {
+      "source": "/compare/:pair",
+      "destination": "/api/prerender?page=compare&slug=:pair"
+    },
+    {
+      "source": "/best/:criteria",
+      "destination": "/api/prerender?page=best&slug=:criteria"
+    },
     { "source": "/(.*)", "destination": "/app.html" }
   ]
 }

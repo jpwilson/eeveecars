@@ -17,6 +17,7 @@ export interface Car {
     top_speed: number;
     make_model_slug: string;
     vehicle_class: string;
+    number_of_full_adult_seats?: number | null;
     production_availability?: boolean;
     availability_desc?: string;
 }

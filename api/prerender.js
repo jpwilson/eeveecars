@@ -364,6 +364,211 @@ async function buildHomePage() {
   };
 }
 
+async function fetchRep(slug) {
+  const res = await fetchWithTimeout(
+    `${API_BASE}/cars/model-details/${encodeURIComponent(slug)}`
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.representative_model || null;
+}
+
+const COMPARE_ROWS = [
+  ["Starting price", (m) => fmtPrice(m.current_price), "current_price", "low"],
+  ["EPA range", (m) => (m.epa_range ? `${m.epa_range} mi` : null), "epa_range", "high"],
+  ["0–60 mph", (m) => (m.acceleration_0_60 ? `${m.acceleration_0_60} s` : null), "acceleration_0_60", "low"],
+  ["Top speed", (m) => (m.top_speed ? `${m.top_speed} mph` : null), "top_speed", "high"],
+  ["Power", (m) => (m.power ? `${m.power} hp` : null), "power", "high"],
+  ["Battery", (m) => (m.battery_capacity ? `${m.battery_capacity} kWh` : null), "battery_capacity", "high"],
+  ["Max DC charging", (m) => (m.battery_max_charging_speed ? `${m.battery_max_charging_speed} kW` : null), "battery_max_charging_speed", "high"],
+  ["Seats", (m) => m.number_of_full_adult_seats || null, "number_of_full_adult_seats", "high"],
+];
+
+async function buildComparePage(pair) {
+  const [slugA, slugB] = String(pair).split("-vs-");
+  if (!slugA || !slugB) return null;
+  const [A, B] = await Promise.all([fetchRep(slugA), fetchRep(slugB)]);
+  if (!A || !B) return null;
+
+  const nameA = `${A.make_name} ${A.model}`;
+  const nameB = `${B.make_name} ${B.model}`;
+  const canonical = `${CANONICAL_HOST}/compare/${pair}`;
+  const title = `${nameA} vs ${nameB}: Price, Range & 0-60 Compared | ${SITE_NAME}`;
+  const description = `${nameA} vs ${nameB} side by side: ${
+    A.epa_range && B.epa_range ? `${A.epa_range} vs ${B.epa_range} mi range, ` : ""
+  }${
+    A.current_price && B.current_price
+      ? `from ${fmtPrice(A.current_price)} vs ${fmtPrice(B.current_price)}. `
+      : ""
+  }Full spec comparison on ${SITE_NAME}.`;
+
+  const faq = [];
+  if (A.epa_range && B.epa_range && A.epa_range !== B.epa_range) {
+    const [w, l] = A.epa_range > B.epa_range ? [A, B] : [B, A];
+    faq.push({
+      "@type": "Question",
+      name: `Which has more range, the ${nameA} or the ${nameB}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `The ${w.make_name} ${w.model} has more EPA range: ${w.epa_range} miles vs ${l.epa_range} miles.`,
+      },
+    });
+  }
+  if (A.current_price && B.current_price && A.current_price !== B.current_price) {
+    const [w, l] = A.current_price < B.current_price ? [A, B] : [B, A];
+    faq.push({
+      "@type": "Question",
+      name: `Which is cheaper, the ${nameA} or the ${nameB}?`,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `The ${w.make_name} ${w.model} starts lower at ${fmtPrice(w.current_price)} vs ${fmtPrice(l.current_price)} MSRP.`,
+      },
+    });
+  }
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `${nameA} vs ${nameB}`,
+      itemListElement: [A, B].map((m, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "Car",
+          name: `${m.make_name} ${m.model}`,
+          brand: { "@type": "Brand", name: m.make_name },
+          image: absImage(m.image_url),
+          url: `${CANONICAL_HOST}/model_detail/${m.make_model_slug}`,
+          fuelType: "Electric",
+        },
+      })),
+    },
+  ];
+  if (faq.length)
+    jsonLd.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq });
+
+  const rows = COMPARE_ROWS.map(([label, get, key, better]) => {
+    const va = get(A) ?? "—";
+    const vb = get(B) ?? "—";
+    let wa = "", wb = "";
+    if (A[key] && B[key] && A[key] !== B[key]) {
+      const aWins = better === "high" ? A[key] > B[key] : A[key] < B[key];
+      if (aWins) wa = " ✓"; else wb = " ✓";
+    }
+    return `<tr><th>${esc(label)}</th><td>${esc(va)}${wa}</td><td>${esc(vb)}${wb}</td></tr>`;
+  }).join("");
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  <p class="crumbs"><a href="/">All EVs</a> › Compare</p>
+  <h1>${esc(nameA)} vs ${esc(nameB)}</h1>
+  <p class="sub">Side-by-side specs from the live ${SITE_NAME} database.</p>
+  <table>
+    <tr><th></th><th><a href="/model_detail/${esc(A.make_model_slug)}">${esc(nameA)}</a></th><th><a href="/model_detail/${esc(B.make_model_slug)}">${esc(nameB)}</a></th></tr>
+    ${rows}
+  </table>
+  <p><a href="/">Browse all electric vehicles →</a></p>
+</div>`;
+
+  return {
+    meta: metaBlock({
+      title,
+      description,
+      canonical,
+      image: absImage(A.image_url),
+      jsonLd,
+    }),
+    content,
+  };
+}
+
+// Mirror of src/data/seoPages.ts — keep slugs and logic in sync.
+const BEST_CONFIGS = {
+  "evs-under-40k": {
+    title: "Best EVs Under $40,000",
+    blurb: "Every electric vehicle under $40k MSRP, ranked by review score.",
+    filter: (c) => c.availability_desc === "available" && c.current_price && c.current_price < 40000,
+    sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0) || (a.current_price ?? 0) - (b.current_price ?? 0),
+  },
+  "longest-range-evs": {
+    title: "Longest Range Electric Cars",
+    blurb: "The EVs that go furthest on a charge, ranked by EPA range.",
+    filter: (c) => c.availability_desc === "available" && c.epa_range,
+    sort: (a, b) => (b.epa_range ?? 0) - (a.epa_range ?? 0),
+  },
+  "fastest-evs": {
+    title: "Fastest Electric Cars (0–60 mph)",
+    blurb: "The quickest EVs on sale, ranked by 0–60 acceleration.",
+    filter: (c) => c.availability_desc === "available" && c.acceleration_0_60,
+    sort: (a, b) => (a.acceleration_0_60 ?? 99) - (b.acceleration_0_60 ?? 99),
+  },
+  "cheapest-evs": {
+    title: "Cheapest Electric Cars",
+    blurb: "The most affordable EVs on the market, ranked by MSRP.",
+    filter: (c) => c.availability_desc === "available" && c.current_price,
+    sort: (a, b) => (a.current_price ?? 0) - (b.current_price ?? 0),
+  },
+  "3-row-evs": {
+    title: "Best 3-Row Electric SUVs (6+ Seats)",
+    blurb: "Every EV with six or more seats, ranked by review score.",
+    filter: (c) => c.availability_desc === "available" && (c.number_of_full_adult_seats ?? 0) >= 6,
+    sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
+  },
+};
+
+async function buildBestPage(criteria) {
+  const cfg = BEST_CONFIGS[criteria];
+  if (!cfg) return null;
+  const res = await fetchWithTimeout(`${API_BASE}/cars/cards`);
+  if (!res.ok) return null;
+  const cars = await res.json();
+  const ranked = cars.filter(cfg.filter).sort(cfg.sort).slice(0, 12);
+
+  const canonical = `${CANONICAL_HOST}/best/${criteria}`;
+  const title = `${cfg.title} (${new Date().getFullYear()}) | ${SITE_NAME}`;
+  const description = `${cfg.blurb} Generated live from the ${SITE_NAME} database of every EV on the market.`;
+
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: cfg.title,
+      itemListElement: ranked.map((m, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: `${m.make_name} ${m.model}`,
+        url: `${CANONICAL_HOST}/model_detail/${m.make_model_slug}`,
+      })),
+    },
+  ];
+
+  const rows = ranked
+    .map(
+      (m, i) =>
+        `<tr><td>${i + 1}</td><td><a href="/model_detail/${esc(m.make_model_slug)}">${esc(m.make_name)} ${esc(m.model)}</a></td><td>${esc(fmtPrice(m.current_price) || "—")}</td><td>${m.epa_range ? esc(m.epa_range) + " mi" : "—"}</td><td>${m.acceleration_0_60 ? esc(m.acceleration_0_60) + "s" : "—"}</td><td>${m.average_rating ? esc(m.average_rating) + "/10" : "—"}</td></tr>`
+    )
+    .join("");
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  <p class="crumbs"><a href="/">All EVs</a> › Rankings</p>
+  <h1>${esc(cfg.title)}</h1>
+  <p class="sub">${esc(cfg.blurb)}</p>
+  <table><tr><th>#</th><th>Model</th><th>From</th><th>Range</th><th>0–60</th><th>Score</th></tr>${rows}</table>
+  <p><a href="/">Browse all electric vehicles →</a></p>
+</div>`;
+
+  return {
+    meta: metaBlock({
+      title,
+      description,
+      canonical,
+      image: absImage(ranked[0]?.image_url),
+      jsonLd,
+    }),
+    content,
+  };
+}
+
 // ---------- handler ----------
 
 export default async function handler(req, res) {
@@ -382,8 +587,10 @@ export default async function handler(req, res) {
   try {
     if (page === "model" && slug) built = await buildModelPage(slug);
     else if (page === "make" && slug) built = await buildMakePage(slug);
+    else if (page === "compare" && slug) built = await buildComparePage(slug);
+    else if (page === "best" && slug) built = await buildBestPage(slug);
     else if (page === "home") built = await buildHomePage();
-    if ((page === "model" || page === "make") && !built) status = 404;
+    if (["model", "make", "compare", "best"].includes(page) && !built) status = 404;
   } catch (e) {
     built = null; // fail open: serve the untouched shell
   }

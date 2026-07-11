@@ -27,6 +27,8 @@ const DashboardPage = lazy(() => import("../pages/DashboardPage"));
 const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
 const TermsPage = lazy(() => import("../pages/TermsPage"));
 const AdvertisePage = lazy(() => import("../pages/AdvertisePage"));
+const ComparePage = lazy(() => import("../pages/ComparePage"));
+const BestPage = lazy(() => import("../pages/BestPage"));
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -48,6 +50,8 @@ const router = createBrowserRouter(
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/advertise" element={<AdvertisePage />} />
       <Route path="/advertize" element={<Navigate to="/advertise" replace />} />
+      <Route path="/compare/:pair" element={<ComparePage />} />
+      <Route path="/best/:criteria" element={<BestPage />} />
       <Route path="/layout_test" element={<Layouts />} />
       <Route path="*" element={<NotFoundPage />} />
     </Route>
