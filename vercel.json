@@ -1,12 +1,9 @@
 {
-    "version": 2,
-    "routes": [
-        {
-            "handle": "filesystem"
-        },
-        {
-            "src": "/.*",
-            "dest": "/index.html"
-        }
-    ]
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://ev-backend-three.vercel.app/sitemap.xml"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
