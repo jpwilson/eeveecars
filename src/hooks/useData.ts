@@ -19,10 +19,7 @@ const useData = <T>(endpoint: string) => {
         setLoading(true);
 
       apiClient
-        .get<FetchResponse<T>>(endpoint, {signal: controller.signal,headers: {
-          'Content-Type': 'application/json',
-          [import.meta.env.VITE_API_SECRET_KEY_NAME]: import.meta.env.VITE_API_SECRET_KEY as string,  // Securely use the environment variable
-        }})
+        .get<FetchResponse<T>>(endpoint, {signal: controller.signal})
         .then((res) => {
           setData(res.data as unknown as T[]);
           setLoading(false);

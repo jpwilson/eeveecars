@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Container,
   Heading,
   Text,
@@ -21,6 +22,9 @@ import {
 } from "@chakra-ui/react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link as RouterLink } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import UserMenu from "../components/UserMenu";
+import AuthModal from "../components/AuthModal";
 import {
   FaCar,
   FaUsers,
@@ -96,11 +100,13 @@ const navLinks: { label: string; desktopLabel?: string; to: string; icon: React.
   { label: "Database", desktopLabel: "Home", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
-  { label: "Insights", to: "/insights", icon: FaNewspaper },
+  { label: "News", to: "/news", icon: FaNewspaper },
 ];
 
 function NavBar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isAuthOpen, onOpen: onAuthOpen, onClose: onAuthClose } = useDisclosure();
+  const { user, isLoading: authLoading } = useAuth();
 
   return (
     <Box
@@ -142,6 +148,22 @@ function NavBar() {
                     {link.desktopLabel || link.label}
                   </ChakraLink>
                 ))}
+                {!authLoading && (
+                  user ? (
+                    <UserMenu />
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="green"
+                      borderRadius="full"
+                      onClick={onAuthOpen}
+                      fontWeight="500"
+                    >
+                      Sign In
+                    </Button>
+                  )
+                )}
               </HStack>
             </Show>
 
@@ -187,6 +209,9 @@ function NavBar() {
           </DrawerBody>
         </DrawerContent>
       </Drawer>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={isAuthOpen} onClose={onAuthClose} />
     </Box>
   );
 }

@@ -21,11 +21,6 @@ const useMultipleCarDetails = (carIds: number[]) => {
         const promises = carIds.map((id) =>
           apiClient.get<CarDetails>(`/cars/${id}`, {
             signal: controller.signal,
-            headers: {
-              "Content-Type": "application/json",
-              [import.meta.env.VITE_API_SECRET_KEY_NAME]: import.meta.env
-                .VITE_API_SECRET_KEY as string,
-            },
           })
         );
 

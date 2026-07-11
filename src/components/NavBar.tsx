@@ -14,6 +14,7 @@ import {
   Show,
   Hide,
   Icon,
+  Button,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { HamburgerIcon } from "@chakra-ui/icons";
@@ -21,12 +22,15 @@ import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
 import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper } from "react-icons/fa";
+import { useAuth } from "../contexts/AuthContext";
+import UserMenu from "./UserMenu";
+import AuthModal from "./AuthModal";
 
 const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType }[] = [
   { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
-  { label: "Insights", to: "/insights", icon: FaNewspaper },
+  { label: "News", to: "/news", icon: FaNewspaper },
   { label: "About", to: "/about", icon: FaBolt },
 ];
 
@@ -36,6 +40,8 @@ interface Props {
 
 const NavBar = ({ onSearch }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isAuthOpen, onOpen: onAuthOpen, onClose: onAuthClose } = useDisclosure();
+  const { user, isLoading } = useAuth();
 
   const navBg = useColorModeValue("rgba(240, 244, 248, 0.85)", "rgba(26, 32, 44, 0.85)");
   const borderColor = useColorModeValue("rgba(34, 197, 94, 0.15)", "rgba(34, 197, 94, 0.3)");
@@ -83,7 +89,7 @@ const NavBar = ({ onSearch }: Props) => {
           </Box>
         )}
 
-        {/* Desktop nav links */}
+        {/* Desktop nav links + auth */}
         <Show above="md">
           <HStack spacing={{ md: 5, lg: 8 }} flexShrink={0}>
             {navLinks.map((link) => (
@@ -100,20 +106,39 @@ const NavBar = ({ onSearch }: Props) => {
                 </Text>
               </Link>
             ))}
+            {/* Auth: Sign In button or User Menu */}
+            {!isLoading && (
+              user ? (
+                <UserMenu />
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="green"
+                  borderRadius="full"
+                  onClick={onAuthOpen}
+                  fontWeight="500"
+                >
+                  Sign In
+                </Button>
+              )
+            )}
           </HStack>
         </Show>
 
         {/* Hamburger menu - mobile only, right side */}
         <Hide above="md">
-          <IconButton
-            aria-label="Open menu"
-            icon={<HamburgerIcon boxSize={5} />}
-            variant="ghost"
-            color={textColor}
-            onClick={onOpen}
-            ml={2}
-            _hover={{ bg: useColorModeValue("blackAlpha.50", "whiteAlpha.100") }}
-          />
+          <HStack spacing={2}>
+            {!isLoading && user && <UserMenu />}
+            <IconButton
+              aria-label="Open menu"
+              icon={<HamburgerIcon boxSize={5} />}
+              variant="ghost"
+              color={textColor}
+              onClick={onOpen}
+              _hover={{ bg: useColorModeValue("blackAlpha.50", "whiteAlpha.100") }}
+            />
+          </HStack>
         </Hide>
 
         {/* Mobile menu drawer - slides from right */}
@@ -140,6 +165,21 @@ const NavBar = ({ onSearch }: Props) => {
                     </HStack>
                   </Link>
                 ))}
+                {/* Sign In button in mobile drawer */}
+                {!isLoading && !user && (
+                  <Button
+                    colorScheme="green"
+                    variant="outline"
+                    mx={4}
+                    mt={4}
+                    onClick={() => {
+                      onClose();
+                      onAuthOpen();
+                    }}
+                  >
+                    Sign In
+                  </Button>
+                )}
               </VStack>
 
               {/* Dark mode toggle at the bottom of drawer */}
@@ -162,6 +202,9 @@ const NavBar = ({ onSearch }: Props) => {
           </DrawerContent>
         </Drawer>
       </Flex>
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={isAuthOpen} onClose={onAuthClose} />
     </Box>
   );
 };

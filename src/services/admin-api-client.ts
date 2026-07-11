@@ -9,8 +9,6 @@ adminApiClient.interceptors.request.use((config) => {
   if (adminKey) {
     config.headers["X-Admin-Key"] = adminKey;
   }
-  config.headers[import.meta.env.VITE_API_SECRET_KEY_NAME as string] =
-    import.meta.env.VITE_API_SECRET_KEY as string;
   return config;
 });
 
