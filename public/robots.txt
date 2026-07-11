@@ -1,0 +1,9 @@
+# EV Lineup — https://www.evlineup.org
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auth/
+Disallow: /dashboard
+Disallow: /layout_test
+
+Sitemap: https://www.evlineup.org/sitemap.xml
