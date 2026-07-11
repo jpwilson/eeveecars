@@ -30,7 +30,8 @@ export interface SelectedFeature {
   }
 
 const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[] | null, searchTerm?: string, showDiscontinuedCars?: boolean, showComingSoonCars?: boolean) => {
-    const { data, error, isLoading } = useData<Car>('/cars/model-reps');
+    // Slim card projection (~30KB) instead of full 60-field objects (~288KB)
+    const { data, error, isLoading } = useData<Car>('/cars/cards');
 
     let filteredCars = data;
 
