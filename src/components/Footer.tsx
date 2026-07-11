@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FaBolt } from "react-icons/fa";
+import NewsletterSignup from "./NewsletterSignup";
 
 const linkColumns: {
   heading: string;
@@ -57,6 +58,16 @@ export default function Footer() {
       borderColor={border}
     >
       <Container maxW="7xl" py={10}>
+        <Box
+          mb={10}
+          pb={8}
+          borderBottom="1px solid"
+          borderColor={border}
+          display="flex"
+          justifyContent="center"
+        >
+          <NewsletterSignup />
+        </Box>
         <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
           <Stack spacing={3}>
             <HStack>
