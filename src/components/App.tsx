@@ -9,6 +9,7 @@ import {
 
 import RootLayout from "../layouts/RootLayout";
 import HomePage from "../pages/HomePage";
+import NotFoundPage from "../pages/NotFoundPage";
 
 // Route-level code splitting: HomePage stays eager (the landing view);
 // everything else loads on demand, keeping the main chunk small.
@@ -29,7 +30,7 @@ const AdvertisePage = lazy(() => import("../pages/AdvertisePage"));
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<RootLayout />}>
+    <Route path="/" element={<RootLayout />} errorElement={<NotFoundPage />}>
       <Route index element={<HomePage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/car_detail/:id" element={<CarDetail />} />
@@ -46,7 +47,9 @@ const router = createBrowserRouter(
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/advertise" element={<AdvertisePage />} />
+      <Route path="/advertize" element={<Navigate to="/advertise" replace />} />
       <Route path="/layout_test" element={<Layouts />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Route>
   )
 );
