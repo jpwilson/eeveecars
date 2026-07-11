@@ -19,6 +19,9 @@ import AdminPage from "../pages/AdminPage";
 import AuthCallbackPage from "../pages/AuthCallbackPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import DashboardPage from "../pages/DashboardPage";
+import PrivacyPage from "../pages/PrivacyPage";
+import TermsPage from "../pages/TermsPage";
+import AdvertisePage from "../pages/AdvertisePage";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -36,6 +39,9 @@ const router = createBrowserRouter(
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/advertise" element={<AdvertisePage />} />
       <Route path="/layout_test" element={<Layouts />} />
     </Route>
   )
