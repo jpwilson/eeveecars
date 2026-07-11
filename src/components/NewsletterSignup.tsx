@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { FaBolt } from "react-icons/fa";
 import apiClient from "../services/api-client";
+import { track } from "../utils/analytics";
 
 /** Email capture for the EV Radar digest. Used in the footer (and reusable elsewhere). */
 export default function NewsletterSignup() {
@@ -26,6 +27,7 @@ export default function NewsletterSignup() {
     try {
       await apiClient.post("/newsletter/subscribe", { email, website: "" });
       setState("done");
+      track("newsletter_subscribe", { location: "footer" });
     } catch (err: any) {
       setState("error");
       setMessage(

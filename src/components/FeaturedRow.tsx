@@ -13,6 +13,7 @@ import { Link as RouterLink } from "react-router-dom";
 import useData from "../hooks/useData";
 import { Car } from "../hooks/useCars";
 import CarCard from "./CarCard";
+import { track } from "../utils/analytics";
 
 /**
  * "Top Picks" — the homepage's featured slot. Currently editorial (top-rated
@@ -57,13 +58,21 @@ export default function FeaturedRow() {
           fontSize="xs"
           color={subText}
           _hover={{ color: "green.500" }}
+          onClick={() => track("sponsor_spot_click", { location: "home_featured" })}
         >
           Sponsor this spot →
         </ChakraLink>
       </HStack>
       <SimpleGrid columns={3} spacing={4} display={{ base: "none", md: "grid" }}>
         {picks.map((car) => (
-          <CarCard key={car.id} car={car} />
+          <Box
+            key={car.id}
+            onClickCapture={() =>
+              track("featured_card_click", { slug: car.make_model_slug })
+            }
+          >
+            <CarCard car={car} />
+          </Box>
         ))}
       </SimpleGrid>
     </Box>

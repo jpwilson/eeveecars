@@ -20,6 +20,7 @@ import {
 } from "@chakra-ui/react";
 import { FaBolt, FaBullseye, FaChartLine, FaEnvelope } from "react-icons/fa";
 import NavBar from "../components/NavBar";
+import { track } from "../utils/analytics";
 
 const placements = [
   {
@@ -180,6 +181,7 @@ export default function AdvertisePage() {
             size="lg"
             borderRadius="full"
             leftIcon={<FaEnvelope />}
+            onClick={() => track("advertise_contact_click")}
           >
             Get in touch
           </Button>

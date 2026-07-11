@@ -44,6 +44,7 @@ import ComparisonModal from "../components/ComparisonModal";
 import NewsTicker from "../components/NewsTicker";
 import FeaturedRow from "../components/FeaturedRow";
 import { makeNameToSlug } from "../utils/makeSlug";
+import { track } from "../utils/analytics";
 
 function HomePage() {
   const [selectedMake, setSelectedMake] = useState<Make | null>(null);
@@ -281,7 +282,10 @@ function HomePage() {
 
               <Button
                 {...toolbarBtnStyle}
-                onClick={toggleCompareMode}
+                onClick={() => {
+                  track("compare_mode_toggled", { enabled: !isCompareMode });
+                  toggleCompareMode();
+                }}
                 bg={isCompareMode ? "green.500" : btnBg}
                 color={isCompareMode ? "white" : textColor}
                 borderColor={isCompareMode ? "green.500" : btnBorder}
