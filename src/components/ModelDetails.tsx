@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import {
+import AffiliateBlock from "./AffiliateBlock";
   Box,
   Collapse,
   Flex,
@@ -387,6 +388,9 @@ const ModelDetails: React.FC = () => {
               </VStack>
             </GridItem>
           </Grid>
+
+          {/* Charging accessories (affiliate — hidden until tag configured) */}
+          <AffiliateBlock />
 
           {/* Previous Generations */}
           {modelDetails.previous_generations &&
