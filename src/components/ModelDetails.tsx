@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import {
-import AffiliateBlock from "./AffiliateBlock";
   Box,
   Collapse,
   Flex,
@@ -37,6 +36,7 @@ import useModelDetails, {
 import { formatPrice } from "../utils/formatPrice";
 import { makeNameToSlug } from "../utils/makeSlug";
 import NavBar from "./NavBar";
+import AffiliateBlock from "./AffiliateBlock";
 
 type VariantSortField = "submodel" | "current_price" | "acceleration_0_60" | "top_speed" | "epa_range";
 type SortDir = "asc" | "desc";
