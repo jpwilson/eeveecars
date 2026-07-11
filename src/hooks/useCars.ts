@@ -11,8 +11,7 @@ export interface Car {
     trim_first_released: string;
     carmodel_first_released: string;
     current_price: number;
-    customer_and_critic_rating: number;
-    average_rating: number;
+    average_rating: number | null;
     epa_range: number;
     acceleration_0_60: number;
     top_speed: number;

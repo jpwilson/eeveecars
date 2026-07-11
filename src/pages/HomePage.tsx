@@ -42,6 +42,7 @@ import { useCompare } from "../contexts/CompareContext";
 import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
 import NewsTicker from "../components/NewsTicker";
+import FeaturedRow from "../components/FeaturedRow";
 import { makeNameToSlug } from "../utils/makeSlug";
 
 function HomePage() {
@@ -205,13 +206,28 @@ function HomePage() {
           </Show>
 
           <GridItem area="main" minW={0}>
+            {/* Value proposition — matches the prerendered h1 bots see */}
+            <Box mx={{ base: 4, md: 10 }} mt={5} mb={1}>
+              <Heading as="h1" size="md" letterSpacing="-0.01em">
+                Every electric vehicle, compared
+              </Heading>
+              <Text fontSize="sm" color={textColor} opacity={0.75} mt={0.5}>
+                Specs, range, and prices for every EV on the market — side by side.
+              </Text>
+            </Box>
+
+            {/* Featured slot (desktop) — Top Picks / sellable sponsor placement */}
+            <Box display={{ base: "none", md: "block" }} mt={4}>
+              <FeaturedRow />
+            </Box>
+
             {/* Toolbar — no background card */}
             <HStack
               spacing={2}
               flexWrap="wrap"
               mx={{ base: 4, md: 10 }}
               mb={5}
-              mt={5}
+              mt={4}
             >
               {/* Brands button - mobile only */}
               <Hide above="lg">

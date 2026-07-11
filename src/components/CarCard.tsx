@@ -109,6 +109,30 @@ const CarCard = ({ car }: Props) => {
           opacity={isCompareMode && selected ? 0.8 : 1}
           transition="transform 0.4s ease"
         />
+        {car.vehicle_class && car.vehicle_class !== "N/A" && (
+          <Box
+            position="absolute"
+            top={3}
+            left={3}
+            bg="blackAlpha.600"
+            color="white"
+            fontSize="10px"
+            fontWeight="600"
+            letterSpacing="0.03em"
+            textTransform="uppercase"
+            px={2}
+            py={0.5}
+            borderRadius="6px"
+            backdropFilter="blur(8px)"
+          >
+            {car.vehicle_class}
+          </Box>
+        )}
+        {!isCompareMode && car.average_rating ? (
+          <Box position="absolute" top={3} right={3}>
+            <CarScore score={car.average_rating} />
+          </Box>
+        ) : null}
         {isCompareMode && (
           <Box
             position="absolute"
@@ -137,35 +161,44 @@ const CarCard = ({ car }: Props) => {
           fontWeight="600"
           color={textColor}
           letterSpacing="-0.01em"
-          mb={3}
+          mb={1}
           noOfLines={1}
         >
           {car.make_name} {car.model}
         </Heading>
-        <VStack spacing={2} align="stretch">
-          <HStack justify="space-between">
-            <Text fontSize="xs" color={subTextColor} fontWeight="500">
-              Price est.
-            </Text>
-            <Text fontSize="sm" fontWeight="600" color={textColor}>
-              {formatPrice(car.current_price)}
-            </Text>
-          </HStack>
-          <HStack justify="space-between">
-            <Text fontSize="xs" color={subTextColor} fontWeight="500">
-              Range
-            </Text>
-            <Text fontSize="sm" fontWeight="600" color={textColor}>
-              {car.epa_range} mi
-            </Text>
-          </HStack>
-          <HStack justify="space-between">
-            <Text fontSize="xs" color={subTextColor} fontWeight="500">
-              Rating
-            </Text>
-            <CarScore score={car.average_rating} />
-          </HStack>
-        </VStack>
+        <HStack spacing={1} mb={3} align="baseline">
+          <Text fontSize="xs" color={subTextColor} fontWeight="500">
+            From
+          </Text>
+          <Text fontSize="md" fontWeight="700" color="green.500">
+            {formatPrice(car.current_price)}
+          </Text>
+        </HStack>
+        <HStack spacing={0} align="stretch">
+          {[
+            { value: car.epa_range ? `${car.epa_range}` : "—", label: "mi range" },
+            {
+              value: car.acceleration_0_60 ? `${car.acceleration_0_60}s` : "—",
+              label: "0–60 mph",
+            },
+            { value: car.top_speed ? `${car.top_speed}` : "—", label: "mph top" },
+          ].map((stat, i) => (
+            <VStack
+              key={stat.label}
+              spacing={0}
+              flex={1}
+              borderLeft={i > 0 ? "1px solid" : "none"}
+              borderColor="rgba(128,128,128,0.15)"
+            >
+              <Text fontSize="sm" fontWeight="700" color={textColor}>
+                {stat.value}
+              </Text>
+              <Text fontSize="10px" color={subTextColor} fontWeight="500">
+                {stat.label}
+              </Text>
+            </VStack>
+          ))}
+        </HStack>
       </Box>
     </Box>
   );

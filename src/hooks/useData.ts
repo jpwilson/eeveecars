@@ -1,39 +1,26 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import apiClient from "../services/api-client";
-import { CanceledError } from "axios";
 
-
-
-  interface FetchResponse<T> {
-    count: number;
-    results: T[];
-  }
-
+/**
+ * Generic list fetcher backed by React Query: concurrent components asking
+ * for the same endpoint share one request + cache (5-min staleTime is set on
+ * the QueryClient in main.tsx). Return shape kept compatible with the old
+ * hand-rolled hook: { data, error, isLoading }.
+ */
 const useData = <T>(endpoint: string) => {
-    const [data, setData] = useState<T[]>([]);
-    const [error, setError] = useState("");
-    const [isLoading, setLoading] = useState(false);
-  
-    useEffect(() => {
-        const controller = new AbortController();
-        setLoading(true);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["list", endpoint],
+    queryFn: async ({ signal }) => {
+      const res = await apiClient.get<T[]>(endpoint, { signal });
+      return res.data;
+    },
+  });
 
-      apiClient
-        .get<FetchResponse<T>>(endpoint, {signal: controller.signal})
-        .then((res) => {
-          setData(res.data as unknown as T[]);
-          setLoading(false);
-          })
-        .catch((err) => {
-            if (err instanceof CanceledError) return;
-            setError(err.message);
-            setLoading(false);
-          });
-    
-        return () => controller.abort();
-    }, []);
-
-    return {data, error, isLoading}
-}
+  return {
+    data: (data ?? []) as T[],
+    error: error ? (error as Error).message : "",
+    isLoading,
+  };
+};
 
 export default useData;

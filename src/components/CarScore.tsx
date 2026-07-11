@@ -1,10 +1,15 @@
 import { Badge } from "@chakra-ui/react";
 
 interface Props {
-  score: number;
+  score: number | null | undefined;
 }
+
+/** Review score badge (normalized /10). Renders nothing when there's no
+ * data — a red "0" reads as broken data, the fastest trust-killer on a
+ * spec site. */
 const CarScore = ({ score }: Props) => {
-  const color = score > 8 ? "green" : score > 5 ? "yellow" : "red";
+  if (!score) return null;
+  const color = score >= 8 ? "green" : score >= 6 ? "yellow" : "orange";
   return (
     <Badge
       colorScheme={color}
@@ -14,7 +19,7 @@ const CarScore = ({ score }: Props) => {
       borderRadius="6px"
       fontWeight="600"
     >
-      {score}
+      {score.toFixed(1)}
     </Badge>
   );
 };
