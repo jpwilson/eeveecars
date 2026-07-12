@@ -18,6 +18,7 @@ import { AdminAuthProvider, useAdminAuth } from "../contexts/AdminAuthContext";
 import AdminAuthGate from "../components/admin/AdminAuthGate";
 import AdminUpdateLog from "../components/admin/AdminUpdateLog";
 import AdminVehicleEditor from "../components/admin/AdminVehicleEditor";
+import DataInbox from "../components/admin/DataInbox";
 
 function AdminContent() {
   const { isAuthenticated, logout } = useAdminAuth();
@@ -67,6 +68,14 @@ function AdminContent() {
           >
             Vehicle Editor
           </Tab>
+          <Tab
+            fontSize="sm"
+            fontWeight="600"
+            color={tabColor}
+            _selected={{ color: selectedTabColor, borderColor: selectedTabColor }}
+          >
+            Data Inbox
+          </Tab>
         </TabList>
 
         <TabPanels>
@@ -76,6 +85,11 @@ function AdminContent() {
           <TabPanel px={0} pt={6}>
             <AdminAuthGate>
               <AdminVehicleEditor />
+            </AdminAuthGate>
+          </TabPanel>
+          <TabPanel px={0} pt={6}>
+            <AdminAuthGate>
+              <DataInbox />
             </AdminAuthGate>
           </TabPanel>
         </TabPanels>
