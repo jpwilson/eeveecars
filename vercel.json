@@ -25,16 +25,19 @@
       "destination": "/api/prerender?page=best&slug=:criteria"
     },
     {
-      "source": "/compare-range",
-      "destination": "https://compare-range.46-225-235-124.sslip.io/"
-    },
-    {
       "source": "/compare-range/:path*",
-      "destination": "https://compare-range.46-225-235-124.sslip.io/:path*"
+      "destination": "https://compare-range.vercel.app/:path*"
     },
     {
       "source": "/(.*)",
       "destination": "/app.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/compare-range",
+      "destination": "/compare-range/",
+      "permanent": false
     }
   ]
 }
