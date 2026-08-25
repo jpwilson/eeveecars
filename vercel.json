@@ -4,7 +4,10 @@
       "source": "/sitemap.xml",
       "destination": "https://ev-backend-three.vercel.app/sitemap.xml"
     },
-    { "source": "/", "destination": "/api/prerender?page=home" },
+    {
+      "source": "/",
+      "destination": "/api/prerender?page=home"
+    },
     {
       "source": "/model_detail/:slug",
       "destination": "/api/prerender?page=model&slug=:slug"
@@ -21,6 +24,17 @@
       "source": "/best/:criteria",
       "destination": "/api/prerender?page=best&slug=:criteria"
     },
-    { "source": "/(.*)", "destination": "/app.html" }
+    {
+      "source": "/compare-range",
+      "destination": "https://compare-range.46-225-235-124.sslip.io/"
+    },
+    {
+      "source": "/compare-range/:path*",
+      "destination": "https://compare-range.46-225-235-124.sslip.io/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/app.html"
+    }
   ]
 }
