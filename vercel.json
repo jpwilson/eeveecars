@@ -25,8 +25,8 @@
       "destination": "/api/prerender?page=best&slug=:criteria"
     },
     {
-      "source": "/compare-range/:path*",
-      "destination": "https://compare-range.vercel.app/:path*"
+      "source": "/compare-range/:path(.*)",
+      "destination": "https://compare-range.vercel.app/:path"
     },
     {
       "source": "/(.*)",
