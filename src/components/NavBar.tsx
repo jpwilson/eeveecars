@@ -21,15 +21,17 @@ import { HamburgerIcon } from "@chakra-ui/icons";
 import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
-import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper } from "react-icons/fa";
+import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper, FaMapMarkedAlt } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import UserMenu from "./UserMenu";
 import AuthModal from "./AuthModal";
 
-const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType }[] = [
+const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType; external?: boolean }[] = [
   { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
+  // Separate app mounted under the same domain — needs a full page load, not a router Link.
+  { label: "Compare Range", to: "/compare-range/", icon: FaMapMarkedAlt, external: true },
   { label: "News", to: "/news", icon: FaNewspaper },
   { label: "About", to: "/about", icon: FaBolt },
 ];
@@ -92,8 +94,8 @@ const NavBar = ({ onSearch }: Props) => {
         {/* Desktop nav links + auth */}
         <Show above="md">
           <HStack spacing={{ md: 5, lg: 8 }} flexShrink={0}>
-            {navLinks.map((link) => (
-              <Link key={link.label} to={link.to}>
+            {navLinks.map((link) => {
+              const text = (
                 <Text
                   fontWeight="500"
                   fontSize="sm"
@@ -104,8 +106,11 @@ const NavBar = ({ onSearch }: Props) => {
                 >
                   {link.label}
                 </Text>
-              </Link>
-            ))}
+              );
+              return link.external
+                ? <a key={link.label} href={link.to}>{text}</a>
+                : <Link key={link.label} to={link.to}>{text}</Link>;
+            })}
             {/* Auth: Sign In button or User Menu */}
             {!isLoading && (
               user ? (
@@ -148,8 +153,8 @@ const NavBar = ({ onSearch }: Props) => {
             <DrawerCloseButton color={textColor} />
             <DrawerBody pt={16}>
               <VStack spacing={2} align="stretch">
-                {navLinks.map((link) => (
-                  <Link key={link.label} to={link.to} onClick={onClose}>
+                {navLinks.map((link) => {
+                  const row = (
                     <HStack
                       px={4}
                       py={3}
@@ -163,8 +168,11 @@ const NavBar = ({ onSearch }: Props) => {
                         {link.mobileLabel || link.label}
                       </Text>
                     </HStack>
-                  </Link>
-                ))}
+                  );
+                  return link.external
+                    ? <a key={link.label} href={link.to}>{row}</a>
+                    : <Link key={link.label} to={link.to} onClick={onClose}>{row}</Link>;
+                })}
                 {/* Sign In button in mobile drawer */}
                 {!isLoading && !user && (
                   <Button
