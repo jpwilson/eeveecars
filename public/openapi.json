@@ -1,0 +1,546 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "EV Lineup API",
+    "version": "1.0.0",
+    "description": "Public read-only API for electric vehicle specs, comparisons, and rankings. All data is from the live EV Lineup database and updated regularly.",
+    "contact": {
+      "name": "EV Lineup",
+      "url": "https://www.evlineup.org"
+    },
+    "license": {
+      "name": "Public API",
+      "url": "https://www.evlineup.org"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://www.evlineup.org/api",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/ev/all": {
+      "get": {
+        "summary": "List all electric vehicles",
+        "description": "Returns all EV models with basic specs from the live database.",
+        "operationId": "getAllEVs",
+        "tags": ["Electric Vehicles"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer",
+                      "description": "Total number of EVs"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EVBasic"
+                      }
+                    },
+                    "updated": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Last update date"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ev/search": {
+      "get": {
+        "summary": "Search electric vehicles",
+        "description": "Search EVs by name, make, or filter by specs like range, price, and seats.",
+        "operationId": "searchEVs",
+        "tags": ["Electric Vehicles"],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search query (make, model, class)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "tesla"
+            }
+          },
+          {
+            "name": "minRange",
+            "in": "query",
+            "description": "Minimum EPA range in miles",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 300
+            }
+          },
+          {
+            "name": "maxPrice",
+            "in": "query",
+            "description": "Maximum price in USD",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 50000
+            }
+          },
+          {
+            "name": "minSeats",
+            "in": "query",
+            "description": "Minimum number of seats",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "example": 6
+            }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "description": "Filter by availability status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["available", "coming_soon", "discontinued"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "object",
+                      "description": "Echo of search parameters"
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Number of matching EVs"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EVBasic"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing search parameters"
+          }
+        }
+      }
+    },
+    "/ev/compare": {
+      "get": {
+        "summary": "Compare two electric vehicles",
+        "description": "Side-by-side comparison of two EV models with calculated differences.",
+        "operationId": "compareEVs",
+        "tags": ["Electric Vehicles"],
+        "parameters": [
+          {
+            "name": "models",
+            "in": "query",
+            "description": "Two model slugs separated by comma",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "tesla-model-3,bmw-i4"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful comparison",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EVComparison"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid model slugs"
+          },
+          "404": {
+            "description": "Model not found"
+          }
+        }
+      }
+    },
+    "/ev/specs": {
+      "get": {
+        "summary": "Get full specifications for one EV",
+        "description": "Complete technical specifications, pricing, and variants for a single EV model.",
+        "operationId": "getEVSpecs",
+        "tags": ["Electric Vehicles"],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "Model slug (e.g., tesla-model-3)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "tesla-model-3"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EVComplete"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Model not found"
+          }
+        }
+      }
+    },
+    "/ev/best": {
+      "get": {
+        "summary": "Get best EVs by criteria",
+        "description": "Ranked lists: cheapest, longest-range, fastest, evs-under-40k, 3-row-evs, electric-trucks.",
+        "operationId": "getBestEVs",
+        "tags": ["Electric Vehicles"],
+        "parameters": [
+          {
+            "name": "criteria",
+            "in": "query",
+            "description": "Ranking criteria",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "cheapest-evs",
+                "longest-range-evs",
+                "fastest-evs",
+                "evs-under-40k",
+                "3-row-evs",
+                "electric-trucks"
+              ],
+              "example": "cheapest-evs"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "criteria": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/EVRanked"
+                      }
+                    },
+                    "pageUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid criteria"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EVBasic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "make": {
+            "type": "string",
+            "example": "Tesla"
+          },
+          "model": {
+            "type": "string",
+            "example": "Model 3"
+          },
+          "submodel": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "example": "tesla-model-3"
+          },
+          "year": {
+            "type": "integer",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "MSRP in USD",
+            "nullable": true
+          },
+          "range": {
+            "type": "number",
+            "description": "EPA range in miles",
+            "nullable": true
+          },
+          "acceleration": {
+            "type": "number",
+            "description": "0-60 mph in seconds",
+            "nullable": true
+          },
+          "topSpeed": {
+            "type": "number",
+            "description": "Top speed in mph",
+            "nullable": true
+          },
+          "power": {
+            "type": "number",
+            "description": "Power in horsepower",
+            "nullable": true
+          },
+          "battery": {
+            "type": "number",
+            "description": "Battery capacity in kWh",
+            "nullable": true
+          },
+          "chargingSpeed": {
+            "type": "number",
+            "description": "Max DC charging in kW",
+            "nullable": true
+          },
+          "seats": {
+            "type": "integer",
+            "nullable": true
+          },
+          "driveType": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["RWD", "FWD", "AWD"]
+          },
+          "vehicleClass": {
+            "type": "string",
+            "nullable": true
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "coming_soon", "discontinued"]
+          },
+          "image": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "EVComplete": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "make": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string",
+                "nullable": true
+              },
+              "founded": {
+                "type": "string",
+                "nullable": true
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "model": {
+            "type": "object"
+          },
+          "pricing": {
+            "type": "object"
+          },
+          "performance": {
+            "type": "object"
+          },
+          "battery": {
+            "type": "object"
+          },
+          "drivetrain": {
+            "type": "object"
+          },
+          "dimensions": {
+            "type": "object"
+          },
+          "interior": {
+            "type": "object"
+          },
+          "availability": {
+            "type": "object"
+          },
+          "media": {
+            "type": "object"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "EVRanked": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EVBasic"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "rank": {
+                "type": "integer"
+              },
+              "rating": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "EVComparison": {
+        "type": "object",
+        "properties": {
+          "model1": {
+            "$ref": "#/components/schemas/EVBasic"
+          },
+          "model2": {
+            "$ref": "#/components/schemas/EVBasic"
+          },
+          "differences": {
+            "type": "object",
+            "properties": {
+              "price": {
+                "type": "object",
+                "properties": {
+                  "difference": {
+                    "type": "number"
+                  },
+                  "cheaper": {
+                    "type": "string",
+                    "enum": ["model1", "model2"]
+                  }
+                }
+              },
+              "range": {
+                "type": "object",
+                "properties": {
+                  "difference": {
+                    "type": "number"
+                  },
+                  "longer": {
+                    "type": "string",
+                    "enum": ["model1", "model2"]
+                  }
+                }
+              },
+              "acceleration": {
+                "type": "object",
+                "properties": {
+                  "difference": {
+                    "type": "number"
+                  },
+                  "faster": {
+                    "type": "string",
+                    "enum": ["model1", "model2"]
+                  }
+                }
+              },
+              "power": {
+                "type": "object",
+                "properties": {
+                  "difference": {
+                    "type": "number"
+                  },
+                  "more": {
+                    "type": "string",
+                    "enum": ["model1", "model2"]
+                  }
+                }
+              }
+            }
+          },
+          "comparisonUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Electric Vehicles",
+      "description": "Search, compare, and retrieve electric vehicle specifications"
+    }
+  ]
+}

@@ -70,4 +70,26 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
     limit: 12,
   },
+  "electric-trucks": {
+    title: "Electric Pickup Trucks",
+    blurb:
+      "Every electric pickup truck on the market and coming soon — from work trucks to luxury pickups.",
+    filter: (c) => c.vehicle_class?.toLowerCase().includes("pickup") && c.availability_desc !== "discontinued",
+    sort: (a, b) => {
+      const availOrder: Record<string, number> = {available: 0, coming_soon: 1};
+      const aOrder = a.availability_desc ? (availOrder[a.availability_desc] ?? 2) : 2;
+      const bOrder = b.availability_desc ? (availOrder[b.availability_desc] ?? 2) : 2;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.average_rating ?? 0) - (a.average_rating ?? 0);
+    },
+    limit: 12,
+  },
+  "300-mile-range-evs": {
+    title: "EVs with 300+ Miles of Range",
+    blurb:
+      "Every electric vehicle that goes 300 miles or more on a charge. Long-range road-trip EVs ranked by EPA range.",
+    filter: (c) => isAvailable(c) && (c.epa_range ?? 0) >= 300,
+    sort: (a, b) => (b.epa_range ?? 0) - (a.epa_range ?? 0),
+    limit: 15,
+  },
 };

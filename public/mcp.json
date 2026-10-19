@@ -1,0 +1,119 @@
+{
+  "name": "evlineup",
+  "version": "1.0.0",
+  "description": "Electric vehicle database - search, compare, and retrieve specs for 87+ EVs",
+  "author": "EV Lineup",
+  "homepage": "https://www.evlineup.org",
+  "license": "Public",
+  "servers": {
+    "evlineup": {
+      "url": "https://www.evlineup.org/api",
+      "type": "http",
+      "transport": {
+        "type": "http"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "search_evs",
+      "description": "Search electric vehicles by name, make, or filter by specs (range, price, seats, availability)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": {
+            "type": "string",
+            "description": "Search query for make, model, or vehicle class"
+          },
+          "minRange": {
+            "type": "integer",
+            "description": "Minimum EPA range in miles"
+          },
+          "maxPrice": {
+            "type": "integer",
+            "description": "Maximum price in USD"
+          },
+          "minSeats": {
+            "type": "integer",
+            "description": "Minimum number of seats"
+          },
+          "availability": {
+            "type": "string",
+            "enum": ["available", "coming_soon", "discontinued"],
+            "description": "Filter by availability status"
+          }
+        }
+      },
+      "endpoint": "/ev/search",
+      "method": "GET"
+    },
+    {
+      "name": "get_all_evs",
+      "description": "List all electric vehicles with basic specs",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "endpoint": "/ev/all",
+      "method": "GET"
+    },
+    {
+      "name": "compare_evs",
+      "description": "Compare two electric vehicles side-by-side with calculated differences",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "models": {
+            "type": "string",
+            "description": "Two model slugs separated by comma (e.g., tesla-model-3,bmw-i4)"
+          }
+        },
+        "required": ["models"]
+      },
+      "endpoint": "/ev/compare",
+      "method": "GET"
+    },
+    {
+      "name": "get_ev_specs",
+      "description": "Get complete specifications for a single EV model",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Model slug (e.g., tesla-model-3)"
+          }
+        },
+        "required": ["slug"]
+      },
+      "endpoint": "/ev/specs",
+      "method": "GET"
+    },
+    {
+      "name": "get_best_evs",
+      "description": "Get ranked lists of EVs by criteria: cheapest-evs, longest-range-evs, fastest-evs, evs-under-40k, 3-row-evs, electric-trucks",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "criteria": {
+            "type": "string",
+            "enum": [
+              "cheapest-evs",
+              "longest-range-evs",
+              "fastest-evs",
+              "evs-under-40k",
+              "3-row-evs",
+              "electric-trucks"
+            ],
+            "description": "Ranking criteria"
+          }
+        },
+        "required": ["criteria"]
+      },
+      "endpoint": "/ev/best",
+      "method": "GET"
+    }
+  ],
+  "documentation": "https://www.evlineup.org/llms.txt",
+  "openapi": "https://www.evlineup.org/openapi.json"
+}

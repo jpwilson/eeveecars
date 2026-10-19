@@ -336,6 +336,60 @@ async function buildHomePage() {
         url: `${CANONICAL_HOST}/model_detail/${m.make_model_slug}`,
       })),
     },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is EV Lineup?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current."
+          }
+        },
+        {
+          "@type": "Question",
+          name: "How many electric cars are there?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: `We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.`
+          }
+        },
+        {
+          "@type": "Question",
+          name: "What's the cheapest electric car?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The most affordable EVs start under $30,000 MSRP before incentives. See the full list at https://www.evlineup.org/best/cheapest-evs"
+          }
+        },
+        {
+          "@type": "Question",
+          name: "Which EV has the longest range?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. See all long-range electric vehicles at https://www.evlineup.org/best/longest-range-evs"
+          }
+        },
+        {
+          "@type": "Question",
+          name: "What's the fastest electric car?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The fastest EVs accelerate 0-60 mph in under 2 seconds. See the fastest electric cars ranked at https://www.evlineup.org/best/fastest-evs"
+          }
+        },
+        {
+          "@type": "Question",
+          name: "Are there 3-row electric SUVs?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes, several electric SUVs offer 6+ seats with three rows for families. See all 3-row electric SUVs at https://www.evlineup.org/best/3-row-evs"
+          }
+        }
+      ]
+    },
   ];
 
   const rows = top
@@ -348,14 +402,23 @@ async function buildHomePage() {
   const content = `${CONTENT_STYLE}<div class="prerender">
   <h1>Every Electric Vehicle, Compared</h1>
   <p class="sub">Specs, range, price, and charging for ${cars.length}+ EV models — side by side.</p>
+  <p><strong>EV Lineup is a comprehensive database of every electric vehicle on the market.</strong> Compare specs, EPA range, pricing, charging speeds, and performance for ${cars.length}+ models from 37 manufacturers. All data is kept current and verified.</p>
+  <h2>Popular Electric Vehicles</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
+  <h2>Frequently Asked Questions</h2>
+  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current.</p></details>
+  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.</p></details>
+  <details><summary><strong>What's the cheapest electric car?</strong></summary><p>The most affordable EVs start under $30,000 MSRP before incentives. <a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
+  <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
+  <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
+  <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p>Yes, several electric SUVs offer 6+ seats with three rows for families. <a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
 </div>`;
 
   return {
     meta: metaBlock({
       title: `${SITE_NAME} — Every Electric Vehicle, Compared`,
       description:
-        "Browse every electric vehicle on the market: specs, range, price, and charging for 200+ EVs from 37 manufacturers. Compare models side by side and find your next EV.",
+        "Browse every electric vehicle on the market: specs, range, price, and charging for 87+ EVs from 37 manufacturers. Compare models side by side and find your next EV.",
       canonical,
       image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
       jsonLd,
@@ -513,6 +576,24 @@ const BEST_CONFIGS = {
     blurb: "Every EV with six or more seats, ranked by review score.",
     filter: (c) => c.availability_desc === "available" && (c.number_of_full_adult_seats ?? 0) >= 6,
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
+  },
+  "electric-trucks": {
+    title: "Electric Pickup Trucks",
+    blurb: "Every electric pickup truck on the market and coming soon — from work trucks to luxury pickups.",
+    filter: (c) => c.vehicle_class?.toLowerCase().includes("pickup") && c.availability_desc !== "discontinued",
+    sort: (a, b) => {
+      const availOrder = {available: 0, coming_soon: 1, null: 2};
+      const aOrder = availOrder[a.availability_desc] ?? 2;
+      const bOrder = availOrder[b.availability_desc] ?? 2;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.average_rating ?? 0) - (a.average_rating ?? 0);
+    },
+  },
+  "300-mile-range-evs": {
+    title: "EVs with 300+ Miles of Range",
+    blurb: "Every electric vehicle that goes 300 miles or more on a charge, ranked by EPA range.",
+    filter: (c) => c.availability_desc === "available" && (c.epa_range ?? 0) >= 300,
+    sort: (a, b) => (b.epa_range ?? 0) - (a.epa_range ?? 0),
   },
 };
 
