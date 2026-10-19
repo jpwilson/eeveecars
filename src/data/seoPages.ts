@@ -70,4 +70,20 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
     limit: 12,
   },
+  "electric-trucks": {
+    title: "Best Electric Pickup Trucks",
+    blurb:
+      "Every electric truck on the market — from work trucks to luxury pickups, ranked by capability and reviews.",
+    filter: (c) => isAvailable(c) && (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")),
+    sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
+    limit: 12,
+  },
+  "300-mile-range-evs": {
+    title: "EVs with 300+ Miles of Range",
+    blurb:
+      "Every electric vehicle that goes 300 miles or more on a charge. Long-range road-trip EVs ranked by EPA range.",
+    filter: (c) => isAvailable(c) && (c.epa_range ?? 0) >= 300,
+    sort: (a, b) => (b.epa_range ?? 0) - (a.epa_range ?? 0),
+    limit: 15,
+  },
 };
