@@ -71,11 +71,17 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
     limit: 12,
   },
   "electric-trucks": {
-    title: "Best Electric Pickup Trucks",
+    title: "Electric Pickup Trucks",
     blurb:
-      "Every electric truck on the market — from work trucks to luxury pickups, ranked by capability and reviews.",
-    filter: (c) => isAvailable(c) && (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")),
-    sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
+      "Every electric truck on the market and coming soon — from work trucks to luxury pickups.",
+    filter: (c) => (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")) && c.availability_desc !== "discontinued",
+    sort: (a, b) => {
+      const availOrder = {available: 0, coming_soon: 1, null: 2};
+      const aOrder = availOrder[a.availability_desc] ?? 2;
+      const bOrder = availOrder[b.availability_desc] ?? 2;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.average_rating ?? 0) - (a.average_rating ?? 0);
+    },
     limit: 12,
   },
   "300-mile-range-evs": {

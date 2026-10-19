@@ -578,10 +578,16 @@ const BEST_CONFIGS = {
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
   },
   "electric-trucks": {
-    title: "Best Electric Pickup Trucks",
-    blurb: "Every electric truck on the market — from work trucks to luxury pickups, ranked by capability.",
-    filter: (c) => c.availability_desc === "available" && (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")),
-    sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
+    title: "Electric Pickup Trucks",
+    blurb: "Every electric truck on the market and coming soon — from work trucks to luxury pickups.",
+    filter: (c) => (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")) && c.availability_desc !== "discontinued",
+    sort: (a, b) => {
+      const availOrder = {available: 0, coming_soon: 1, null: 2};
+      const aOrder = availOrder[a.availability_desc] ?? 2;
+      const bOrder = availOrder[b.availability_desc] ?? 2;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return (b.average_rating ?? 0) - (a.average_rating ?? 0);
+    },
   },
   "300-mile-range-evs": {
     title: "EVs with 300+ Miles of Range",
