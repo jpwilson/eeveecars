@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import {
   Box,
@@ -37,6 +37,7 @@ import { formatPrice } from "../utils/formatPrice";
 import { makeNameToSlug } from "../utils/makeSlug";
 import NavBar from "./NavBar";
 import AffiliateBlock from "./AffiliateBlock";
+import { track } from "../utils/analytics";
 
 type VariantSortField = "submodel" | "current_price" | "acceleration_0_60" | "top_speed" | "epa_range";
 type SortDir = "asc" | "desc";
@@ -96,6 +97,17 @@ const ModelDetails: React.FC = () => {
     "rgba(22, 163, 74, 0.08)"
   );
   const linkColor = useColorModeValue("#16a34a", "#4ec77f");
+
+  useEffect(() => {
+    if (modelDetails && !isLoading) {
+      track("model_viewed", {
+        make: modelDetails.representative_model.make_name,
+        model: modelDetails.representative_model.model,
+        slug: safeMakeModelSlug,
+        variant_count: modelDetails.submodels.length,
+      });
+    }
+  }, [modelDetails, isLoading, safeMakeModelSlug]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -304,6 +316,12 @@ const ModelDetails: React.FC = () => {
                     color={linkColor}
                     fontWeight="500"
                     fontSize="sm"
+                    onClick={() => track("external_link_clicked", {
+                      link_type: "model_page",
+                      make: make_name,
+                      model: model,
+                      destination: model_webpage,
+                    })}
                   >
                     Official {model} Site
                   </Link>
