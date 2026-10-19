@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link as RouterLink } from "react-router-dom";
 import useCarDetail from "../hooks/useCarDetails";
 import useMakes from "../hooks/useMakes";
@@ -41,6 +41,7 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import NavBar from "./NavBar";
+import { track } from "../utils/analytics";
 
 const CarDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -64,6 +65,18 @@ const CarDetails = () => {
   }
 
   const { car, error, isLoading } = useCarDetail(numericId);
+
+  useEffect(() => {
+    if (car && !isLoading) {
+      track("model_viewed", {
+        make: car.make_name,
+        model: car.model,
+        submodel: car.submodel,
+        car_id: car.id,
+        view_type: "variant",
+      });
+    }
+  }, [car, isLoading]);
 
   // Glassmorphism color tokens
   const cardBg = useColorModeValue(
@@ -519,6 +532,12 @@ const CarDetails = () => {
                       href={review.url}
                       isExternal
                       _hover={{ textDecoration: "none" }}
+                      onClick={() => track("external_link_clicked", {
+                        link_type: "review",
+                        make: car.make_name,
+                        model: car.model,
+                        destination: review.url,
+                      })}
                     >
                       <HStack
                         p={4}

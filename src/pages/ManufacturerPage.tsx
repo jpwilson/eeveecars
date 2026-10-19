@@ -23,6 +23,7 @@ import CarCardContainer from "../components/CarCardContainer";
 import useMakes from "../hooks/useMakes";
 import useCars from "../hooks/useCars";
 import { makeNameMatchesSlug } from "../utils/makeSlug";
+import { track } from "../utils/analytics";
 
 const statusColors: Record<string, string> = {
   active: "green",
@@ -155,7 +156,15 @@ function ManufacturerPage() {
             >
               {/* Logo — links to company website if available */}
               {make.website_url ? (
-                <Link href={make.website_url} isExternal>
+                <Link 
+                  href={make.website_url} 
+                  isExternal
+                  onClick={() => track("external_link_clicked", {
+                    link_type: "manufacturer_website",
+                    manufacturer: make.name,
+                    destination: make.website_url,
+                  })}
+                >
                   <Image
                     src={make.lrg_logo_img_url}
                     alt={make.name}
@@ -236,7 +245,15 @@ function ManufacturerPage() {
                     </HStack>
                   )}
                   {make.website_url && (
-                    <Link href={make.website_url} isExternal>
+                    <Link 
+                      href={make.website_url} 
+                      isExternal
+                      onClick={() => track("external_link_clicked", {
+                        link_type: "manufacturer_website",
+                        manufacturer: make.name,
+                        destination: make.website_url,
+                      })}
+                    >
                       <HStack spacing={1} fontSize="sm" color="#16a34a" _hover={{ textDecoration: "underline" }}>
                         <FaGlobe />
                         <Text>Website</Text>

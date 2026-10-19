@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Center, Spinner } from "@chakra-ui/react";
 import GoogleAnalytics from "../components/GoogleAnalytics";
+import PostHogAnalytics from "../components/PostHogAnalytics";
 import { Analytics } from "@vercel/analytics/react";
 import Footer from "../components/Footer";
 
@@ -16,6 +17,7 @@ export default function RootLayout() {
     <div>
       <Analytics />
       <GoogleAnalytics />
+      <PostHogAnalytics />
       <Suspense
         fallback={
           <Center minH="60vh">

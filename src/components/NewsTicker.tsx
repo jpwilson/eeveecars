@@ -7,6 +7,7 @@ import {
   keyframes,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { track } from "../utils/analytics";
 
 interface NewsItem {
   title: string;
@@ -141,6 +142,11 @@ const NewsTicker = () => {
               isExternal
               _hover={{ textDecoration: "underline", color: "#16a34a" }}
               transition="color 0.2s"
+              onClick={() => track("external_link_clicked", {
+                link_type: "news",
+                title: item.title,
+                destination: item.link,
+              })}
             >
               <Text fontSize="xs" color={linkColor} fontWeight="400">
                 {item.title}

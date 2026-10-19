@@ -106,11 +106,22 @@ function HomePage() {
         (f) => f.featureName === featureName && f.bucketName === bucketName
       );
       if (exists) {
+        track("filter_used", {
+          action: "remove",
+          feature: featureName,
+          bucket: bucketName,
+        });
         return prev.filter(
           (f) => !(f.featureName === featureName && f.bucketName === bucketName)
         );
       }
       if (prev.length >= 6) return prev;
+      track("filter_used", {
+        action: "add",
+        feature: featureName,
+        bucket: bucketName,
+        matching_cars: carIds.length,
+      });
       return [...prev, { featureName, bucketName, carIds }];
     });
   };
