@@ -55,8 +55,8 @@ const CRITERIA = {
   },
   'electric-trucks': {
     title: 'Electric Pickup Trucks',
-    description: 'All electric trucks ranked by capability',
-    filter: (c) => c.availability_desc === 'available' && (c.vehicle_class?.toLowerCase().includes('truck') || c.vehicle_class?.toLowerCase().includes('pickup')),
+    description: 'All electric pickup trucks ranked by capability',
+    filter: (c) => c.availability_desc === 'available' && c.vehicle_class?.toLowerCase().includes('pickup'),
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
     limit: 12
   }

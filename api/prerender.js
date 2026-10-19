@@ -579,8 +579,8 @@ const BEST_CONFIGS = {
   },
   "electric-trucks": {
     title: "Electric Pickup Trucks",
-    blurb: "Every electric truck on the market and coming soon — from work trucks to luxury pickups.",
-    filter: (c) => (c.vehicle_class?.toLowerCase().includes("truck") || c.vehicle_class?.toLowerCase().includes("pickup")) && c.availability_desc !== "discontinued",
+    blurb: "Every electric pickup truck on the market and coming soon — from work trucks to luxury pickups.",
+    filter: (c) => c.vehicle_class?.toLowerCase().includes("pickup") && c.availability_desc !== "discontinued",
     sort: (a, b) => {
       const availOrder = {available: 0, coming_soon: 1, null: 2};
       const aOrder = availOrder[a.availability_desc] ?? 2;
