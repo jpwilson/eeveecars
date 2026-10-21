@@ -57,6 +57,10 @@
       "destination": "/vs/fueleconomy-gov.html"
     },
     {
+      "source": "/:file(.*\\.(?:txt|xml|json|ico|png|jpg|jpeg|webp|svg|js|css|map|woff|woff2))",
+      "destination": "/api/notfound"
+    },
+    {
       "source": "/(.*)",
       "destination": "/app.html"
     }
