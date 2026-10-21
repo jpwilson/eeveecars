@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/sitemap.xml",
-      "destination": "https://ev-backend-three.vercel.app/sitemap.xml"
+      "destination": "/api/sitemap"
     },
     {
       "source": "/",
@@ -29,6 +29,34 @@
       "destination": "https://compare-range.vercel.app/:path"
     },
     {
+      "source": "/what-is-ev-lineup",
+      "destination": "/what-is-ev-lineup.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/faq.html"
+    },
+    {
+      "source": "/alternatives",
+      "destination": "/alternatives.html"
+    },
+    {
+      "source": "/vs/edmunds",
+      "destination": "/vs/edmunds.html"
+    },
+    {
+      "source": "/vs/kelley-blue-book",
+      "destination": "/vs/kelley-blue-book.html"
+    },
+    {
+      "source": "/vs/car-and-driver",
+      "destination": "/vs/car-and-driver.html"
+    },
+    {
+      "source": "/vs/fueleconomy-gov",
+      "destination": "/vs/fueleconomy-gov.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/app.html"
     }
@@ -37,6 +65,31 @@
     {
       "source": "/compare-range",
       "destination": "/compare-range/",
+      "permanent": false
+    },
+    {
+      "source": "/what-is-ev-lineup/",
+      "destination": "/what-is-ev-lineup",
+      "permanent": true
+    },
+    {
+      "source": "/faq/",
+      "destination": "/faq",
+      "permanent": true
+    },
+    {
+      "source": "/alternatives/",
+      "destination": "/alternatives",
+      "permanent": true
+    },
+    {
+      "source": "/vs/:slug/",
+      "destination": "/vs/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/vs",
+      "destination": "/alternatives",
       "permanent": false
     }
   ]
