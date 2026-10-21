@@ -52,6 +52,10 @@ export default async function handler(req, res) {
 
     let cars = await response.json();
 
+    // Filter out defunct brands that are no longer operating
+    const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+    cars = cars.filter(car => !DEFUNCT_BRANDS.includes(car.make_name));
+
     // Filter by text query
     if (q) {
       const query = q.toLowerCase();

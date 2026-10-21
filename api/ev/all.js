@@ -43,8 +43,12 @@ export default async function handler(req, res) {
 
     const cars = await response.json();
     
+    // Filter out defunct brands that are no longer operating
+    const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+    const activeCars = cars.filter(car => !DEFUNCT_BRANDS.includes(car.make_name));
+    
     // Return simplified data structure
-    const evData = cars.map(car => ({
+    const evData = activeCars.map(car => ({
       id: car.id,
       make: car.make_name,
       model: car.model,

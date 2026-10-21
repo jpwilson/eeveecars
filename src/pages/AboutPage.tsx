@@ -99,8 +99,6 @@ const statHover = {
 const navLinks: { label: string; desktopLabel?: string; to: string; icon: React.ElementType }[] = [
   { label: "Database", desktopLabel: "Home", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
-  { label: "Marketplace", to: "/marketplace", icon: FaStore },
-  { label: "News", to: "/news", icon: FaNewspaper },
 ];
 
 function NavBar() {
@@ -472,20 +470,6 @@ function AboutPage() {
               description="Meet the visionaries driving the EV revolution. CEOs, founders, engineers, and journalists shaping the future."
               linkText="Meet the Leaders"
               linkTo="/people"
-            />
-            <FeatureCard
-              icon={FaStore}
-              title="Marketplace"
-              description="Buy, sell, and discover electric vehicles. Connect with verified dealers and private sellers near you."
-              linkText="View Listings"
-              linkTo="/marketplace"
-            />
-            <FeatureCard
-              icon={FaNewspaper}
-              title="Insights"
-              description="Stay informed with EV news, in-depth comparisons, buying guides, and industry analysis from our team."
-              linkText="Read Articles"
-              linkTo="/insights"
             />
           </SimpleGrid>
         </MotionBox>

@@ -106,7 +106,12 @@ export default async function handler(req, res) {
     }
 
     const cars = await response.json();
-    const ranked = cars
+    
+    // Filter out defunct brands that are no longer operating
+    const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+    const activeCars = cars.filter(car => !DEFUNCT_BRANDS.includes(car.make_name));
+    
+    const ranked = activeCars
       .filter(config.filter)
       .sort(config.sort)
       .slice(0, config.limit);
