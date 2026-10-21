@@ -162,7 +162,7 @@ export function homeSections(cars) {
 
   <h2>How to use it</h2>
   <ol class="plain">
-    <li><strong>Start with a list or a brand.</strong> Browse the table above, open a best-of list, or jump to a manufacturer's full lineup.</li>
+    <li><strong>Start with a list or a brand.</strong> Browse the table of popular models below, open a best-of list, or jump to a manufacturer's full lineup.</li>
     <li><strong>Open the model pages</strong> for the cars that fit and check the trim table — the cheapest trim and the long-range trim are often very different cars.</li>
     <li><strong>Compare them head to head</strong> at <code>/compare/model-a-vs-model-b</code>, then confirm the final price and availability with the manufacturer.</li>
   </ol>
