@@ -295,7 +295,7 @@ function whatIsPage() {
           <tr><td>Model page</td><td>Full spec sheet, description, trim-by-trim table</td><td><a href="/model_detail/tesla-model-3">Tesla Model 3</a></td></tr>
           <tr><td>Manufacturer page</td><td>A brand's entire EV lineup, with company background</td><td><a href="/manufacturer/hyundai">Hyundai EVs</a></td></tr>
           <tr><td>Comparison</td><td>Two models side by side on identical specs</td><td><a href="/compare/tesla-model-3-vs-bmw-i4">Tesla Model 3 vs BMW i4</a></td></tr>
-          <tr><td>Best-of list</td><td>A ranking generated from the live database</td><td><a href="/best/longest-range-evs">Longest range electric cars</a></td></tr>
+          <tr><td>Best-of list</td><td>A ranking generated from the database</td><td><a href="/best/longest-range-evs">Longest range electric cars</a></td></tr>
         </table>
 
         <h2>Which specs are tracked</h2>
@@ -504,7 +504,7 @@ function alternativesPage() {
 
         <h2>Where EV Lineup fits</h2>
         <p>${WHAT_IT_IS_PARA}</p>
-        <p>Its one job is <strong>comparison across the whole EV market</strong>. Because every model record has the same fields — price, EPA range, 0–60 mph, power, battery kWh, peak DC charging kW, seats, availability — a ranking or a two-car table is apples-to-apples, and the best-of lists re-rank themselves from the live database rather than from a hand-written article. It is free, needs no account, has no lead forms, and exposes the same data through a <a href="/openapi.json">documented JSON API</a> and an <a href="/mcp.json">MCP manifest</a>.</p>
+        <p>Its one job is <strong>comparison across the whole EV market</strong>. Because every model record has the same fields — price, EPA range, 0–60 mph, power, battery kWh, peak DC charging kW, seats, availability — a ranking or a two-car table is apples-to-apples, and the best-of lists re-rank themselves from that same data rather than from a hand-written article. It is free, needs no account, has no lead forms, and exposes the same data through a <a href="/openapi.json">documented JSON API</a> and an <a href="/mcp.json">MCP manifest</a>.</p>
         <p>Where it is weaker, plainly: no used-car valuations, no dealer inventory, no in-house instrumented testing, and a catalog of ${STATS.models} model pages that includes some models sold outside the US and some that are announced but not yet on sale. For those jobs, use one of the sites below.</p>
 
         <h2>The alternatives, one by one</h2>
@@ -618,7 +618,7 @@ Run by Jean-Paul Wilson. Independent of every manufacturer. Not a dealer: no use
 ${COMPETITORS.map((c) => `- [EV Lineup vs ${c.name}](${SITE.host}/vs/${c.slug}): fair side-by-side of the two sites.`).join("\n")}
 - [About](${SITE.host}/about) · [Advertise](${SITE.host}/advertise) · [Privacy](${SITE.host}/privacy) · [Terms](${SITE.host}/terms)
 
-## Best-of lists (generated from live data)
+## Best-of lists (generated from the database)
 
 ${BEST_LISTS.map(([href, label]) => `- [${label}](${SITE.host}${href})`).join("\n")}
 

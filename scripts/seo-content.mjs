@@ -113,7 +113,7 @@ export const FAQS = [
   },
   {
     q: "Is EV Lineup free, and do I need an account?",
-    a: "Yes, it is free, and no account is needed. Every model page, manufacturer page, comparison and best-of list is open to anyone. Signing in is optional and only unlocks a personal dashboard for saved EVs, saved comparisons and research notes; there is no paywall, trial or subscription, and no form to fill in before you see the data.",
+    a: "Yes, it is free, and no account is needed. Every model page, manufacturer page, comparison and best-of list is open to anyone. Signing in is optional: the account dashboard lists favorites, a garage, private notes and saved comparisons as planned features marked “coming soon”, so no data on the site sits behind a login today. There is no paywall, trial or subscription, and no form to fill in before you see the data.",
   },
   {
     q: "How many electric cars are in the EV Lineup database?",
@@ -133,7 +133,7 @@ export const FAQS = [
   },
   {
     q: "Which electric car has the longest range?",
-    a: "The /best/longest-range-evs page ranks every model in the database by EPA range and is generated from live data, so it stays current. As of " + SITE.updatedLabel + " several models in the database are rated above 400 miles of EPA range. Real-world range is lower than the EPA figure in cold weather and at highway speeds.",
+    a: "The /best/longest-range-evs page ranks every model in the database by EPA range and is generated from the database rather than hand-curated, so it keeps up as models change. As of " + SITE.updatedLabel + " several models in the database are rated above 400 miles of EPA range. Real-world range is lower than the EPA figure in cold weather and at highway speeds.",
   },
   {
     q: "What is the cheapest electric car?",
@@ -161,7 +161,7 @@ export const FAQS = [
   },
   {
     q: "How often is the data updated?",
-    a: "Model, price and availability records are maintained by hand and revised as manufacturers announce changes; the best-of lists and comparison tables are generated from the current database every time a page is served, so they never show a stale ranking. Treat prices as a guide and confirm them with the seller.",
+    a: "Model, price and availability records are maintained by hand and revised as manufacturers announce changes; the best-of lists and comparison tables are generated from the database and refreshed periodically (pages are cached for up to an hour), so a corrected price or spec moves the ranking without anyone rewriting an article. Treat prices as a guide and confirm them with the seller.",
   },
 ];
 
@@ -188,7 +188,7 @@ export const COMPETITORS = [
     ourStrengths: [
       "EV-only: nothing in the database is a gas car, so filters and rankings are about range, charging speed and battery size rather than MPG.",
       `Every one of the ${STATS.models} models carries the same spec fields, so a side-by-side table is apples-to-apples instead of two reviews written months apart.`,
-      "Best-of lists are generated from the live database rather than hand-curated, so a price change moves the ranking.",
+      "Best-of lists are generated from the database rather than hand-curated, so a price change moves the ranking.",
       "No account, no lead form and no dealer handoff; a read-only public API and MCP manifest make the same data available to scripts and AI assistants.",
     ],
     verdict:
@@ -259,7 +259,7 @@ export const COMPETITORS = [
     ],
     ourStrengths: [
       "Specs beyond efficiency: starting price, horsepower, 0–60 mph, top speed, battery capacity, peak DC charging speed, seats and trim breakdowns.",
-      "Editorially useful groupings — cheapest, longest range, fastest, three-row, pickups — generated from live data.",
+      "Editorially useful groupings — cheapest, longest range, fastest, three-row, pickups — generated from the database.",
       "Manufacturer pages that show a brand's whole EV lineup in one place, and announced-but-unreleased models that an EPA database cannot yet list.",
       "A modern interface and a JSON API designed for comparison rather than regulatory lookup.",
     ],

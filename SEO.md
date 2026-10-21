@@ -45,14 +45,26 @@ them risks a manual action. `scripts/check-seo.mjs` fails if one appears.
 
 ### robots.txt (`public/robots.txt`)
 
-`User-agent: *` is allowed everywhere except `/admin`, `/dashboard`,
-`/auth/`, `/layout_test` and `/api/prerender` (the internal rewrite target).
-Explicit `Allow` groups exist for the retrieval and training crawlers that
-matter: OAI-SearchBot, ChatGPT-User, GPTBot, Claude-SearchBot, Claude-User,
-ClaudeBot, PerplexityBot, Perplexity-User, Googlebot, Google-Extended,
-bingbot, Applebot, Applebot-Extended, DuckAssistBot, DuckDuckBot,
-meta-externalagent, CCBot, Amazonbot, YandexBot and others. Grok has no
-documented token, so the `*` group covers it.
+Everything is **one group**: every `User-agent:` line is listed back-to-back,
+then a single rule block (`Allow: /`, plus `Disallow:` for `/admin`,
+`/auth/`, `/dashboard`, `/layout_test` and `/api/prerender`). That shape is
+deliberate — a named group does *not* inherit the `*` group's rules
+([spec](https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec)),
+so a `User-agent: Googlebot` / `Allow: /` group of its own would have handed
+Googlebot the private paths. Don't put a blank line inside the group, and add
+new agents above `Allow: /`, never after it.
+
+Named agents: OAI-SearchBot, ChatGPT-User, GPTBot, Claude-SearchBot,
+Claude-User, ClaudeBot, PerplexityBot, Perplexity-User, Googlebot,
+Google-Extended, bingbot, Applebot, Applebot-Extended, DuckAssistBot,
+DuckDuckBot, meta-externalagent, CCBot, Amazonbot, YandexBot, Bytespider,
+Omgilibot, cohere-ai, anthropic-ai. Grok has no documented token, so the `*`
+entry covers it.
+
+`scripts/check-seo.mjs` parses robots.txt into groups and evaluates the
+**effective** verdict (most specific matching group, then longest-match rule)
+for every named agent, for `*`, and for an unlisted bot — so a future named
+group that accidentally drops the exclusions fails the check.
 
 Training crawlers are allowed on purpose: being in the models is how people
 end up being told about EV Lineup when they ask an assistant about EVs.
@@ -61,9 +73,23 @@ end up being told about EV Lineup when they ask an assistant about EVs.
 
 `/sitemap.xml` is served by `api/sitemap.js`, which fetches the backend's
 data-driven sitemap (every model, manufacturer, comparison and best-of URL,
-generated from the live database) and merges in the frontend-only marketing
-URLs listed in `STATIC_URLS`. If the backend is unreachable it still returns a
+generated from the database) and merges in the frontend-only marketing URLs
+listed in `STATIC_URLS`. If the backend is unreachable it still returns a
 valid sitemap of the static URLs. `Content-Type: application/xml`.
+
+Two rules for `STATIC_URLS`:
+
+* **Only self-canonical URLs.** `/about`, `/advertise`, `/privacy` and
+  `/terms` are React-only routes served from `app.html`, whose canonical is
+  `/`; submitting them would submit non-self-canonical pages, so they are left
+  out until they have their own crawler-visible content and metadata (see
+  *Known gaps*). They are still crawlable — just not advertised.
+* **`lastmod` is a real date or absent.** The marketing pages carry
+  `CONTENT_UPDATED` (the date their content was last edited, matching the
+  visible "Last updated" line). The data-driven routes (`/` and the best-of
+  lists) change whenever the database does, with no date to point at, so they
+  ship no `lastmod` at all. Never stamp `new Date()` — a sitemap that claims
+  every page changed today teaches crawlers to ignore the field.
 
 ### llms.txt / llms-full.txt
 
@@ -142,19 +168,33 @@ request /  ──► vercel.json rewrite ──► /api/prerender?page=home
                       fetch https://ev-backend-three.vercel.app/...  (data)
                                             │
           replace <!-- meta:start … meta:end --> with per-page head tags
-          replace <div id="root"></div> with the server-rendered content
+          replace <div id="root"></div> with
+              <div id="root">…page content…</div>
+              <div id="seo-content">…prose, FAQ, internal links…</div>
                                             │
                       200 text/html, s-maxage=3600
 ```
 
 * `npm run build` renames `dist/index.html` to `dist/app.html` so the
   filesystem never beats the `/` rewrite.
-* React hydrates over the injected block on load, so humans get the full app
-  and bots get the same text. The function **fails open**: any error serves
-  the untouched shell, and an unknown model/make/compare/best slug returns 404.
+* **Two blocks, on purpose.** `#root` is the page content React replaces when
+  it mounts (`createRoot` clears `#root`'s children). `#seo-content` is a
+  *sibling* of `#root`, so the prose sections, the home-page FAQ and the
+  internal-link block stay on the page for readers as well as crawlers. React
+  cannot touch it. Anything whose JSON-LD claims it is visible — the home
+  `FAQPage` especially — belongs in the tail, not in `#root`.
+  `scripts/check-seo.mjs` asserts the tail is outside `#root` and still holds
+  100+ words of text.
+* The function **fails open**: any error serves the untouched shell, and an
+  unknown model/make/compare/best slug returns 404.
 * `api/_seo.js` holds the shared pieces: site-wide JSON-LD, breadcrumbs, the
-  internal-link block appended to every prerendered page, the home-page prose
-  sections, and the intro paragraphs for manufacturer/compare/best pages.
+  internal-link block, the home-page prose sections, and the intro paragraphs
+  for manufacturer/compare/best pages. Every value that comes from the
+  database goes through `esc()` (HTML), `num()` (numeric spec fields, so a
+  non-numeric value is dropped instead of printed) or `safeUrl()` (http/https
+  only — a `javascript:` website_url is suppressed). JSON-LD is emitted by
+  `jsonLdScript()`, which escapes `<`, `>` and `&` as `\u00xx`, so a record
+  containing `</script>` can't break out of the block.
 * Static pages are plain files, so they do not depend on the backend at all.
 
 Render them locally (needs network: live API + live shell):
@@ -185,8 +225,9 @@ node scripts/render-prerender.mjs --page best --slug electric-trucks
 
 ### A new prerendered route type
 
-1. Add a builder in `api/prerender.js` returning `{ meta, content }` (use
-   `metaBlock()` and append `linksBlock()`), and dispatch it in `handler`.
+1. Add a builder in `api/prerender.js` returning `{ meta, content, tail }`
+   (use `metaBlock()`; `tail` is normally `linksBlock()`), and dispatch it in
+   `handler`. Escape every database value — see section 4.
 2. Add the `vercel.json` rewrite, and a React route in `src/components/App.tsx`
    so humans get a real page after hydration.
 3. Extend `DEFAULT_TARGETS` in `scripts/render-prerender.mjs` so the checker
@@ -202,7 +243,7 @@ the live data rather than typed in.
 ```bash
 npm ci
 npm run build          # tsc + vite build (must pass)
-npm run seo:check      # 273 assertions; --no-live to skip the network ones
+npm run seo:check      # 353 assertions; --no-live to skip the network ones
 ```
 
 `scripts/check-seo.mjs` reads the built `dist/` output and asserts, for every
@@ -210,24 +251,27 @@ public page: unique title (≤75 chars), unique meta description (80–230 chars
 absolute self-referencing canonical, exactly one `<h1>`, `lang`, OG and Twitter
 tags, JSON-LD that parses and contains `Organization` + `WebSite`, no
 `aggregateRating`, and more than 300 crawler-visible words with JS stripped.
-It also checks the robots.txt bot groups, the llms files, the IndexNow key
-file, the `vercel.json` rewrite order and the sitemap URL list, then renders
-the five prerendered route types against the live API and applies the same
-checks to them.
+It also checks the effective robots.txt rules per bot, the llms files, the
+IndexNow key file, the `vercel.json` rewrite order, the sitemap URL list and
+`lastmod` policy, and that hostile database values (markup, `javascript:`
+URLs, non-numeric specs) come out of `api/_seo.js` as escaped text. Then it
+renders the five prerendered route types against the live API, applies the
+same per-page checks, and asserts the `#seo-content` tail is a sibling of
+`#root`.
 
 ### Crawler-visible word counts (JS stripped)
 
 | URL | Before | After |
 |---|---|---|
-| `/` (home) | 410 | 1,038 |
+| `/` (home) | 410 | 1,037 |
 | `/model_detail/tesla-model-3` | — | 356 |
 | `/manufacturer/hyundai` | — | 323 |
-| `/compare/tesla-model-3-vs-bmw-i4` | — | 401 |
-| `/best/longest-range-evs` | — | 404 |
-| `/what-is-ev-lineup` | new | 914 |
-| `/faq` | new | 1,208 |
+| `/compare/tesla-model-3-vs-bmw-i4` | — | 396 |
+| `/best/longest-range-evs` | — | 401 |
+| `/what-is-ev-lineup` | new | 913 |
+| `/faq` | new | 1,240 |
 | `/alternatives` | new | 1,448 |
-| `/vs/edmunds` | new | 824 |
+| `/vs/edmunds` | new | 823 |
 | `/vs/kelley-blue-book` | new | 799 |
 | `/vs/car-and-driver` | new | 800 |
 | `/vs/fueleconomy-gov` | new | 791 |
@@ -252,15 +296,24 @@ checks to them.
 
 ## 8. Known gaps
 
-* `/about` (the React `AboutPage`) is still SPA-only: it is in the sitemap but
-  a JS-less crawler sees an empty shell there. It was left alone deliberately
+* `/about` (the React `AboutPage`) is still SPA-only: a JS-less crawler sees
+  an empty shell there, and `app.html` canonicalises it to `/`, so it is
+  **not** in the sitemap. It was left alone deliberately
   — PR #8 edits that component, and its visible stat cards ("400+ Electric
   Vehicles", "30+ Manufacturers") do not match the database (87 models, 32
   brands with models, 35 manufacturer profiles), so they should be corrected
   before the page is prerendered. `/what-is-ev-lineup` carries the accurate
   explainer content in the meantime.
+* `/advertise`, `/privacy` and `/terms` are SPA-only for the same reason and
+  are also out of the sitemap. Giving them a prerendered route (or static
+  files) with their own title/description/canonical is the fix.
 * `/people`, `/marketplace` and `/news` are also SPA-only. `/marketplace` is a
   coming-soon page, so there is nothing to prerender yet.
+* The signed-in dashboard's features (favorites, garage, notes, saved
+  comparisons) are marked "coming soon" in `src/pages/DashboardPage.tsx`. The
+  FAQ says exactly that — if they ship, update the "Is EV Lineup free, and do
+  I need an account?" answer in `scripts/seo-content.mjs` and re-run
+  `npm run seo:pages`.
 * The hero image on prerendered model pages has no `width`/`height` because
   the intrinsic size is not in the API response.
 

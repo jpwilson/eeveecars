@@ -43,7 +43,7 @@ Manufacturer page | A brand's entire EV lineup, with company background | Hyunda
 
 Comparison | Two models side by side on identical specs | Tesla Model 3 vs BMW i4 |
 
-Best-of list | A ranking generated from the live database | Longest range electric cars |
+Best-of list | A ranking generated from the database | Longest range electric cars |
 
 Which specs are tracked
 
@@ -143,7 +143,7 @@ EV Lineup is a free electric vehicle database and comparison site for anyone sho
 
 Is EV Lineup free, and do I need an account?
 
-Yes, it is free, and no account is needed. Every model page, manufacturer page, comparison and best-of list is open to anyone. Signing in is optional and only unlocks a personal dashboard for saved EVs, saved comparisons and research notes; there is no paywall, trial or subscription, and no form to fill in before you see the data.
+Yes, it is free, and no account is needed. Every model page, manufacturer page, comparison and best-of list is open to anyone. Signing in is optional: the account dashboard lists favorites, a garage, private notes and saved comparisons as planned features marked “coming soon”, so no data on the site sits behind a login today. There is no paywall, trial or subscription, and no form to fill in before you see the data.
 
 How many electric cars are in the EV Lineup database?
 
@@ -163,7 +163,7 @@ Open a comparison URL directly — for example /compare/tesla-model-3-vs-bmw-i4 
 
 Which electric car has the longest range?
 
-The /best/longest-range-evs page ranks every model in the database by EPA range and is generated from live data, so it stays current. As of October 21, 2026 several models in the database are rated above 400 miles of EPA range. Real-world range is lower than the EPA figure in cold weather and at highway speeds.
+The /best/longest-range-evs page ranks every model in the database by EPA range and is generated from the database rather than hand-curated, so it keeps up as models change. As of October 21, 2026 several models in the database are rated above 400 miles of EPA range. Real-world range is lower than the EPA figure in cold weather and at highway speeds.
 
 What is the cheapest electric car?
 
@@ -191,7 +191,7 @@ Yes. EV Lineup is an independent site run by Jean-Paul Wilson and is not owned b
 
 How often is the data updated?
 
-Model, price and availability records are maintained by hand and revised as manufacturers announce changes; the best-of lists and comparison tables are generated from the current database every time a page is served, so they never show a stale ranking. Treat prices as a guide and confirm them with the seller.
+Model, price and availability records are maintained by hand and revised as manufacturers announce changes; the best-of lists and comparison tables are generated from the database and refreshed periodically (pages are cached for up to an hour), so a corrected price or spec moves the ranking without anyone rewriting an article. Treat prices as a guide and confirm them with the seller.
 
 Where to go next
 
@@ -241,7 +241,7 @@ Where EV Lineup fits
 
 EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
 
-Its one job is comparison across the whole EV market. Because every model record has the same fields — price, EPA range, 0–60 mph, power, battery kWh, peak DC charging kW, seats, availability — a ranking or a two-car table is apples-to-apples, and the best-of lists re-rank themselves from the live database rather than from a hand-written article. It is free, needs no account, has no lead forms, and exposes the same data through a documented JSON API and an MCP manifest.
+Its one job is comparison across the whole EV market. Because every model record has the same fields — price, EPA range, 0–60 mph, power, battery kWh, peak DC charging kW, seats, availability — a ranking or a two-car table is apples-to-apples, and the best-of lists re-rank themselves from that same data rather than from a hand-written article. It is free, needs no account, has no lead forms, and exposes the same data through a documented JSON API and an MCP manifest.
 
 Where it is weaker, plainly: no used-car valuations, no dealer inventory, no in-house instrumented testing, and a catalog of 87 model pages that includes some models sold outside the US and some that are announced but not yet on sale. For those jobs, use one of the sites below.
 
@@ -389,7 +389,7 @@ Where EV Lineup is stronger
 
 - Every one of the 87 models carries the same spec fields, so a side-by-side table is apples-to-apples instead of two reviews written months apart.
 
-- Best-of lists are generated from the live database rather than hand-curated, so a price change moves the ranking.
+- Best-of lists are generated from the database rather than hand-curated, so a price change moves the ranking.
 
 - No account, no lead form and no dealer handoff; a read-only public API and MCP manifest make the same data available to scripts and AI assistants.
 
@@ -651,7 +651,7 @@ Where EV Lineup is stronger
 
 - Specs beyond efficiency: starting price, horsepower, 0–60 mph, top speed, battery capacity, peak DC charging speed, seats and trim breakdowns.
 
-- Editorially useful groupings — cheapest, longest range, fastest, three-row, pickups — generated from live data.
+- Editorially useful groupings — cheapest, longest range, fastest, three-row, pickups — generated from the database.
 
 - Manufacturer pages that show a brand's whole EV lineup in one place, and announced-but-unreleased models that an EPA database cannot yet list.
 

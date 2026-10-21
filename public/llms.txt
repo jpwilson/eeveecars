@@ -16,7 +16,7 @@ Run by Jean-Paul Wilson. Independent of every manufacturer. Not a dealer: no use
 - [EV Lineup vs fueleconomy.gov](https://www.evlineup.org/vs/fueleconomy-gov): fair side-by-side of the two sites.
 - [About](https://www.evlineup.org/about) · [Advertise](https://www.evlineup.org/advertise) · [Privacy](https://www.evlineup.org/privacy) · [Terms](https://www.evlineup.org/terms)
 
-## Best-of lists (generated from live data)
+## Best-of lists (generated from the database)
 
 - [Longest range electric cars](https://www.evlineup.org/best/longest-range-evs)
 - [Cheapest electric cars](https://www.evlineup.org/best/cheapest-evs)

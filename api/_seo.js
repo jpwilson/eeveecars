@@ -47,12 +47,48 @@ export const GUIDE_LINKS = [
   ["/vs/fueleconomy-gov", "EV Lineup vs fueleconomy.gov"],
 ];
 
-const esc = (s) =>
+/**
+ * Everything below interpolates values that come from the database, so each
+ * one goes through `esc` (HTML text/attribute), `num` (numeric fields) or
+ * `safeUrl` (links) before it reaches a template. A spec field containing
+ * markup must render as text, never as HTML.
+ */
+export const esc = (s) =>
   String(s ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+/** A finite number, or null — for spec fields that must never be free text. */
+export const num = (v) => {
+  if (v === null || v === undefined || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+/** The finite numbers in a list of raw spec values. */
+const nums = (list) => list.map(num).filter((n) => n !== null);
+
+/** An http(s) URL, or null — blocks javascript:/data: links from the DB. */
+export const safeUrl = (u) => {
+  const s = String(u ?? "").trim();
+  if (!/^https?:\/\//i.test(s)) return null;
+  try {
+    return new URL(s).href;
+  } catch {
+    return null;
+  }
+};
+
+/** "Official site: example.com" link, or "" when there is no usable URL. */
+function officialSite(url) {
+  const safe = safeUrl(url);
+  if (!safe) return "";
+  const label = safe.replace(/^https?:\/\//i, "").replace(/\/$/, "");
+  return ` Official site: <a href="${esc(safe)}" rel="nofollow noopener">${esc(label)}</a>.`;
+}
 
 const links = (pairs) =>
   pairs.map(([href, label]) => `<li><a href="${href}">${esc(label)}</a></li>`).join("");
@@ -116,6 +152,15 @@ export const LINKS_STYLE = `<style>
 .prerender .seo-note{font-size:.8rem;color:#4a5568;margin-top:20px}
 .prerender h2{font-size:1.25rem;margin:28px 0 8px}
 .prerender ul.plain{padding-left:20px}
+/* #seo-content sits outside #root, so it survives React mounting and has to
+   follow the app's colour mode (Chakra puts the class on <body>). */
+#seo-content{border-top:1px solid #e2e8f0;margin-top:0;padding-bottom:48px}
+#seo-content details{margin:6px 0}
+#seo-content summary{cursor:pointer}
+body.chakra-ui-dark #seo-content{color:#e2e8f0;border-top-color:#2d3748}
+body.chakra-ui-dark #seo-content .sub,body.chakra-ui-dark #seo-content .seo-note,body.chakra-ui-dark #seo-content .seo-links h2{color:#a0aec0}
+body.chakra-ui-dark #seo-content .seo-links,body.chakra-ui-dark #seo-content th,body.chakra-ui-dark #seo-content td{border-color:#2d3748}
+body.chakra-ui-dark #seo-content a{color:#48bb78}
 </style>`;
 
 /* ------------------------------------------------------------------ *
@@ -162,7 +207,7 @@ export function homeSections(cars) {
 
   <h2>How to use it</h2>
   <ol class="plain">
-    <li><strong>Start with a list or a brand.</strong> Browse the table of popular models below, open a best-of list, or jump to a manufacturer's full lineup.</li>
+    <li><strong>Start with a list or a brand.</strong> Browse the table of popular models, open a best-of list, or jump to a manufacturer's full lineup.</li>
     <li><strong>Open the model pages</strong> for the cars that fit and check the trim table — the cheapest trim and the long-range trim are often very different cars.</li>
     <li><strong>Compare them head to head</strong> at <code>/compare/model-a-vs-model-b</code>, then confirm the final price and availability with the manufacturer.</li>
   </ol>
@@ -181,7 +226,10 @@ export function homeSections(cars) {
  * Intro prose for the data-driven pages (facts come from the API rows)
  * ------------------------------------------------------------------ */
 
-const money = (n) => `$${Number(n).toLocaleString("en-US")}`;
+const money = (n) => {
+  const v = num(n);
+  return v === null ? null : `$${v.toLocaleString("en-US")}`;
+};
 
 /** Plain-language intro for a /compare/a-vs-b page. */
 export function compareIntro(A, B) {
@@ -189,41 +237,50 @@ export function compareIntro(A, B) {
   const nameB = `${B.make_name} ${B.model}`;
   const line = (m) => {
     const bits = [];
-    if (m.current_price) bits.push(`starts at ${money(m.current_price)} MSRP`);
-    if (m.epa_range) bits.push(`${m.epa_range} miles of EPA range`);
-    if (m.acceleration_0_60) bits.push(`0–60 mph in ${m.acceleration_0_60} seconds`);
-    if (m.battery_capacity) bits.push(`a ${m.battery_capacity} kWh battery`);
-    if (m.battery_max_charging_speed) bits.push(`up to ${m.battery_max_charging_speed} kW DC charging`);
-    if (m.number_of_full_adult_seats) bits.push(`${m.number_of_full_adult_seats} seats`);
+    const price = money(m.current_price);
+    const range = num(m.epa_range);
+    const zeroSixty = num(m.acceleration_0_60);
+    const battery = num(m.battery_capacity);
+    const charge = num(m.battery_max_charging_speed);
+    const seats = num(m.number_of_full_adult_seats);
+    if (price) bits.push(`starts at ${price} MSRP`);
+    if (range) bits.push(`${range} miles of EPA range`);
+    if (zeroSixty) bits.push(`0–60 mph in ${zeroSixty} seconds`);
+    if (battery) bits.push(`a ${battery} kWh battery`);
+    if (charge) bits.push(`up to ${charge} kW DC charging`);
+    if (seats) bits.push(`${seats} seats`);
     return bits.length ? `The ${esc(`${m.make_name} ${m.model}`)} ${bits.join(", ")}.` : "";
   };
   return `
-  <p>This page compares the <strong>${esc(nameA)}</strong> and the <strong>${esc(nameB)}</strong> on the same spec fields, pulled from the ${SITE_NAME} database when the page loads, so the numbers match the rest of the site. ${line(A)} ${line(B)}</p>
+  <p>This page compares the <strong>${esc(nameA)}</strong> and the <strong>${esc(nameB)}</strong> on the same spec fields, taken from the ${SITE_NAME} database, so the numbers match the rest of the site. ${line(A)} ${line(B)}</p>
   <p>The table below covers starting price, EPA range, 0–60 mph, top speed, power, battery capacity, maximum DC fast-charging speed and seat count; a ✓ marks the better figure in each row. Range figures are EPA ratings where one exists and real-world range is lower in cold weather and at highway speeds. Prices are manufacturer starting prices before taxes, fees and incentives — check the current price with the manufacturer before buying.</p>`;
 }
 
 /** Methodology paragraph for a /best/<criteria> page. */
 export function bestIntro(title, blurb, ranked, total) {
-  const prices = ranked.map((m) => m.current_price).filter(Boolean);
-  const ranges = ranked.map((m) => m.epa_range).filter(Boolean);
+  const prices = nums(ranked.map((m) => m.current_price));
+  const ranges = nums(ranked.map((m) => m.epa_range));
   const bits = [];
   if (prices.length > 1)
     bits.push(`prices on this list run from ${money(Math.min(...prices))} to ${money(Math.max(...prices))}`);
   if (ranges.length > 1)
     bits.push(`EPA range runs from ${Math.min(...ranges)} to ${Math.max(...ranges)} miles`);
+  const count = num(total);
   return `
-  <p>This ranking is generated from the ${SITE_NAME} database every time the page is served, so it reflects the current ${total} models on file rather than a hand-written list that goes stale. ${esc(blurb)}${bits.length ? ` As listed, ${bits.join(" and ")}.` : ""}</p>
+  <p>This ranking is generated from the ${SITE_NAME} database and refreshed periodically rather than hand-written, so it keeps up with the${
+    count ? ` ${count}` : ""
+  } models on file instead of going stale. ${esc(blurb)}${bits.length ? ` As listed, ${bits.join(" and ")}.` : ""}</p>
   <p>Every row links to the full spec sheet for that model, where you can see each trim's own price, range and performance. Prices are manufacturer starting prices (MSRP) in US dollars before taxes, fees and incentives; range is the EPA rating where one has been published. Confirm the final figures with the manufacturer or dealer.</p>`;
 }
 
 /** Short factual summary for a /manufacturer/<slug> page. */
 export function makeIntro(make, models) {
-  const prices = models.map((m) => m.current_price).filter(Boolean);
-  const ranges = models.map((m) => m.epa_range).filter(Boolean);
+  const prices = nums(models.map((m) => m.current_price));
+  const ranges = nums(models.map((m) => m.epa_range));
   const facts = [];
-  if (make.headquarters) facts.push(`is headquartered in ${make.headquarters}`);
-  if (make.founding_date) facts.push(`was founded in ${make.founding_date}`);
-  if (make.country) facts.push(`is based in ${make.country}`);
+  if (make.headquarters) facts.push(`is headquartered in ${esc(make.headquarters)}`);
+  if (make.founding_date) facts.push(`was founded in ${esc(make.founding_date)}`);
+  if (make.country) facts.push(`is based in ${esc(make.country)}`);
   const spread = [];
   if (prices.length)
     spread.push(
@@ -242,19 +299,13 @@ export function makeIntro(make, models) {
     return `
   <p>No ${esc(make.name)} models are listed in the ${SITE_NAME} database right now — either the brand has not brought an EV to the markets we track, or its models are still being added.${
       facts.length ? ` The company ${facts.join(" and ")}.` : ""
-    }${
-      make.website_url
-        ? ` Official site: <a href="${esc(make.website_url)}" rel="nofollow noopener">${esc(String(make.website_url).replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>.`
-        : ""
-    }</p>
+    }${officialSite(make.website_url)}</p>
   <p>In the meantime, every other brand's lineup is listed with the same spec fields — starting price, EPA range, 0–60 mph, power, battery capacity in kWh, maximum DC fast-charging speed and seat count. Start from <a href="/">the full database</a>, a ranked list such as <a href="/best/longest-range-evs">longest range electric cars</a>, or the <a href="/faq">FAQ</a> for how the data is put together.</p>`;
   }
 
   return `
   <p>${esc(make.name)} has <strong>${models.length} electric ${models.length === 1 ? "model" : "models"}</strong> in the ${SITE_NAME} database${
     spread.length ? `; ${spread.join(", ")}` : ""
-  }.${facts.length ? ` The company ${facts.join(" and ")}.` : ""}${
-    make.website_url ? ` Official site: <a href="${esc(make.website_url)}" rel="nofollow noopener">${esc(String(make.website_url).replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>.` : ""
-  }</p>
+  }.${facts.length ? ` The company ${facts.join(" and ")}.` : ""}${officialSite(make.website_url)}</p>
   <p>The table below lists every ${esc(make.name)} EV on file with its starting price, EPA range and availability status; each model links to a full spec sheet with trim-by-trim figures, battery capacity and DC fast-charging speed. Prices are MSRP before taxes, fees and incentives. To put a ${esc(make.name)} model against a rival, use a <a href="/alternatives">comparison</a> page or build one at <code>/compare/model-a-vs-model-b</code>.</p>`;
 }

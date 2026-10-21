@@ -4,7 +4,11 @@
  * Serves the SPA's index.html with per-page <head> meta (title, description,
  * canonical, OG/Twitter, JSON-LD) and a semantic HTML content block inside
  * #root. Everyone — bots and humans — gets the same HTML (no UA sniffing, no
- * cloaking); React replaces the block when the bundle loads.
+ * cloaking); React replaces the #root block when the bundle loads.
+ *
+ * The prose sections, FAQ and internal-link block go in a sibling
+ * <div id="seo-content"> *outside* #root, so they survive hydration and stay
+ * visible to readers — structured data must describe content people can see.
  *
  * Fails open: any error returns the untouched SPA shell.
  */
@@ -17,6 +21,8 @@ import {
   compareIntro,
   bestIntro,
   makeIntro,
+  num,
+  safeUrl,
   LINKS_STYLE,
 } from "./_seo.js";
 
@@ -51,31 +57,47 @@ function esc(s) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
+/**
+ * JSON-LD <script> tag. `<`, `>` and `&` are written as \u escapes so a
+ * database value containing "</script>" can't break out of the block —
+ * JSON.stringify alone does not escape them.
+ */
+function jsonLdScript(obj) {
+  const json = JSON.stringify(obj)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+  return `<script type="application/ld+json">${json}</script>`;
+}
+
+const FALLBACK_IMAGE = `${CANONICAL_HOST}/pub_assets/hero-ev.png`;
+
 function absImage(url) {
-  if (!url) return `${CANONICAL_HOST}/pub_assets/hero-ev.png`;
-  if (url.startsWith("http")) return url;
-  return `${CANONICAL_HOST}${url.startsWith("/") ? "" : "/"}${url}`;
+  const raw = String(url ?? "").trim();
+  if (!raw) return FALLBACK_IMAGE;
+  if (/^https?:\/\//i.test(raw)) return safeUrl(raw) || FALLBACK_IMAGE;
+  if (/^[\w.+-]+:/.test(raw)) return FALLBACK_IMAGE; // javascript:, data:, ...
+  return `${CANONICAL_HOST}${raw.startsWith("/") ? "" : "/"}${raw}`;
 }
 
 function metaBlock({ title, description, canonical, image, ogType, jsonLd }) {
   const t = esc(title);
   const d = esc(description);
   const img = esc(image);
+  const url = esc(canonical);
   const jsonLdTags = [...siteJsonLd(), ...(jsonLd || [])]
-    .map(
-      (obj) =>
-        `<script type="application/ld+json">${JSON.stringify(obj)}</script>`
-    )
+    .map(jsonLdScript)
     .join("\n    ");
   return `<title>${t}</title>
     <meta name="description" content="${d}" />
-    <link rel="canonical" href="${canonical}" />
+    <link rel="canonical" href="${url}" />
     <meta property="og:site_name" content="${SITE_NAME}" />
     <meta property="og:type" content="${ogType || "website"}" />
-    <meta property="og:url" content="${canonical}" />
+    <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${t}" />
     <meta property="og:description" content="${d}" />
     <meta property="og:image" content="${img}" />
@@ -105,8 +127,8 @@ function specRow(label, value, unit = "") {
 }
 
 function fmtPrice(p) {
-  if (!p) return null;
-  return `$${Number(p).toLocaleString("en-US")}`;
+  const v = num(p);
+  return v ? `$${v.toLocaleString("en-US")}` : null;
 }
 
 // ---------- page builders ----------
@@ -211,7 +233,7 @@ async function buildModelPage(slug) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › <a href="/manufacturer/${slugify(rep.make_name)}">${esc(rep.make_name)}</a> › ${esc(rep.model)}</p>
   <h1>${esc(name)}</h1>
   <p class="sub">${esc(rep.vehicle_class || "Electric vehicle")}${rep.generation ? ` · ${esc(rep.generation)}` : ""}${price ? ` · from ${esc(price)}` : ""}</p>
@@ -231,7 +253,6 @@ async function buildModelPage(slug) {
   </table>
   ${subs.length ? `<h2>Variants</h2><table><tr><th>Trim</th><th>Price</th><th>Range</th><th>0–60</th></tr>${variantRows}</table>` : ""}
   <p><a href="/">Browse all electric vehicles →</a></p>
-  ${linksBlock()}
 </div>`;
 
   return {
@@ -244,6 +265,7 @@ async function buildModelPage(slug) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -315,7 +337,7 @@ async function buildMakePage(slug) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › ${esc(make.name)}</p>
   <h1>${esc(make.name)} Electric Vehicles</h1>
   <p class="sub">${esc(make.headquarters || "")}${make.founding_date ? ` · founded ${esc(make.founding_date)}` : ""}</p>
@@ -324,7 +346,6 @@ async function buildMakePage(slug) {
   <h2>${esc(make.name)} EV lineup</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>Status</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
-  ${linksBlock()}
 </div>`;
 
   return {
@@ -336,6 +357,7 @@ async function buildMakePage(slug) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -421,13 +443,17 @@ async function buildHomePage() {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <h1>EV Lineup — Every Electric Vehicle, Compared</h1>
   <p class="sub">Specs, range, price, and charging for ${cars.length} EV models from ${brandCount} brands — side by side.</p>
   <p><strong>EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.</strong> Compare specs, EPA range, pricing, charging speed, seats and performance across ${cars.length} models from ${brandCount} brands, or jump straight to a <a href="/best/longest-range-evs">ranked list</a>, a <a href="/compare/tesla-model-3-vs-bmw-i4">side-by-side comparison</a> or the <a href="/faq">FAQ</a>.</p>
-  ${homeSections(cars)}
   <h2>Popular electric vehicles</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
+</div>`;
+
+  // Lives outside #root, so it is still on the page after React mounts —
+  // the FAQPage JSON-LD above describes these visible answers.
+  const tail = `${homeSections(cars)}
   <h2>Frequently Asked Questions</h2>
   <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is a free electric vehicle database and comparison site. Every model has the same spec fields — MSRP, EPA range, 0–60 mph, power, battery capacity, DC charging speed and seats — so any two EVs can be compared line by line. It is free, needs no account, and is independent of every manufacturer.</p></details>
   <details><summary><strong>How many electric cars are there?</strong></summary><p>The database holds ${cars.length} electric vehicle models from ${brandCount} brands, including sedans, SUVs, trucks, vans and sports cars.</p></details>
@@ -435,9 +461,7 @@ async function buildHomePage() {
   <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
   <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
   <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p>Yes, several electric SUVs offer 6+ seats with three rows for families. <a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
-  <p><a href="/faq">All frequently asked questions about EV Lineup →</a></p>
-  ${linksBlock()}
-</div>`;
+  <p><a href="/faq">All frequently asked questions about EV Lineup →</a></p>`;
 
   return {
     meta: metaBlock({
@@ -448,6 +472,7 @@ async function buildHomePage() {
       jsonLd,
     }),
     content,
+    tail: `${tail}\n${linksBlock()}`,
   };
 }
 
@@ -552,17 +577,16 @@ async function buildComparePage(pair) {
     return `<tr><th>${esc(label)}</th><td>${esc(va)}${wa}</td><td>${esc(vb)}${wb}</td></tr>`;
   }).join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › Compare</p>
   <h1>${esc(nameA)} vs ${esc(nameB)}</h1>
-  <p class="sub">Side-by-side specs from the live ${SITE_NAME} database.</p>
+  <p class="sub">Side-by-side specs from the ${SITE_NAME} database.</p>
   ${compareIntro(A, B)}
   <table>
     <tr><th></th><th><a href="/model_detail/${esc(A.make_model_slug)}">${esc(nameA)}</a></th><th><a href="/model_detail/${esc(B.make_model_slug)}">${esc(nameB)}</a></th></tr>
     ${rows}
   </table>
   <p><a href="/">Browse all electric vehicles →</a></p>
-  ${linksBlock()}
 </div>`;
 
   return {
@@ -574,6 +598,7 @@ async function buildComparePage(pair) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -639,7 +664,7 @@ async function buildBestPage(criteria) {
 
   const canonical = `${CANONICAL_HOST}/best/${criteria}`;
   const title = `${cfg.title} (${new Date().getFullYear()}) | ${SITE_NAME}`;
-  const description = `${cfg.blurb} Generated live from the ${SITE_NAME} database of every EV on the market.`;
+  const description = `${cfg.blurb} Ranked from the ${SITE_NAME} database of every EV on the market and refreshed periodically.`;
 
   const jsonLd = [
     {
@@ -669,14 +694,13 @@ async function buildBestPage(criteria) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › Rankings</p>
   <h1>${esc(cfg.title)}</h1>
   <p class="sub">${esc(cfg.blurb)}</p>
   ${bestIntro(cfg.title, cfg.blurb, ranked, cars.length)}
   <table><tr><th>#</th><th>Model</th><th>From</th><th>Range</th><th>0–60</th><th>Score</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
-  ${linksBlock()}
 </div>`;
 
   return {
@@ -688,6 +712,7 @@ async function buildBestPage(criteria) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -721,9 +746,14 @@ export default async function handler(req, res) {
   if (built) {
     html = html.replace(
       /<!-- meta:start[\s\S]*?meta:end -->/,
-      `<!-- meta:start -->\n    ${built.meta}\n    <!-- meta:end -->`
+      `<!-- meta:start -->\n    ${built.meta}\n    ${CONTENT_STYLE}\n    <!-- meta:end -->`
     );
-    html = html.replace('<div id="root"></div>', `<div id="root">${built.content}</div>`);
+    // #root is replaced by React on mount; #seo-content is a sibling, so the
+    // prose, FAQ and internal links stay on the page for readers too.
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root">${built.content}</div>\n    <div id="seo-content" class="prerender">${built.tail}</div>`
+    );
   }
 
   res
