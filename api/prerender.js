@@ -9,6 +9,17 @@
  * Fails open: any error returns the untouched SPA shell.
  */
 
+import {
+  siteJsonLd,
+  breadcrumbJsonLd,
+  linksBlock,
+  homeSections,
+  compareIntro,
+  bestIntro,
+  makeIntro,
+  LINKS_STYLE,
+} from "./_seo.js";
+
 const API_BASE = "https://ev-backend-three.vercel.app";
 const CANONICAL_HOST = "https://www.evlineup.org";
 const SITE_NAME = "EV Lineup";
@@ -53,7 +64,7 @@ function metaBlock({ title, description, canonical, image, ogType, jsonLd }) {
   const t = esc(title);
   const d = esc(description);
   const img = esc(image);
-  const jsonLdTags = (jsonLd || [])
+  const jsonLdTags = [...siteJsonLd(), ...(jsonLd || [])]
     .map(
       (obj) =>
         `<script type="application/ld+json">${JSON.stringify(obj)}</script>`
@@ -84,7 +95,8 @@ const CONTENT_STYLE = `<style>
 .prerender th,.prerender td{text-align:left;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:.95rem}
 .prerender a{color:#16a34a}
 .prerender .crumbs{font-size:.85rem;margin-bottom:12px}
-</style>`;
+.prerender p{margin:10px 0}
+</style>${LINKS_STYLE}`;
 
 function specRow(label, value, unit = "") {
   if (value === null || value === undefined || value === "" || value === 0)
@@ -219,6 +231,7 @@ async function buildModelPage(slug) {
   </table>
   ${subs.length ? `<h2>Variants</h2><table><tr><th>Trim</th><th>Price</th><th>Range</th><th>0–60</th></tr>${variantRows}</table>` : ""}
   <p><a href="/">Browse all electric vehicles →</a></p>
+  ${linksBlock()}
 </div>`;
 
   return {
@@ -281,6 +294,13 @@ async function buildMakePage(slug) {
     },
   ];
 
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/manufacturer/${slug}`, `${make.name} EVs`],
+    ])
+  );
+
   const rows = models
     .map(
       (m) =>
@@ -293,9 +313,11 @@ async function buildMakePage(slug) {
   <h1>${esc(make.name)} Electric Vehicles</h1>
   <p class="sub">${esc(make.headquarters || "")}${make.founding_date ? ` · founded ${esc(make.founding_date)}` : ""}</p>
   <p>${esc(make.description || "")}</p>
+  ${makeIntro(make, models)}
   <h2>${esc(make.name)} EV lineup</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>Status</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
+  ${linksBlock()}
 </div>`;
 
   return {
@@ -315,17 +337,10 @@ async function buildHomePage() {
   if (!res.ok) return null;
   const cars = await res.json();
   const top = cars.slice(0, 30);
+  const brandCount = new Set(cars.map((c) => c.make_name).filter(Boolean)).size;
 
   const canonical = `${CANONICAL_HOST}/`;
   const jsonLd = [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: canonical,
-      description:
-        "Every electric vehicle on the market: specs, range, price, and charging — compared side by side.",
-    },
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -345,7 +360,7 @@ async function buildHomePage() {
           name: "What is EV Lineup?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current."
+            text: "EV Lineup is a free electric vehicle database and comparison site. Every model has the same spec fields — MSRP, EPA range, 0-60 mph, power, battery capacity, DC charging speed and seats — so any two EVs can be compared line by line. It is free, needs no account, and is independent of every manufacturer."
           }
         },
         {
@@ -353,7 +368,7 @@ async function buildHomePage() {
           name: "How many electric cars are there?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.`
+            text: `The database holds ${cars.length} electric vehicle models from ${brandCount} brands, including sedans, SUVs, trucks, vans and sports cars.`
           }
         },
         {
@@ -400,25 +415,27 @@ async function buildHomePage() {
     .join("");
 
   const content = `${CONTENT_STYLE}<div class="prerender">
-  <h1>Every Electric Vehicle, Compared</h1>
-  <p class="sub">Specs, range, price, and charging for ${cars.length}+ EV models — side by side.</p>
-  <p><strong>EV Lineup is a comprehensive database of every electric vehicle on the market.</strong> Compare specs, EPA range, pricing, charging speeds, and performance for ${cars.length}+ models from 37 manufacturers. All data is kept current and verified.</p>
-  <h2>Popular Electric Vehicles</h2>
+  <h1>EV Lineup — Every Electric Vehicle, Compared</h1>
+  <p class="sub">Specs, range, price, and charging for ${cars.length} EV models from ${brandCount} brands — side by side.</p>
+  <p><strong>EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.</strong> Compare specs, EPA range, pricing, charging speed, seats and performance across ${cars.length} models from ${brandCount} brands, or jump straight to a <a href="/best/longest-range-evs">ranked list</a>, a <a href="/compare/tesla-model-3-vs-bmw-i4">side-by-side comparison</a> or the <a href="/faq">FAQ</a>.</p>
+  ${homeSections(cars)}
+  <h2>Popular electric vehicles</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
   <h2>Frequently Asked Questions</h2>
-  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current.</p></details>
-  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.</p></details>
+  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is a free electric vehicle database and comparison site. Every model has the same spec fields — MSRP, EPA range, 0–60 mph, power, battery capacity, DC charging speed and seats — so any two EVs can be compared line by line. It is free, needs no account, and is independent of every manufacturer.</p></details>
+  <details><summary><strong>How many electric cars are there?</strong></summary><p>The database holds ${cars.length} electric vehicle models from ${brandCount} brands, including sedans, SUVs, trucks, vans and sports cars.</p></details>
   <details><summary><strong>What's the cheapest electric car?</strong></summary><p>The most affordable EVs start under $30,000 MSRP before incentives. <a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
   <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
   <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
   <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p>Yes, several electric SUVs offer 6+ seats with three rows for families. <a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
+  <p><a href="/faq">All frequently asked questions about EV Lineup →</a></p>
+  ${linksBlock()}
 </div>`;
 
   return {
     meta: metaBlock({
       title: `${SITE_NAME} — Every Electric Vehicle, Compared`,
-      description:
-        "Browse every electric vehicle on the market: specs, range, price, and charging for 87+ EVs from 37 manufacturers. Compare models side by side and find your next EV.",
+      description: `Free EV database: specs, EPA range, price and charging speed for ${cars.length} electric models from ${brandCount} brands. Compare any two EVs side by side and see ranked best-of lists.`,
       canonical,
       image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
       jsonLd,
@@ -508,6 +525,12 @@ async function buildComparePage(pair) {
       })),
     },
   ];
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/compare/${pair}`, `${nameA} vs ${nameB}`],
+    ])
+  );
   if (faq.length)
     jsonLd.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq });
 
@@ -526,11 +549,13 @@ async function buildComparePage(pair) {
   <p class="crumbs"><a href="/">All EVs</a> › Compare</p>
   <h1>${esc(nameA)} vs ${esc(nameB)}</h1>
   <p class="sub">Side-by-side specs from the live ${SITE_NAME} database.</p>
+  ${compareIntro(A, B)}
   <table>
     <tr><th></th><th><a href="/model_detail/${esc(A.make_model_slug)}">${esc(nameA)}</a></th><th><a href="/model_detail/${esc(B.make_model_slug)}">${esc(nameB)}</a></th></tr>
     ${rows}
   </table>
   <p><a href="/">Browse all electric vehicles →</a></p>
+  ${linksBlock()}
 </div>`;
 
   return {
@@ -623,6 +648,13 @@ async function buildBestPage(criteria) {
     },
   ];
 
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/best/${criteria}`, cfg.title],
+    ])
+  );
+
   const rows = ranked
     .map(
       (m, i) =>
@@ -634,8 +666,10 @@ async function buildBestPage(criteria) {
   <p class="crumbs"><a href="/">All EVs</a> › Rankings</p>
   <h1>${esc(cfg.title)}</h1>
   <p class="sub">${esc(cfg.blurb)}</p>
+  ${bestIntro(cfg.title, cfg.blurb, ranked, cars.length)}
   <table><tr><th>#</th><th>Model</th><th>From</th><th>Range</th><th>0–60</th><th>Score</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
+  ${linksBlock()}
 </div>`;
 
   return {
