@@ -238,6 +238,18 @@ export function makeIntro(make, models) {
         : `an EPA range of ${ranges[0]} miles`
     );
 
+  if (!models.length) {
+    return `
+  <p>No ${esc(make.name)} models are listed in the ${SITE_NAME} database right now — either the brand has not brought an EV to the markets we track, or its models are still being added.${
+      facts.length ? ` The company ${facts.join(" and ")}.` : ""
+    }${
+      make.website_url
+        ? ` Official site: <a href="${esc(make.website_url)}" rel="nofollow noopener">${esc(String(make.website_url).replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a>.`
+        : ""
+    }</p>
+  <p>In the meantime, every other brand's lineup is listed with the same spec fields — starting price, EPA range, 0–60 mph, power, battery capacity in kWh, maximum DC fast-charging speed and seat count. Start from <a href="/">the full database</a>, a ranked list such as <a href="/best/longest-range-evs">longest range electric cars</a>, or the <a href="/faq">FAQ</a> for how the data is put together.</p>`;
+  }
+
   return `
   <p>${esc(make.name)} has <strong>${models.length} electric ${models.length === 1 ? "model" : "models"}</strong> in the ${SITE_NAME} database${
     spread.length ? `; ${spread.join(", ")}` : ""

@@ -269,12 +269,16 @@ async function buildMakePage(slug) {
   const canonical = `${CANONICAL_HOST}/manufacturer/${slug}`;
   const title = `${make.name} Electric Vehicles — All ${make.name} EV Models | ${SITE_NAME}`;
   const ranges = models.map((m) => m.epa_range).filter(Boolean);
-  const description = `${models.length === 1 ? "The" : `All ${models.length}`} ${make.name} electric ${models.length === 1 ? "vehicle" : "vehicles"} in the ${SITE_NAME} database: ${models
-    .slice(0, 4)
-    .map((m) => m.model)
-    .join(", ")}${models.length > 4 ? " and more" : ""}. Compare starting price, EPA range${
-    ranges.length > 1 ? ` (${Math.min(...ranges)}–${Math.max(...ranges)} mi)` : ""
-  }, 0-60 mph, battery size and charging speed.`;
+  const description = models.length
+    ? `${models.length === 1 ? "The" : `All ${models.length}`} ${make.name} electric ${
+        models.length === 1 ? "vehicle" : "vehicles"
+      } in the ${SITE_NAME} database: ${models
+        .slice(0, 4)
+        .map((m) => m.model)
+        .join(", ")}${models.length > 4 ? " and more" : ""}. Compare starting price, EPA range${
+        ranges.length > 1 ? ` (${Math.min(...ranges)}–${Math.max(...ranges)} mi)` : ""
+      }, 0-60 mph, battery size and charging speed.`
+    : `${make.name} on ${SITE_NAME}: company profile and electric vehicle status, plus every other EV brand's lineup with prices, EPA range, 0-60 mph, battery size and charging speed.`;
 
   const jsonLd = [
     {
