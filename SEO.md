@@ -219,18 +219,18 @@ checks to them.
 
 | URL | Before | After |
 |---|---|---|
-| `/` (home) | 410 | 1,035 |
+| `/` (home) | 410 | 1,038 |
 | `/model_detail/tesla-model-3` | — | 356 |
-| `/manufacturer/hyundai` | — | 302 |
+| `/manufacturer/hyundai` | — | 323 |
 | `/compare/tesla-model-3-vs-bmw-i4` | — | 401 |
 | `/best/longest-range-evs` | — | 404 |
 | `/what-is-ev-lineup` | new | 914 |
 | `/faq` | new | 1,208 |
 | `/alternatives` | new | 1,448 |
-| `/vs/edmunds` | new | 828 |
-| `/vs/kelley-blue-book` | new | 812 |
-| `/vs/car-and-driver` | new | 813 |
-| `/vs/fueleconomy-gov` | new | 804 |
+| `/vs/edmunds` | new | 824 |
+| `/vs/kelley-blue-book` | new | 799 |
+| `/vs/car-and-driver` | new | 800 |
+| `/vs/fueleconomy-gov` | new | 791 |
 
 ---
 
@@ -250,7 +250,21 @@ checks to them.
 * **One page per real intent**, not per keyword variant (Google calls the
   latter scaled content abuse).
 
-## 8. Off-site (the biggest remaining lever)
+## 8. Known gaps
+
+* `/about` (the React `AboutPage`) is still SPA-only: it is in the sitemap but
+  a JS-less crawler sees an empty shell there. It was left alone deliberately
+  — PR #8 edits that component, and its visible stat cards ("400+ Electric
+  Vehicles", "30+ Manufacturers") do not match the database (87 models, 32
+  brands with models, 35 manufacturer profiles), so they should be corrected
+  before the page is prerendered. `/what-is-ev-lineup` carries the accurate
+  explainer content in the meantime.
+* `/people`, `/marketplace` and `/news` are also SPA-only. `/marketplace` is a
+  coming-soon page, so there is nothing to prerender yet.
+* The hero image on prerendered model pages has no `width`/`height` because
+  the intrinsic size is not in the API response.
+
+## 9. Off-site (the biggest remaining lever)
 
 Rankings and AI citations both lean heavily on being mentioned elsewhere.
 Worth doing, none of it in this repo: EV subreddits and forums where a spec
