@@ -9,7 +9,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && mv dist/index.html dist/app.html",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seo:pages": "node scripts/build-pages.mjs",
+    "seo:render": "node scripts/render-prerender.mjs",
+    "seo:check": "node scripts/check-seo.mjs",
+    "seo:indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
