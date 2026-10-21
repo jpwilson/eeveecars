@@ -23,6 +23,16 @@ export interface Make {
   }
   
 
-const useMakes = () => useData<Make>('/makes');
+const useMakes = () => {
+  const result = useData<Make>('/makes');
+  
+  // Filter out defunct brands that are no longer operating
+  const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+  
+  return {
+    ...result,
+    data: result.data.filter(make => !DEFUNCT_BRANDS.includes(make.name))
+  };
+};
 
 export default useMakes;

@@ -245,7 +245,12 @@ async function buildMakePage(slug) {
   const res = await fetchWithTimeout(`${API_BASE}/makes`);
   if (!res.ok) return null;
   const makes = await res.json();
-  const make = makes.find((m) => slugify(m.name) === slug);
+  
+  // Filter out defunct brands that are no longer operating
+  const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+  const activeMakes = makes.filter(m => !DEFUNCT_BRANDS.includes(m.name));
+  
+  const make = activeMakes.find((m) => slugify(m.name) === slug);
   if (!make) return null;
 
   // Model reps for this make
@@ -314,7 +319,12 @@ async function buildHomePage() {
   const res = await fetchWithTimeout(`${API_BASE}/cars/cards`);
   if (!res.ok) return null;
   const cars = await res.json();
-  const top = cars.slice(0, 30);
+  
+  // Filter out defunct brands that are no longer operating
+  const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+  const activeCars = cars.filter(car => !DEFUNCT_BRANDS.includes(car.make_name));
+  
+  const top = activeCars.slice(0, 30);
 
   const canonical = `${CANONICAL_HOST}/`;
   const jsonLd = [
@@ -353,7 +363,7 @@ async function buildHomePage() {
           name: "How many electric cars are there?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.`
+            text: `We track ${activeCars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.`
           }
         },
         {
@@ -401,13 +411,13 @@ async function buildHomePage() {
 
   const content = `${CONTENT_STYLE}<div class="prerender">
   <h1>Every Electric Vehicle, Compared</h1>
-  <p class="sub">Specs, range, price, and charging for ${cars.length}+ EV models — side by side.</p>
-  <p><strong>EV Lineup is a comprehensive database of every electric vehicle on the market.</strong> Compare specs, EPA range, pricing, charging speeds, and performance for ${cars.length}+ models from 37 manufacturers. All data is kept current and verified.</p>
+  <p class="sub">Specs, range, price, and charging for ${activeCars.length}+ EV models — side by side.</p>
+  <p><strong>EV Lineup is a comprehensive database of every electric vehicle on the market.</strong> Compare specs, EPA range, pricing, charging speeds, and performance for ${activeCars.length}+ models from 37 manufacturers. All data is kept current and verified.</p>
   <h2>Popular Electric Vehicles</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
   <h2>Frequently Asked Questions</h2>
   <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current.</p></details>
-  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.</p></details>
+  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${activeCars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.</p></details>
   <details><summary><strong>What's the cheapest electric car?</strong></summary><p>The most affordable EVs start under $30,000 MSRP before incentives. <a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
   <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
   <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
@@ -603,7 +613,12 @@ async function buildBestPage(criteria) {
   const res = await fetchWithTimeout(`${API_BASE}/cars/cards`);
   if (!res.ok) return null;
   const cars = await res.json();
-  const ranked = cars.filter(cfg.filter).sort(cfg.sort).slice(0, 12);
+  
+  // Filter out defunct brands that are no longer operating
+  const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+  const activeCars = cars.filter(car => !DEFUNCT_BRANDS.includes(car.make_name));
+  
+  const ranked = activeCars.filter(cfg.filter).sort(cfg.sort).slice(0, 12);
 
   const canonical = `${CANONICAL_HOST}/best/${criteria}`;
   const title = `${cfg.title} (${new Date().getFullYear()}) | ${SITE_NAME}`;

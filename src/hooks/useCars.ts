@@ -35,6 +35,12 @@ const useCars = (selectedMake?: Make | null, selectedFeatures?: SelectedFeature[
 
     let filteredCars = data;
 
+    // Filter out defunct brands (Fisker, Canoo) that are no longer operating
+    const DEFUNCT_BRANDS = ['Fisker', 'Canoo'];
+    filteredCars = filteredCars.filter(car =>
+      !DEFUNCT_BRANDS.includes(car.make_name)
+    );
+
     // Always filter out previous generation cars from the main feed
     filteredCars = filteredCars.filter(car =>
       car.availability_desc !== "previous_generation"

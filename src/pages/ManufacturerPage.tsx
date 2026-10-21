@@ -265,7 +265,7 @@ function ManufacturerPage() {
             </Flex>
 
             {/* Stats row */}
-            {(make.market_cap || make.revenue || make.num_ev_model) && (
+            {(make.market_cap && make.market_cap > 0) || (make.revenue && make.revenue > 0) || make.num_ev_model || make.first_ev_model_date ? (
               <Grid
                 templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }}
                 gap={3}
@@ -274,7 +274,7 @@ function ManufacturerPage() {
                 borderTop="1px solid"
                 borderColor={borderColor}
               >
-                {make.market_cap && (
+                {make.market_cap && make.market_cap > 0 && (
                   <GridItem>
                     <Box bg={infoBg} borderRadius="10px" p={3} textAlign="center">
                       <Text fontSize="xs" color={subTextColor} fontWeight="500">
@@ -286,7 +286,7 @@ function ManufacturerPage() {
                     </Box>
                   </GridItem>
                 )}
-                {make.revenue && (
+                {make.revenue && make.revenue > 0 && (
                   <GridItem>
                     <Box bg={infoBg} borderRadius="10px" p={3} textAlign="center">
                       <Text fontSize="xs" color={subTextColor} fontWeight="500">
@@ -323,7 +323,7 @@ function ManufacturerPage() {
                   </GridItem>
                 )}
               </Grid>
-            )}
+            ) : null}
           </Box>
 
           {/* Cars sections */}

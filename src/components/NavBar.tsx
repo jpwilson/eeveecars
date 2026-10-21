@@ -29,10 +29,8 @@ import AuthModal from "./AuthModal";
 const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType; external?: boolean }[] = [
   { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
   { label: "People", to: "/people", icon: FaUsers },
-  { label: "Marketplace", to: "/marketplace", icon: FaStore },
   // Separate app mounted under the same domain — needs a full page load, not a router Link.
   { label: "Compare Range", to: "/compare-range/", icon: FaMapMarkedAlt, external: true },
-  { label: "News", to: "/news", icon: FaNewspaper },
   { label: "About", to: "/about", icon: FaBolt },
 ];
 
