@@ -182,7 +182,7 @@ export const COMPETITORS = [
     theirStrengths: [
       "Used-car and trade-in pricing, which EV Lineup does not do at all.",
       "Dealer inventory and local listings, so you can see what is actually on a lot near you.",
-      "Long-form expert reviews and in-house road testing, including its own real-world EV range testing.",
+      "Long-form expert reviews and in-house road testing — as of October 2026, per its website, that includes its own real-world EV range testing.",
       "Coverage of gasoline, hybrid and diesel cars, which matters if you have not settled on an EV.",
     ],
     ourStrengths: [

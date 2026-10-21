@@ -357,7 +357,7 @@ Side by side
 
 Scope | Electric vehicles only | All fuel types, EVs included |
 
-Standardised spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
 
 Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
 
@@ -371,8 +371,6 @@ Own road testing | No | Yes |
 
 Cost and sign-up | Free, no account needed | Free to read |
 
-Public data API | Yes — documented and free | Not a published consumer feature |
-
 Rows describing Edmunds reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.edmunds.com for the current position.
 
 Where Edmunds is stronger
@@ -381,7 +379,7 @@ Where Edmunds is stronger
 
 - Dealer inventory and local listings, so you can see what is actually on a lot near you.
 
-- Long-form expert reviews and in-house road testing, including its own real-world EV range testing.
+- Long-form expert reviews and in-house road testing — as of October 2026, per its website, that includes its own real-world EV range testing.
 
 - Coverage of gasoline, hybrid and diesel cars, which matters if you have not settled on an EV.
 
@@ -447,7 +445,7 @@ Side by side
 
 Scope | Electric vehicles only | All fuel types, EVs included |
 
-Standardised spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
 
 Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
 
@@ -460,8 +458,6 @@ Used values / dealer inventory | No | Yes |
 Own road testing | No | Yes |
 
 Cost and sign-up | Free, no account needed | Free to read |
-
-Public data API | Yes — documented and free | Not a published consumer feature |
 
 Rows describing Kelley Blue Book reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.kbb.com for the current position.
 
@@ -537,7 +533,7 @@ Side by side
 
 Scope | Electric vehicles only | All fuel types, EVs included |
 
-Standardised spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
 
 Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
 
@@ -550,8 +546,6 @@ Used values / dealer inventory | No | No / limited |
 Own road testing | No | Yes |
 
 Cost and sign-up | Free, no account needed | Free to read |
-
-Public data API | Yes — documented and free | Not a published consumer feature |
 
 Rows describing Car and Driver reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.caranddriver.com for the current position.
 
@@ -627,7 +621,7 @@ Side by side
 
 Scope | Electric vehicles only | All fuel types, EVs included |
 
-Standardised spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
 
 Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
 
@@ -640,8 +634,6 @@ Used values / dealer inventory | No | No / limited |
 Own road testing | No | EPA certification data |
 
 Cost and sign-up | Free, no account needed | Free to read |
-
-Public data API | Yes — documented and free | Not a published consumer feature |
 
 Rows describing fueleconomy.gov reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.fueleconomy.gov for the current position.
 

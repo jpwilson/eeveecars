@@ -418,14 +418,13 @@ function versusPage(c) {
         <table>
           <tr><th>&nbsp;</th><th>EV Lineup</th><th>${esc(c.name)}</th></tr>
           <tr><th>Scope</th><td>Electric vehicles only</td><td>All fuel types, EVs included</td></tr>
-          <tr><th>Standardised spec table for every model</th><td>Yes — same fields for all ${STATS.models} models</td><td>Varies by model and review</td></tr>
+          <tr><th>Standardized spec table for every model</th><td>Yes — same fields for all ${STATS.models} models</td><td>Varies by model and review</td></tr>
           <tr><th>Battery kWh and peak DC charging kW</th><td>Yes, for every model</td><td>Sometimes, depending on the page</td></tr>
           <tr><th>Two-car side-by-side comparison</th><td>Yes, any two models in the database</td><td>Yes, in its own tools</td></tr>
           <tr><th>Price shown</th><td>Manufacturer MSRP (new)</td><td>${c.slug === "fueleconomy-gov" ? "Not a pricing site" : "New and used pricing"}</td></tr>
           <tr><th>Used values / dealer inventory</th><td>No</td><td>${c.slug === "fueleconomy-gov" || c.slug === "car-and-driver" ? "No / limited" : "Yes"}</td></tr>
           <tr><th>Own road testing</th><td>No</td><td>${c.slug === "fueleconomy-gov" ? "EPA certification data" : "Yes"}</td></tr>
           <tr><th>Cost and sign-up</th><td>Free, no account needed</td><td>Free to read</td></tr>
-          <tr><th>Public data API</th><td>Yes — <a href="/openapi.json">documented</a> and free</td><td>Not a published consumer feature</td></tr>
         </table>
         <p>Rows describing ${esc(c.name)} reflect its publicly visible features as of ${SITE.updatedLabel}, per its website; features change, so check <a href="${c.url}" rel="nofollow noopener" target="_blank">${esc(c.url.replace(/^https?:\/\//, "").replace(/\/$/, ""))}</a> for the current position.</p>
 
