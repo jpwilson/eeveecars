@@ -57,7 +57,7 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
   "cheapest-evs": {
     title: "Cheapest Electric Cars",
     blurb:
-      "The most affordable EVs on the market, ranked by MSRP. Entry EV pricing changes fast — this list is generated from our live database.",
+      "The most affordable EVs on the market, ranked by MSRP. Entry EV pricing changes fast — this list is generated from our database.",
     filter: (c) => isAvailable(c) && !!c.current_price,
     sort: (a, b) => (a.current_price ?? 0) - (b.current_price ?? 0),
     limit: 12,
