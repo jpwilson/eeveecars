@@ -57,20 +57,8 @@ const SortSelector: React.FC<SortSelectorProps> = ({ onSortChange }) => {
       value: { field: "acceleration_0_60", direction: "desc" },
     },
     {
-      label: "Top Speed (fastest first)",
-      value: { field: "top_speed", direction: "desc" },
-    },
-    {
-      label: "Top Speed (slowest first)",
-      value: { field: "top_speed", direction: "asc" },
-    },
-    {
-      label: "Rating (highest first)",
-      value: { field: "average_rating", direction: "desc" },
-    },
-    {
-      label: "Rating (lowest first)",
-      value: { field: "average_rating", direction: "asc" },
+      label: "Newest first",
+      value: { field: "carmodel_first_released", direction: "desc" },
     },
   ];
 

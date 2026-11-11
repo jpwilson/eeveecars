@@ -9,12 +9,52 @@
       "destination": "/api/prerender?page=home"
     },
     {
+      "source": "/cars",
+      "destination": "/api/prerender?page=cars"
+    },
+    {
+      "source": "/make",
+      "destination": "/api/prerender?page=makes"
+    },
+    {
+      "source": "/make/:make",
+      "destination": "/api/prerender?page=catalog-make&make=:make"
+    },
+    {
+      "source": "/make/:make/:model",
+      "destination": "/api/prerender?page=catalog-model&make=:make&model=:model"
+    },
+    {
+      "source": "/make/:make/:model/:generation",
+      "destination": "/api/prerender?page=catalog-generation&make=:make&model=:model&generation=:generation"
+    },
+    {
+      "source": "/make/:make/:model/:generation/:variant",
+      "destination": "/api/prerender?page=catalog-variant&make=:make&model=:model&generation=:generation&variant=:variant"
+    },
+    {
+      "source": "/model_detail/:slug/",
+      "destination": "/api/prerender?page=legacy&kind=model&slug=:slug"
+    },
+    {
       "source": "/model_detail/:slug",
-      "destination": "/api/prerender?page=model&slug=:slug"
+      "destination": "/api/prerender?page=legacy&kind=model&slug=:slug"
+    },
+    {
+      "source": "/manufacturer/:slug/",
+      "destination": "/api/prerender?page=legacy&kind=make&slug=:slug"
     },
     {
       "source": "/manufacturer/:slug",
-      "destination": "/api/prerender?page=make&slug=:slug"
+      "destination": "/api/prerender?page=legacy&kind=make&slug=:slug"
+    },
+    {
+      "source": "/car_detail/:id/",
+      "destination": "/api/prerender?page=legacy&kind=variant&slug=:id"
+    },
+    {
+      "source": "/car_detail/:id",
+      "destination": "/api/prerender?page=legacy&kind=variant&slug=:id"
     },
     {
       "source": "/compare/:pair",
@@ -38,6 +78,16 @@
       "source": "/compare-range",
       "destination": "/compare-range/",
       "permanent": false
+    },
+    {
+      "source": "/make/:path*/",
+      "destination": "/make/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/cars/",
+      "destination": "/cars",
+      "permanent": true
     }
   ]
 }

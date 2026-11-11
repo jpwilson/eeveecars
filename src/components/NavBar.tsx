@@ -21,13 +21,15 @@ import { HamburgerIcon } from "@chakra-ui/icons";
 import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
-import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper, FaMapMarkedAlt } from "react-icons/fa";
+import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper, FaMapMarkedAlt, FaThLarge, FaIndustry } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import UserMenu from "./UserMenu";
 import AuthModal from "./AuthModal";
 
 const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType; external?: boolean }[] = [
   { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
+  { label: "All Cars", mobileLabel: "All electric cars", to: "/cars", icon: FaThLarge },
+  { label: "Makes", mobileLabel: "Car makers", to: "/make", icon: FaIndustry },
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
   // Separate app mounted under the same domain — needs a full page load, not a router Link.
@@ -92,8 +94,9 @@ const NavBar = ({ onSearch }: Props) => {
         )}
 
         {/* Desktop nav links + auth */}
-        <Show above="md">
-          <HStack spacing={{ md: 5, lg: 8 }} flexShrink={0}>
+        {/* 8 links: the full row needs lg+; narrower screens use the drawer */}
+        <Show above="lg">
+          <HStack spacing={{ lg: 5, xl: 8 }} flexShrink={0}>
             {navLinks.map((link) => {
               const text = (
                 <Text
@@ -132,7 +135,7 @@ const NavBar = ({ onSearch }: Props) => {
         </Show>
 
         {/* Hamburger menu - mobile only, right side */}
-        <Hide above="md">
+        <Hide above="lg">
           <HStack spacing={2}>
             {!isLoading && user && <UserMenu />}
             <IconButton

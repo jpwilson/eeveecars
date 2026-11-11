@@ -9,7 +9,9 @@
  * Fails open: any error returns the untouched SPA shell.
  */
 
-const API_BASE = "https://ev-backend-three.vercel.app";
+// EV_API_BASE (server-side env, optional) lets a preview or a local test point
+// the prerenderer at another backend; production uses the live API.
+const API_BASE = (process.env.EV_API_BASE || "https://ev-backend-three.vercel.app").replace(/\/$/, "");
 const CANONICAL_HOST = "https://www.evlineup.org";
 const SITE_NAME = "EV Lineup";
 
@@ -43,8 +45,17 @@ function esc(s) {
     .replace(/"/g, "&quot;");
 }
 
+// Commons originals are large and rate-limited when hotlinked; use a standard-width thumbnail.
+function commonsThumb(url, width) {
+  const m = /^https:\/\/upload\.wikimedia\.org\/wikipedia\/commons\/([0-9a-f])\/([0-9a-f]{2})\/([^/?#]+)$/i.exec(url || "");
+  if (!m || !/\.(jpe?g|png|webp|gif)$/i.test(m[3])) return null;
+  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${m[1]}/${m[2]}/${m[3]}/${width}px-${m[3]}`;
+}
+
 function absImage(url) {
   if (!url) return `${CANONICAL_HOST}/pub_assets/hero-ev.png`;
+  const thumb = commonsThumb(url, 1280);
+  if (thumb) return thumb;
   if (url.startsWith("http")) return url;
   return `${CANONICAL_HOST}${url.startsWith("/") ? "" : "/"}${url}`;
 }
@@ -310,11 +321,56 @@ async function buildMakePage(slug) {
   };
 }
 
-async function buildHomePage() {
+/** Home rows from the catalog (US, current, consumer models); null when the catalog is not available. */
+async function homeRowsFromCatalog() {
+  try {
+    const [list, meta] = await Promise.all([
+      catalogGet("/catalog/models?market=US&status=current&commercial=false&limit=1000"),
+      catalogGet("/catalog/meta").catch(() => null),
+    ]);
+    const rows = list.models.map((m) => ({
+      name: displayName(m.make && m.make.name, m.name),
+      url: m.path,
+      price: m.from_price && m.from_price.value ? money(m.from_price.value, m.from_price.currency) : null,
+      range: m.max_range && m.max_range.value ? rangeText(m.max_range.value, m.max_range.unit, m.max_range.cycle) : null,
+      accel: m.quickest_0_60 && m.quickest_0_60.value ? `${m.quickest_0_60.value}s` : null,
+    }));
+    return {
+      rows,
+      models: meta && meta.counts ? meta.counts.models : rows.length,
+      makes: meta && meta.counts ? meta.counts.makes : null,
+      onSale: rows.length,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function homeRowsFromLegacy() {
   const res = await fetchWithTimeout(`${API_BASE}/cars/cards`);
   if (!res.ok) return null;
   const cars = await res.json();
-  const top = cars.slice(0, 30);
+  return {
+    rows: cars.map((m) => ({
+      name: `${m.make_name} ${m.model}`,
+      url: `/model_detail/${m.make_model_slug}`,
+      price: fmtPrice(m.current_price),
+      range: m.epa_range ? `${m.epa_range} mi` : null,
+      accel: m.acceleration_0_60 ? `${m.acceleration_0_60}s` : null,
+    })),
+    models: cars.length,
+    makes: 37,
+    onSale: cars.length,
+  };
+}
+
+async function buildHomePage() {
+  const data = (await homeRowsFromCatalog()) || (await homeRowsFromLegacy());
+  if (!data) return null;
+  const top = data.rows.slice(0, 30);
+  const nModels = data.models;
+  const nMakes = data.makes;
+  const fromMakes = nMakes ? ` from ${nMakes} manufacturers` : "";
 
   const canonical = `${CANONICAL_HOST}/`;
   const jsonLd = [
@@ -324,7 +380,7 @@ async function buildHomePage() {
       name: SITE_NAME,
       url: canonical,
       description:
-        "Every electric vehicle on the market: specs, range, price, and charging — compared side by side.",
+        "Every electric vehicle, current and past: specs, range, price, and charging — compared side by side.",
     },
     {
       "@context": "https://schema.org",
@@ -332,8 +388,8 @@ async function buildHomePage() {
       itemListElement: top.map((m, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        name: `${m.make_name} ${m.model}`,
-        url: `${CANONICAL_HOST}/model_detail/${m.make_model_slug}`,
+        name: m.name,
+        url: `${CANONICAL_HOST}${m.url}`,
       })),
     },
     {
@@ -345,80 +401,79 @@ async function buildHomePage() {
           name: "What is EV Lineup?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current."
-          }
+            text: "EV Lineup is an electric vehicle database: specs, prices and range for electric cars on sale today, plus earlier versions, discontinued and cancelled models, and brands that have gone out of business.",
+          },
         },
         {
           "@type": "Question",
           name: "How many electric cars are there?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.`
-          }
+            text: `We track ${nModels} electric car models${fromMakes}, including sedans, SUVs, trucks, vans and sports cars; ${data.onSale} are on sale in the US.`,
+          },
         },
         {
           "@type": "Question",
           name: "What's the cheapest electric car?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The most affordable EVs start under $30,000 MSRP before incentives. See the full list at https://www.evlineup.org/best/cheapest-evs"
-          }
+            text: "See the electric cars with the lowest US MSRP at https://www.evlineup.org/best/cheapest-evs",
+          },
         },
         {
           "@type": "Question",
           name: "Which EV has the longest range?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. See all long-range electric vehicles at https://www.evlineup.org/best/longest-range-evs"
-          }
+            text: "See the electric cars with the longest EPA range at https://www.evlineup.org/best/longest-range-evs",
+          },
         },
         {
           "@type": "Question",
           name: "What's the fastest electric car?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The fastest EVs accelerate 0-60 mph in under 2 seconds. See the fastest electric cars ranked at https://www.evlineup.org/best/fastest-evs"
-          }
+            text: "See the fastest electric cars ranked by 0-60 mph time at https://www.evlineup.org/best/fastest-evs",
+          },
         },
         {
           "@type": "Question",
           name: "Are there 3-row electric SUVs?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes, several electric SUVs offer 6+ seats with three rows for families. See all 3-row electric SUVs at https://www.evlineup.org/best/3-row-evs"
-          }
-        }
-      ]
+            text: "Yes, several electric SUVs offer 6+ seats with three rows. See them at https://www.evlineup.org/best/3-row-evs",
+          },
+        },
+      ],
     },
   ];
 
   const rows = top
     .map(
       (m) =>
-        `<tr><td><a href="/model_detail/${esc(m.make_model_slug)}">${esc(m.make_name)} ${esc(m.model)}</a></td><td>${esc(fmtPrice(m.current_price) || "—")}</td><td>${m.epa_range ? esc(m.epa_range) + " mi" : "—"}</td><td>${m.acceleration_0_60 ? esc(m.acceleration_0_60) + "s" : "—"}</td></tr>`
+        `<tr><td><a href="${esc(m.url)}">${esc(m.name)}</a></td><td>${esc(m.price || "—")}</td><td>${esc(m.range || "—")}</td><td>${esc(m.accel || "—")}</td></tr>`
     )
     .join("");
 
   const content = `${CONTENT_STYLE}<div class="prerender">
   <h1>Every Electric Vehicle, Compared</h1>
-  <p class="sub">Specs, range, price, and charging for ${cars.length}+ EV models — side by side.</p>
-  <p><strong>EV Lineup is a comprehensive database of every electric vehicle on the market.</strong> Compare specs, EPA range, pricing, charging speeds, and performance for ${cars.length}+ models from 37 manufacturers. All data is kept current and verified.</p>
-  <h2>Popular Electric Vehicles</h2>
+  <p class="sub">Specs, range, price, and charging for ${nModels} EV models${fromMakes} — side by side.</p>
+  <p><strong>EV Lineup is a database of electric vehicles, current and past.</strong> Compare specs, range, pricing, charging speeds, and performance, and see every earlier version of each model. <a href="/cars">Browse all electric cars</a> or <a href="/make">every maker</a>.</p>
+  <h2>Electric Vehicles on Sale in the US</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
   <h2>Frequently Asked Questions</h2>
-  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is the most complete electric vehicle comparison database, with up-to-date specs, prices, and range for every EV on the market. All data is verified and maintained current.</p></details>
-  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${cars.length}+ electric vehicle models from 37 manufacturers, including sedans, SUVs, trucks, and sports cars.</p></details>
-  <details><summary><strong>What's the cheapest electric car?</strong></summary><p>The most affordable EVs start under $30,000 MSRP before incentives. <a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
-  <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
-  <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
-  <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p>Yes, several electric SUVs offer 6+ seats with three rows for families. <a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
+  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is an electric vehicle database: specs, prices and range for electric cars on sale today, plus earlier versions, discontinued and cancelled models, and brands that have gone out of business.</p></details>
+  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${nModels} electric car models${fromMakes}; ${data.onSale} are on sale in the US.</p></details>
+  <details><summary><strong>What's the cheapest electric car?</strong></summary><p><a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
+  <details><summary><strong>Which EV has the longest range?</strong></summary><p><a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
+  <details><summary><strong>What's the fastest electric car?</strong></summary><p><a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
+  <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p><a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
 </div>`;
 
   return {
     meta: metaBlock({
       title: `${SITE_NAME} — Every Electric Vehicle, Compared`,
-      description:
-        "Browse every electric vehicle on the market: specs, range, price, and charging for 87+ EVs from 37 manufacturers. Compare models side by side and find your next EV.",
+      description: `Browse every electric vehicle, current and past: specs, range, price, and charging for ${nModels} EV models${fromMakes}. Compare models side by side and find your next EV.`,
       canonical,
       image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
       jsonLd,
@@ -650,10 +705,709 @@ async function buildBestPage(criteria) {
   };
 }
 
+// ---------- catalog pages (/make/..., /cars) ----------
+//
+// Data from the backend's /catalog/* API (ev_backend/docs/catalog-api.md).
+// Figures keep their own unit, test cycle and currency (never converted), and
+// JSON-LD never claims InStock.
+
+class HttpError extends Error {
+  constructor(status, message) {
+    super(message || `HTTP ${status}`);
+    this.status = status;
+  }
+}
+
+/** GET a catalog endpoint; throws HttpError(404 | 503 | 502). */
+async function catalogGet(path) {
+  let res;
+  try {
+    res = await fetchWithTimeout(`${API_BASE}${path}`);
+  } catch (e) {
+    throw new HttpError(503, "backend timeout or network error");
+  }
+  if (res.status === 404) throw new HttpError(404);
+  if (res.status === 503) throw new HttpError(503, "catalog not migrated");
+  if (!res.ok) throw new HttpError(502, `backend ${res.status}`);
+  return res.json();
+}
+
+const enc = encodeURIComponent;
+const abs = (path) => `${CANONICAL_HOST}${path}`;
+
+const STATUS_TEXT = {
+  current: "on sale",
+  upcoming: "coming soon",
+  discontinued: "discontinued",
+  cancelled: "cancelled",
+};
+
+function displayName(makeName, modelName) {
+  const mk = makeName || "";
+  const md = modelName || "";
+  return md.toLowerCase().startsWith(mk.toLowerCase()) ? md : `${mk} ${md}`.trim();
+}
+
+function money(value, currency) {
+  if (!value) return null;
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(value);
+  } catch (e) {
+    return `${value} ${currency || ""}`.trim();
+  }
+}
+
+function rangeText(value, unit, cycle) {
+  if (!value) return null;
+  return [Math.round(value), unit, cycle].filter(Boolean).join(" ");
+}
+
+function yearsText(start, end, status) {
+  if (!start && !end) return "";
+  if (status === "upcoming") return start ? `due ${start}` : "";
+  if (status === "cancelled") return start ? `planned for ${start}` : "";
+  if (start && !end) return `${start}–present`;
+  if (start === end) return `${start}`;
+  return `${start || "?"}–${end || ""}`;
+}
+
+function primaryImage(images) {
+  if (!images || !images.length) return null;
+  return images.find((i) => i.is_primary) || images[0];
+}
+
+function breadcrumbLd(items) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map(([name, path], i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name,
+      item: abs(path),
+    })),
+  };
+}
+
+function crumbsHtml(items) {
+  return `<p class="crumbs">${items
+    .map(([name, path], i) => (i === items.length - 1 ? esc(name) : `<a href="${esc(path)}">${esc(name)}</a>`))
+    .join(" › ")}</p>`;
+}
+
+function uniqueSourceUrls(sources) {
+  const out = [];
+  for (const s of sources || []) if (s && s.url && !out.includes(s.url)) out.push(s.url);
+  return out;
+}
+
+function webPageLd(canonical, name, dateModified, sources) {
+  const urls = uniqueSourceUrls(sources);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${canonical}#webpage`,
+    url: canonical,
+    name,
+    ...(dateModified ? { dateModified: String(dateModified).slice(0, 10) } : {}),
+    ...(urls.length ? { isBasedOn: urls.slice(0, 20) } : {}),
+  };
+}
+
+function imageCreditHtml(img) {
+  if (!img || !(img.credit || img.license)) return "";
+  const text = esc([img.credit, img.license].filter(Boolean).join(" · "));
+  return `<p class="sub">Photo: ${img.page_url ? `<a href="${esc(img.page_url)}" rel="noopener">${text}</a>` : text}</p>`;
+}
+
+function heroHtml(img, alt) {
+  if (!img || !img.url) return `<p class="sub">No photo of this version yet.</p>`;
+  return `<img class="hero" src="${esc(absImage(img.url))}" alt="${esc(img.alt || alt)}" />${imageCreditHtml(img)}`;
+}
+
+function sourcesHtml(sources) {
+  const urls = [];
+  const items = [];
+  for (const s of sources || []) {
+    if (!s || !s.url || urls.includes(s.url)) continue;
+    urls.push(s.url);
+    items.push(`<li><a href="${esc(s.url)}" rel="noopener">${esc(s.name || s.url)}</a></li>`);
+  }
+  return items.length ? `<h2>Sources</h2><ul>${items.join("")}</ul>` : "";
+}
+
+function newestOffering(offerings, market) {
+  const list = [...(offerings || [])].sort((a, b) => (b.model_year || 0) - (a.model_year || 0));
+  return (market && list.find((o) => o.market === market)) || list.find((o) => o.market === "US") || list[0] || null;
+}
+
+function variantRowsHtml(variants, market) {
+  return (variants || [])
+    .map((v) => {
+      const o = newestOffering(v.offerings, market);
+      const price = o ? money(o.price || o.launch_price, o.currency) : null;
+      const range = o ? rangeText(o.range, o.range_unit, o.range_cycle) : null;
+      const accel = v.accel_0_60_s ? `${v.accel_0_60_s} s (0–60 mph)` : v.accel_0_100_s ? `${v.accel_0_100_s} s (0–100 km/h)` : null;
+      return `<tr><td><a href="${esc(v.path)}">${esc(v.name || v.slug)}</a></td><td>${esc(v.drivetrain || "—")}</td><td>${v.battery_kwh ? esc(v.battery_kwh) + " kWh" : "—"}</td><td>${esc(range || "—")}</td><td>${esc(accel || "—")}</td><td>${esc(price ? `${price}${o.market ? ` (${o.market}${o.model_year ? ` MY${o.model_year}` : ""})` : ""}` : "—")}</td></tr>`;
+    })
+    .join("");
+}
+
+const VARIANT_TABLE_HEAD = "<tr><th>Variant</th><th>Drive</th><th>Battery</th><th>Range</th><th>Acceleration</th><th>Price</th></tr>";
+
+/** schema.org Car for one variant. Offers only for sourced prices; never InStock. */
+function variantCarLd(v, ctx) {
+  const o = newestOffering(v.offerings, ctx.market);
+  const props = [];
+  for (const off of v.offerings || []) {
+    if (off.range) {
+      props.push({
+        "@type": "PropertyValue",
+        name: `Range (${off.range_cycle || "unspecified cycle"}${off.market ? `, ${off.market}` : ""}${off.model_year ? ` MY${off.model_year}` : ""})`,
+        value: off.range,
+        unitCode: off.range_unit === "mi" ? "SMI" : off.range_unit === "km" ? "KMT" : undefined,
+        measurementTechnique: off.range_cycle || undefined,
+      });
+    }
+  }
+  if (v.battery_kwh)
+    props.push({ "@type": "PropertyValue", name: `Battery capacity${v.battery_basis ? ` (${v.battery_basis})` : ""}`, value: v.battery_kwh, unitCode: "KWH" });
+  if (v.dc_kw) props.push({ "@type": "PropertyValue", name: "Peak DC charging power", value: v.dc_kw, unitCode: "KWT" });
+  if (o && o.connector) props.push({ "@type": "PropertyValue", name: "Charging connector", value: o.connector });
+
+  const offers = (v.offerings || [])
+    .filter((off) => off.price && off.currency && !off.is_estimate)
+    .slice(0, 5)
+    .map((off) => ({
+      "@type": "Offer",
+      price: off.price,
+      priceCurrency: off.currency,
+      ...(off.market ? { eligibleRegion: off.market === "EU" ? "EU" : off.market === "UK" ? "GB" : off.market } : {}),
+      ...(v.status === "discontinued" ? { availability: "https://schema.org/Discontinued" } : {}),
+    }));
+
+  return {
+    "@type": "Car",
+    "@id": abs(v.path) + "#variant",
+    name: `${ctx.name} ${v.name || ""}`.trim(),
+    url: abs(v.path),
+    brand: { "@type": "Brand", name: ctx.makeName },
+    ...(ctx.modelPath ? { isVariantOf: { "@id": abs(ctx.modelPath) + "#model" } } : {}),
+    ...(ctx.genPath ? { model: { "@id": abs(ctx.genPath) + "#generation" } } : {}),
+    vehicleConfiguration: v.name || undefined,
+    ...(v.year_from ? { vehicleModelDate: String(v.year_from) } : {}),
+    ...(v.body_type ? { bodyType: v.body_type } : {}),
+    ...(v.drivetrain ? { driveWheelConfiguration: v.drivetrain } : {}),
+    ...(v.seats ? { seatingCapacity: v.seats } : {}),
+    fuelType: "Electric",
+    ...(v.accel_0_60_s
+      ? { accelerationTime: { "@type": "QuantitativeValue", value: v.accel_0_60_s, unitCode: "SEC", valueReference: "0-60 mph" } }
+      : v.accel_0_100_s
+      ? { accelerationTime: { "@type": "QuantitativeValue", value: v.accel_0_100_s, unitCode: "SEC", valueReference: "0-100 km/h" } }
+      : {}),
+    ...(props.length ? { additionalProperty: props } : {}),
+    ...(offers.length ? { offers } : {}),
+    ...(ctx.image ? { image: absImage(ctx.image.url) } : {}),
+  };
+}
+
+async function buildMakesIndexPage() {
+  const data = await catalogGet("/catalog/makes");
+  const canonical = abs("/make");
+  const groups = { current: [], upcoming: [], discontinued: [], defunct: [] };
+  for (const m of data.makes) (groups[m.display_status] || groups.discontinued).push(m);
+  const labels = {
+    current: "Selling electric cars now",
+    upcoming: "Coming soon",
+    discontinued: "No electric cars on sale right now",
+    defunct: "Defunct or acquired",
+  };
+  const sections = Object.entries(groups)
+    .filter(([, list]) => list.length)
+    .map(
+      ([k, list]) =>
+        `<h2>${esc(labels[k])}</h2><ul>${list
+          .map((m) => `<li><a href="${esc(m.path)}">${esc(m.name)}</a>${m.status_date && k === "defunct" ? ` (${esc(m.status)} ${esc(m.status_date)})` : ""}</li>`)
+          .join("")}</ul>`
+    )
+    .join("");
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml([["Home", "/"], ["Makes", "/make"]])}
+  <h1>Electric car makers</h1>
+  <p class="sub">${data.count} brands, including the ones that have stopped making electric cars or gone out of business.</p>
+  ${sections}
+</div>`;
+  const jsonLd = [
+    breadcrumbLd([["Home", "/"], ["Makes", "/make"]]),
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Electric car makers",
+      itemListElement: data.makes.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: m.name, url: abs(m.path) })),
+    },
+  ];
+  return {
+    meta: metaBlock({
+      title: `All Electric Car Makers (${data.count}) | ${SITE_NAME}`,
+      description: `Every electric car brand we track: ${data.count} makers, grouped by whether they sell EVs today, are coming soon, or have closed.`,
+      canonical,
+      image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
+      jsonLd,
+    }),
+    content,
+  };
+}
+
+/** On a 404, an old or alias slug may still resolve (e.g. /make/mercedes → /make/mercedes-benz). */
+async function getOrAlias(path, kind, key, selfPath) {
+  try {
+    return await catalogGet(path);
+  } catch (e) {
+    if (!(e instanceof HttpError) || e.status !== 404) throw e;
+    const r = await resolveLegacy(kind, key);
+    if (r.redirect && r.redirect !== selfPath) return { __redirect: r.redirect };
+    throw e;
+  }
+}
+
+async function buildCatalogMakePage(makeSlug) {
+  const data = await getOrAlias(`/catalog/makes/${enc(makeSlug)}`, "make", makeSlug, `/make/${makeSlug}`);
+  if (data.__redirect) return { redirect: data.__redirect };
+  const make = data.make;
+  // Legacy or alias slug: send to the canonical one.
+  if (make.path !== `/make/${makeSlug}`) return { redirect: make.path };
+  const canonical = abs(make.path);
+  const all = [...data.models.current, ...data.models.upcoming, ...data.models.discontinued, ...data.models.cancelled];
+  const gone = make.status === "defunct" || make.status === "acquired";
+  const crumbs = [["Makes", "/make"], [make.name, make.path]];
+
+  const section = (title, list) =>
+    list.length
+      ? `<h2>${esc(title)}</h2><table><tr><th>Model</th><th>Years</th><th>Status</th><th>From</th><th>Range</th></tr>${list
+          .map(
+            (m) =>
+              `<tr><td><a href="${esc(m.path)}">${esc(m.name)}</a></td><td>${esc(yearsText(m.years && m.years.start, m.years && m.years.end, m.status))}</td><td>${esc(STATUS_TEXT[m.status] || m.status || "")}</td><td>${esc(
+                (m.from_price && money(m.from_price.value, m.from_price.currency)) || "—"
+              )}</td><td>${esc((m.max_range && rangeText(m.max_range.value, m.max_range.unit, m.max_range.cycle)) || "—")}</td></tr>`
+          )
+          .join("")}</table>`
+      : "";
+
+  const banner = gone
+    ? `<p><strong>${esc(make.name)} ${make.status === "acquired" ? "was acquired" : "is no longer in business"}${make.status_date ? ` (${esc(make.status_date)})` : ""}.</strong> ${esc(make.status_details || "")} Its cars are kept here for reference.</p>`
+    : "";
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(make.name)} electric cars</h1>
+  <p class="sub">${[make.country, make.headquarters, make.founded ? `founded ${make.founded}` : null, make.parent_group ? `part of ${make.parent_group}` : null]
+    .filter(Boolean)
+    .map(esc)
+    .join(" · ")}</p>
+  ${banner}
+  <p>${esc(make.description || "")}</p>
+  ${section("On sale now", data.models.current)}
+  ${section("Coming soon", data.models.upcoming)}
+  ${section("Discontinued and cancelled", [...data.models.discontinued, ...data.models.cancelled])}
+  ${sourcesHtml(make.sources)}
+</div>`;
+
+  const brand = {
+    "@context": "https://schema.org",
+    "@type": "Brand",
+    "@id": `${canonical}#brand`,
+    name: make.name,
+    url: canonical,
+    ...(make.logo_url ? { logo: absImage(make.logo_url) } : {}),
+    ...(make.description ? { description: make.description } : {}),
+    ...(make.website_url ? { sameAs: [make.website_url] } : {}),
+  };
+  const jsonLd = [brand];
+  if (gone) {
+    jsonLd.push({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: make.name,
+      url: canonical,
+      ...(make.founded ? { foundingDate: String(make.founded) } : {}),
+      ...(make.status === "defunct" && make.status_date ? { dissolutionDate: make.status_date } : {}),
+      ...(make.status_details ? { description: make.status_details } : {}),
+    });
+  }
+  jsonLd.push({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: all.map((m, i) => ({ "@type": "ListItem", position: i + 1, name: displayName(make.name, m.name), url: abs(m.path) })),
+  });
+  jsonLd.push(breadcrumbLd(crumbs));
+  jsonLd.push(webPageLd(canonical, `${make.name} electric cars`, null, make.sources));
+
+  const names = data.models.current.slice(0, 4).map((m) => m.name);
+  const description = gone
+    ? `${make.name} ${make.status === "acquired" ? "was acquired" : "went out of business"}${make.status_date ? ` (${make.status_date})` : ""}. Every ${make.name} electric car it made or announced, with specs and history.`
+    : `Every ${make.name} electric car${names.length ? `: ${names.join(", ")}${data.models.current.length > 4 ? " and more" : ""}` : ""}. Specs, range, prices and earlier versions.`;
+  const firstImage = all.find((m) => m.image && m.image.url);
+  return {
+    meta: metaBlock({
+      title: `${make.name} Electric Cars: Every Model, Current and Past | ${SITE_NAME}`,
+      description,
+      canonical,
+      image: absImage((firstImage && firstImage.image.url) || make.logo_url),
+      jsonLd,
+    }),
+    content,
+  };
+}
+
+function generationLd(gen, ctx, data, gensNewestFirst) {
+  const idx = gensNewestFirst.findIndex((g) => g.slug === gen.slug);
+  const newer = idx > 0 ? gensNewestFirst[idx - 1] : null;
+  const older = idx >= 0 && idx < gensNewestFirst.length - 1 ? gensNewestFirst[idx + 1] : null;
+  const img = primaryImage(gen.images);
+  return {
+    "@type": "ProductModel",
+    "@id": abs(gen.path) + "#generation",
+    name: `${ctx.name} ${gen.name || gen.slug}`,
+    url: abs(gen.path),
+    brand: { "@type": "Brand", name: data.make.name },
+    isVariantOf: { "@id": abs(data.model.path) + "#model" },
+    ...(gen.start_year ? { productionDate: String(gen.start_year) } : {}),
+    ...(gen.description ? { description: gen.description } : {}),
+    ...(img && img.url ? { image: absImage(img.url) } : {}),
+    // successorOf: the generation this one replaced (older); predecessorOf: the one that replaced it (newer)
+    ...(older ? { successorOf: { "@id": abs(older.path) + "#generation" } } : {}),
+    ...(newer ? { predecessorOf: { "@id": abs(newer.path) + "#generation" } } : {}),
+  };
+}
+
+async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
+  const legacyKey = modelSlug.startsWith(`${makeSlug}-`) ? modelSlug : `${makeSlug}-${modelSlug}`;
+  const data = await getOrAlias(
+    `/catalog/models/${enc(makeSlug)}/${enc(modelSlug)}`,
+    "model",
+    legacyKey,
+    `/make/${makeSlug}/${modelSlug}`
+  );
+  if (data.__redirect) return { redirect: genSlug ? `${data.__redirect}/${genSlug}` : data.__redirect };
+  const { make, model } = data;
+  if (model.path !== `/make/${makeSlug}/${modelSlug}`) {
+    return { redirect: genSlug ? `${model.path}/${genSlug}` : model.path };
+  }
+  const gens = data.generations || [];
+  let gen = null;
+  if (genSlug) {
+    gen = gens.find((g) => g.slug === genSlug);
+    if (!gen) {
+      // A model year inside a generation → that generation.
+      const y = /^\d{4}$/.test(genSlug) ? Number(genSlug) : null;
+      const containing =
+        y &&
+        gens
+          .filter((g) => g.status !== "cancelled" && g.start_year && g.start_year <= y && (g.end_year || 9999) >= y)
+          .sort((a, b) => b.start_year - a.start_year)[0];
+      if (containing) return { redirect: containing.path };
+      throw new HttpError(404);
+    }
+  }
+  const def = gens.find((g) => g.slug === data.default_generation) || gens[0] || null;
+  const shown = gen || def;
+  const name = displayName(make.name, model.name);
+  const isGenPage = !!gen;
+  const path = isGenPage ? gen.path : model.path;
+  // The default generation is shown on the model page, so its page points there.
+  const canonical = abs(isGenPage && !gen.is_default ? gen.path : model.path);
+  const img = shown ? primaryImage(shown.images) : null;
+  const h = data.headline || {};
+  const crumbs = [["Makes", "/make"], [make.name, make.path], [model.name, model.path]];
+  if (isGenPage) crumbs.push([gen.name || gen.slug, gen.path]);
+  const gone = make.status === "defunct" || make.status === "acquired";
+  const market = h.market || null;
+  const ctx = { name, makeName: make.name, modelPath: model.path, market, image: img };
+
+  // Headline figures name their variant and test cycle.
+  const figures = [];
+  if (!isGenPage && h.from_price && h.from_price.value)
+    figures.push(
+      `from ${money(h.from_price.value, h.from_price.currency)} (${[h.from_price.market, h.from_price.model_year ? `MY${h.from_price.model_year}` : null, h.from_price.variant && h.from_price.variant.name]
+        .filter(Boolean)
+        .join(", ")})`
+    );
+  if (!isGenPage && h.max_range && h.max_range.value)
+    figures.push(`up to ${rangeText(h.max_range.value, h.max_range.unit, h.max_range.cycle)} (${(h.max_range.variant && h.max_range.variant.name) || ""})`);
+  if (!isGenPage && h.quickest_0_60 && h.quickest_0_60.value)
+    figures.push(`0–60 mph in ${h.quickest_0_60.value} s (${(h.quickest_0_60.variant && h.quickest_0_60.variant.name) || ""})`);
+
+  const statusLine = [
+    STATUS_TEXT[(isGenPage ? gen.status : model.status)] || null,
+    isGenPage ? yearsText(gen.start_year, gen.end_year, gen.status) : yearsText(model.years && model.years.start, model.years && model.years.end, model.status),
+    gone ? `${make.name} is ${make.status === "acquired" ? "acquired" : "defunct"}${make.status_date ? ` since ${make.status_date}` : ""}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  const earlier = isGenPage ? [] : gens.filter((g) => def && g.slug !== def.slug);
+  const earlierHtml = earlier.length
+    ? `<h2>Every version</h2><ul>${earlier
+        .map(
+          (g) =>
+            `<li><a href="${esc(g.path)}">${esc(g.name || g.slug)}</a> (${esc(yearsText(g.start_year, g.end_year, g.status))}, ${esc(STATUS_TEXT[g.status] || "")})${g.description ? `: ${esc(g.description)}` : ""}</li>`
+        )
+        .join("")}</ul>`
+    : "";
+
+  const offeringsHtml = isGenPage
+    ? (() => {
+        const rows = (gen.variants || []).flatMap((v) =>
+          (v.offerings || []).map(
+            (o) =>
+              `<tr><td>${esc(o.market || "")}</td><td>${esc(o.model_year || "current")}</td><td><a href="${esc(v.path)}">${esc(v.name || v.slug)}</a></td><td>${esc(money(o.price, o.currency) || "—")}</td><td>${esc(money(o.launch_price, o.currency) || "—")}</td><td>${esc(rangeText(o.range, o.range_unit, o.range_cycle) || "—")}</td></tr>`
+          )
+        );
+        return rows.length
+          ? `<h2>Prices and ranges by market and model year</h2><table><tr><th>Market</th><th>Model year</th><th>Variant</th><th>Price</th><th>Launch price</th><th>Range</th></tr>${rows.join("")}</table>`
+          : "";
+      })()
+    : "";
+
+  const relHtml = (data.relations || []).length
+    ? `<h2>Related</h2><ul>${data.relations
+        .map((r) => `<li>${esc({ twin: "Twin", successor: "Replaced by", predecessor: "Replaces" }[r.relation] || r.relation)}: <a href="${esc(r.model.path)}">${esc(displayName(r.model.make && r.model.make.name, r.model.name))}</a></li>`)
+        .join("")}</ul>`
+    : "";
+
+  const sources = [
+    ...(isGenPage ? [] : model.sources || []),
+    ...(shown ? [...(shown.sources || []), ...(shown.variants || []).flatMap((v) => v.sources || [])] : []),
+  ];
+
+  const h1 = isGenPage ? `${name} ${gen.name || gen.slug}` : name;
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(h1)}</h1>
+  <p class="sub">${esc(statusLine)}</p>
+  ${gone ? `<p><strong>${esc(make.status_details || "")}</strong></p>` : ""}
+  ${heroHtml(img, h1)}
+  ${figures.length ? `<p>${esc(figures.join(" · "))}</p>` : ""}
+  <p>${esc(isGenPage ? gen.description || "" : model.description || "")}</p>
+  ${shown && (shown.variants || []).length ? `<h2>${esc(isGenPage || gens.length < 2 ? "Variants" : `${shown.name || shown.slug} variants`)}</h2><table>${VARIANT_TABLE_HEAD}${variantRowsHtml(shown.variants, market)}</table>` : ""}
+  ${offeringsHtml}
+  ${earlierHtml}
+  ${relHtml}
+  ${sourcesHtml(sources)}
+  ${data.updated_at ? `<p class="sub">Last updated ${esc(String(data.updated_at).slice(0, 10))}</p>` : ""}
+</div>`;
+
+  const jsonLd = [];
+  if (isGenPage) {
+    jsonLd.push({
+      "@context": "https://schema.org",
+      ...generationLd(gen, ctx, data, gens),
+      hasVariant: undefined,
+    });
+    jsonLd.push({
+      "@context": "https://schema.org",
+      "@graph": (gen.variants || []).map((v) => variantCarLd(v, { ...ctx, genPath: gen.path })),
+    });
+  } else {
+    const twins = (data.relations || []).filter((r) => r.relation === "twin");
+    jsonLd.push({
+      "@context": "https://schema.org",
+      "@type": "ProductGroup",
+      "@id": abs(model.path) + "#model",
+      name,
+      url: abs(model.path),
+      productGroupID: model.key,
+      brand: { "@type": "Brand", name: make.name, url: abs(make.path) },
+      ...(model.description ? { description: model.description } : {}),
+      ...(img && img.url ? { image: absImage(img.url) } : {}),
+      variesBy: ["https://schema.org/vehicleModelDate", "https://schema.org/vehicleConfiguration"],
+      hasVariant: def ? (def.variants || []).map((v) => variantCarLd(v, { ...ctx, genPath: def.path })) : [],
+      ...(twins.length ? { isSimilarTo: twins.map((r) => ({ "@type": "ProductGroup", name: displayName(r.model.make && r.model.make.name, r.model.name), url: abs(r.model.path) })) } : {}),
+    });
+    jsonLd.push({ "@context": "https://schema.org", "@graph": gens.map((g) => generationLd(g, ctx, data, gens)) });
+    // FAQ from offering values that name their test cycle and market.
+    const faq = [];
+    if (h.max_range && h.max_range.value)
+      faq.push({
+        "@type": "Question",
+        name: `What is the range of the ${name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Up to ${rangeText(h.max_range.value, h.max_range.unit, h.max_range.cycle)} (${(h.max_range.variant && h.max_range.variant.name) || "best variant"}${h.max_range.market ? `, ${h.max_range.market}` : ""}${h.max_range.model_year ? ` model year ${h.max_range.model_year}` : ""}).`,
+        },
+      });
+    if (h.from_price && h.from_price.value)
+      faq.push({
+        "@type": "Question",
+        name: `How much does the ${name} cost?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `From ${money(h.from_price.value, h.from_price.currency)} (${(h.from_price.variant && h.from_price.variant.name) || "base variant"}${h.from_price.market ? `, ${h.from_price.market}` : ""}${h.from_price.model_year ? ` model year ${h.from_price.model_year}` : ""}${h.from_price.basis ? `, ${h.from_price.basis.replace(/_/g, " ")}` : ""}${h.from_price.is_estimate ? ", manufacturer estimate" : ""}).`,
+        },
+      });
+    if (faq.length) jsonLd.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq });
+  }
+  jsonLd.push(breadcrumbLd(crumbs));
+  jsonLd.push(webPageLd(abs(path), h1, data.updated_at, sources));
+
+  const descBits = [];
+  if (isGenPage) {
+    descBits.push(`${name} ${gen.name || gen.slug} (${yearsText(gen.start_year, gen.end_year, gen.status)})`);
+    if (gen.description) descBits.push(gen.description);
+  } else {
+    descBits.push(`${name}${statusLine ? ` (${statusLine})` : ""}`);
+    if (figures.length) descBits.push(figures.join(", "));
+    if (gens.length > 1) descBits.push(`All ${gens.length} versions with specs and prices`);
+  }
+  return {
+    meta: metaBlock({
+      title: isGenPage
+        ? `${name} ${gen.name || gen.slug} (${yearsText(gen.start_year, gen.end_year, gen.status)}): Specs & Prices | ${SITE_NAME}`
+        : `${name}: Specs, Range, Price & Every Version | ${SITE_NAME}`,
+      description: descBits.join(". ").slice(0, 300),
+      canonical,
+      image: absImage(img && img.url),
+      ogType: "product",
+      jsonLd,
+    }),
+    content,
+  };
+}
+
+async function buildCatalogVariantPage(makeSlug, modelSlug, genSlug, variantSlug) {
+  const data = await catalogGet(`/catalog/variants/${[makeSlug, modelSlug, genSlug, variantSlug].map(enc).join("/")}`);
+  const { make, model, generation: gen, variant: v } = data;
+  if (v.path !== `/make/${makeSlug}/${modelSlug}/${genSlug}/${variantSlug}`) return { redirect: v.path };
+  const name = displayName(make.name, model.name);
+  const title = `${name} ${v.name || v.slug}`;
+  const canonical = abs(v.path);
+  const img = primaryImage(gen.images);
+  const crumbs = [["Makes", "/make"], [make.name, make.path], [model.name, model.path], [gen.name || gen.slug, gen.path], [v.name || v.slug, v.path]];
+  const o = newestOffering(v.offerings, "US");
+
+  const offerRows = [...(v.offerings || [])]
+    .map(
+      (off) =>
+        `<tr><td>${esc(off.market || "")}</td><td>${esc(off.model_year || "current")}</td><td>${esc(money(off.price, off.currency) || "—")}</td><td>${esc(money(off.launch_price, off.currency) || "—")}</td><td>${esc(rangeText(off.range, off.range_unit, off.range_cycle) || "—")}</td><td>${esc(off.connector || "—")}</td></tr>`
+    )
+    .join("");
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(title)}</h1>
+  <p class="sub">${esc([gen.name, yearsText(gen.start_year, gen.end_year, gen.status), STATUS_TEXT[v.status]].filter(Boolean).join(" · "))}</p>
+  ${make.status === "defunct" || make.status === "acquired" ? `<p><strong>${esc(make.name)} is ${make.status === "acquired" ? "acquired" : "defunct"}${make.status_date ? ` since ${esc(make.status_date)}` : ""}.</strong> ${esc(make.status_details || "")}</p>` : ""}
+  ${heroHtml(img, title)}
+  <h2>Specifications</h2>
+  <table>
+    ${specRow("Drivetrain", v.drivetrain)}
+    ${specRow("Seats", v.seats)}
+    ${specRow("Battery", v.battery_kwh ? `${v.battery_kwh} kWh${v.battery_basis ? ` (${v.battery_basis})` : ""}` : null)}
+    ${specRow("Power", v.power_hp, " hp")}
+    ${specRow("Torque", v.torque_lbft, " lb-ft")}
+    ${specRow("0–60 mph", v.accel_0_60_s, " s")}
+    ${specRow("0–100 km/h", v.accel_0_100_s, " s")}
+    ${specRow("Top speed", v.top_speed_mph, " mph")}
+    ${specRow("Peak DC charging", v.dc_kw, " kW")}
+  </table>
+  ${offerRows ? `<h2>Prices and range by market</h2><table><tr><th>Market</th><th>Model year</th><th>Price</th><th>Launch price</th><th>Range</th><th>Connector</th></tr>${offerRows}</table>` : ""}
+  ${sourcesHtml(v.sources)}
+  ${v.updated_at ? `<p class="sub">Last updated ${esc(String(v.updated_at).slice(0, 10))}</p>` : ""}
+</div>`;
+
+  const jsonLd = [
+    { "@context": "https://schema.org", ...variantCarLd(v, { name, makeName: make.name, modelPath: model.path, genPath: gen.path, market: "US", image: img }) },
+    breadcrumbLd(crumbs),
+    webPageLd(canonical, title, v.updated_at, v.sources),
+  ];
+  const bits = [title, gen.name ? `(${gen.name})` : null].filter(Boolean).join(" ");
+  const facts = [
+    o && o.range ? `${rangeText(o.range, o.range_unit, o.range_cycle)} range` : null,
+    o && (o.price || o.launch_price) ? `${money(o.price || o.launch_price, o.currency)}${o.market ? ` ${o.market}` : ""}` : null,
+    v.accel_0_60_s ? `0–60 mph in ${v.accel_0_60_s} s` : null,
+    v.battery_kwh ? `${v.battery_kwh} kWh battery` : null,
+  ].filter(Boolean);
+  return {
+    meta: metaBlock({
+      title: `${title} (${gen.name || gen.slug}): Full Specs | ${SITE_NAME}`,
+      description: `${bits}${facts.length ? `: ${facts.join(", ")}` : ""}. Full specifications, prices by market and sources.`,
+      canonical,
+      image: absImage(img && img.url),
+      ogType: "product",
+      jsonLd,
+    }),
+    content,
+  };
+}
+
+async function buildAllCarsPage() {
+  const data = await catalogGet("/catalog/models?limit=1000");
+  const canonical = abs("/cars");
+  const rows = data.models
+    .map(
+      (m) =>
+        `<tr><td><a href="${esc(m.path)}">${esc(displayName(m.make && m.make.name, m.name))}</a></td><td>${esc(yearsText(m.years && m.years.start, m.years && m.years.end, m.status))}</td><td>${esc(STATUS_TEXT[m.status] || "")}</td><td>${esc((m.from_price && money(m.from_price.value, m.from_price.currency)) || "—")}</td><td>${esc((m.max_range && rangeText(m.max_range.value, m.max_range.unit, m.max_range.cycle)) || "—")}</td></tr>`
+    )
+    .join("");
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml([["Home", "/"], ["All electric cars", "/cars"]])}
+  <h1>All electric cars</h1>
+  <p class="sub">Every battery-electric model we track, on sale or not: ${data.count} models.</p>
+  <table><tr><th>Model</th><th>Years</th><th>Status</th><th>From</th><th>Range</th></tr>${rows}</table>
+</div>`;
+  return {
+    meta: metaBlock({
+      title: `All Electric Cars: ${data.count} Models, Current and Past | ${SITE_NAME}`,
+      description: `Browse all ${data.count} electric car models: on sale, coming soon, discontinued and cancelled, with prices and ranges as published in each market.`,
+      canonical,
+      image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
+      jsonLd: [
+        breadcrumbLd([["Home", "/"], ["All electric cars", "/cars"]]),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          numberOfItems: data.count,
+          itemListElement: data.models.slice(0, 200).map((m, i) => ({ "@type": "ListItem", position: i + 1, url: abs(m.path) })),
+        },
+      ],
+    }),
+    content,
+  };
+}
+
+/**
+ * Legacy URL → 301 to the catalog page via BE /catalog/resolve.
+ * Hit: 301. Miss: 404. Backend error: 503. Catalog not migrated yet (503 from
+ * the BE): serve the legacy page as before.
+ */
+async function resolveLegacy(kind, key) {
+  let res;
+  try {
+    res = await fetchWithTimeout(`${API_BASE}/catalog/resolve?kind=${enc(kind)}&key=${enc(String(key).toLowerCase())}`);
+  } catch (e) {
+    return { error: 503 };
+  }
+  if (res.status === 404) return { notFound: true };
+  if (res.status === 503) {
+    const body = await res.json().catch(() => null);
+    // Only the "not migrated" answer means fall back; other 503s are outages.
+    if (body && /migration/i.test(String(body.detail || ""))) return { fallback: true };
+    return { error: 503 };
+  }
+  if (!res.ok) return { error: 503 };
+  const data = await res.json();
+  return data && data.path ? { redirect: data.path } : { notFound: true };
+}
+
+function noindex(meta) {
+  return `${meta}\n    <meta name="robots" content="noindex" />`;
+}
+
 // ---------- handler ----------
 
 export default async function handler(req, res) {
-  const { page, slug } = req.query || {};
+  const q = req.query || {};
+  const { page, slug } = q;
   let template;
   try {
     template = await getTemplate(req.headers.host);
@@ -663,17 +1417,63 @@ export default async function handler(req, res) {
     return;
   }
 
+  const redirect = (location) =>
+    res
+      .status(301)
+      .setHeader("Location", location)
+      .setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800")
+      .send("");
+
   let built = null;
   let status = 200;
+  let retryAfter = false;
+  // Old routes: 301 to the catalog page; fall back to the old page only while
+  // the catalog is not migrated on the backend.
+  let legacyPage = page;
+  if (page === "legacy") {
+    const kind = q.kind;
+    const key = String(slug || "").replace(/\/+$/, "");
+    if (!["model", "make", "variant"].includes(kind) || !key) {
+      status = 404;
+    } else {
+      const r = await resolveLegacy(kind, key);
+      if (r.redirect) return redirect(r.redirect);
+      if (r.notFound) status = 404;
+      else if (r.error) {
+        status = 503;
+        retryAfter = true;
+      } else if (r.fallback) legacyPage = kind === "model" ? "model" : kind === "make" ? "make" : "variant-legacy";
+    }
+  }
+
+  const CATALOG_PAGES = ["makes", "catalog-make", "catalog-model", "catalog-generation", "catalog-variant", "cars"];
   try {
-    if (page === "model" && slug) built = await buildModelPage(slug);
-    else if (page === "make" && slug) built = await buildMakePage(slug);
-    else if (page === "compare" && slug) built = await buildComparePage(slug);
-    else if (page === "best" && slug) built = await buildBestPage(slug);
-    else if (page === "home") built = await buildHomePage();
-    if (["model", "make", "compare", "best"].includes(page) && !built) status = 404;
+    if (status === 200) {
+      if (legacyPage === "model" && slug) built = await buildModelPage(slug);
+      else if (legacyPage === "make" && slug) built = await buildMakePage(slug);
+      else if (page === "compare" && slug) built = await buildComparePage(slug);
+      else if (page === "best" && slug) built = await buildBestPage(slug);
+      else if (page === "home") built = await buildHomePage();
+      else if (page === "makes") built = await buildMakesIndexPage();
+      else if (page === "cars") built = await buildAllCarsPage();
+      else if (page === "catalog-make" && q.make) built = await buildCatalogMakePage(q.make);
+      else if (page === "catalog-model" && q.make && q.model) built = await buildCatalogModelPage(q.make, q.model, null);
+      else if (page === "catalog-generation" && q.make && q.model && q.generation)
+        built = await buildCatalogModelPage(q.make, q.model, q.generation);
+      else if (page === "catalog-variant" && q.make && q.model && q.generation && q.variant)
+        built = await buildCatalogVariantPage(q.make, q.model, q.generation, q.variant);
+      if (built && built.redirect) return redirect(built.redirect);
+      if (["model", "make", "compare", "best"].includes(legacyPage) && !built) status = 404;
+    }
   } catch (e) {
-    built = null; // fail open: serve the untouched shell
+    built = null;
+    if (CATALOG_PAGES.includes(page) && e instanceof HttpError) {
+      // Catalog pages: real 404s; backend trouble (incl. not migrated) is a 503 so
+      // crawlers retry instead of indexing an empty shell.
+      status = e.status === 404 ? 404 : 503;
+      retryAfter = status === 503;
+    }
+    // Other pages fail open: serve the untouched shell.
   }
 
   let html = template;
@@ -683,14 +1483,23 @@ export default async function handler(req, res) {
       `<!-- meta:start -->\n    ${built.meta}\n    <!-- meta:end -->`
     );
     html = html.replace('<div id="root"></div>', `<div id="root">${built.content}</div>`);
+  } else if (status === 404) {
+    html = html.replace(
+      /<!-- meta:start[\s\S]*?meta:end -->/,
+      `<!-- meta:start -->\n    ${noindex(`<title>Page not found | ${SITE_NAME}</title>`)}\n    <!-- meta:end -->`
+    );
   }
 
+  res.status(status).setHeader("Content-Type", "text/html; charset=utf-8");
+  if (retryAfter) res.setHeader("Retry-After", "300");
   res
-    .status(status)
-    .setHeader("Content-Type", "text/html; charset=utf-8")
     .setHeader(
       "Cache-Control",
-      built ? "public, s-maxage=3600, stale-while-revalidate=86400" : "public, s-maxage=60"
+      built
+        ? "public, s-maxage=3600, stale-while-revalidate=86400"
+        : status === 503
+        ? "no-store"
+        : "public, s-maxage=60"
     )
     .send(html);
 }
