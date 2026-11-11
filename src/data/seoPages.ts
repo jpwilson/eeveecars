@@ -1,23 +1,27 @@
 import { Car } from "../hooks/useCars";
 
-/** Curated comparison pairs — keep in sync with backend routers/seo.py
- * (sitemap) and api/prerender.js (bot HTML). */
+/** Curated comparison pairs, in canonical form: the two catalog model slugs in
+ * alphabetical order (design 5: other orders 301 to this one). The backend
+ * sitemap (routers/catalog.py) canonicalises routers/seo.py's list the same way. */
 export const COMPARE_PAIRS: { pair: string; label: string }[] = [
-  { pair: "tesla-model-3-vs-bmw-i4", label: "Tesla Model 3 vs BMW i4" },
+  { pair: "bmw-i4-vs-tesla-model-3", label: "BMW i4 vs Tesla Model 3" },
   { pair: "hyundai-ioniq-5-vs-kia-ev6", label: "Ioniq 5 vs KIA EV6" },
-  { pair: "tesla-model-y-vs-ford-mustang-mach-e", label: "Model Y vs Mach-E" },
+  { pair: "ford-mustang-mach-e-vs-tesla-model-y", label: "Mach-E vs Model Y" },
   { pair: "rivian-r1s-vs-tesla-model-x", label: "Rivian R1S vs Model X" },
-  { pair: "tesla-model-3-vs-hyundai-ioniq-6", label: "Model 3 vs Ioniq 6" },
+  { pair: "hyundai-ioniq-6-vs-tesla-model-3", label: "Ioniq 6 vs Model 3" },
   { pair: "ford-f150-lightning-vs-tesla-cybertruck", label: "F-150 Lightning vs Cybertruck" },
   { pair: "chevrolet-equinox-ev-vs-tesla-model-y", label: "Equinox EV vs Model Y" },
   { pair: "kia-ev9-vs-rivian-r1s", label: "KIA EV9 vs Rivian R1S" },
-  { pair: "tesla-model-y-vs-hyundai-ioniq-5", label: "Model Y vs Ioniq 5" },
-  { pair: "rivian-r1t-vs-ford-f150-lightning", label: "R1T vs F-150 Lightning" },
+  { pair: "hyundai-ioniq-5-vs-tesla-model-y", label: "Ioniq 5 vs Model Y" },
+  { pair: "ford-f150-lightning-vs-rivian-r1t", label: "F-150 Lightning vs R1T" },
 ];
 
 export interface BestPageConfig {
   title: string;
+  /** describes the catalog list (`/catalog/best/{key}`: US offerings, USD, EPA) */
   blurb: string;
+  /** the old wording, shown only by the legacy fallback when it ranks differently */
+  legacyBlurb?: string;
   filter: (c: Car) => boolean;
   sort: (a: Car, b: Car) => number;
   limit: number;
@@ -25,12 +29,16 @@ export interface BestPageConfig {
 
 const isAvailable = (c: Car) => c.availability_desc === "available";
 
-/** Best-of list pages — data-driven, always current. Slugs must match
- * backend BEST_PATHS and api/prerender.js. */
+/** Best-of list pages — data-driven, always current. Slugs must match the
+ * backend's /catalog/best keys and api/prerender.js. The lists come from the
+ * catalog API; filter/sort/limit are only used by the legacy fallback (catalog
+ * answers 503) and limit is also passed to the catalog. */
 export const BEST_PAGES: Record<string, BestPageConfig> = {
   "evs-under-40k": {
     title: "Best EVs Under $40,000",
     blurb:
+      "Every electric vehicle you can buy in the US for under $40k MSRP, cheapest first. Prices are before taxes and incentives — some makers quote them with destination, some without.",
+    legacyBlurb:
       "Every electric vehicle you can buy for under $40k MSRP, ranked by review score. Prices exclude taxes, fees, and incentives — the federal tax credit can push these even lower.",
     filter: (c) => isAvailable(c) && !!c.current_price && c.current_price < 40000,
     sort: (a, b) =>
@@ -65,6 +73,8 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
   "3-row-evs": {
     title: "Best 3-Row Electric SUVs (6+ Seats)",
     blurb:
+      "Every electric vehicle on sale in the US with three rows or six-plus seats — the family-hauler list, ranked by EPA range.",
+    legacyBlurb:
       "Every electric vehicle with three rows or six-plus seats — the family-hauler list, ranked by review score.",
     filter: (c) => isAvailable(c) && (c.number_of_full_adult_seats ?? 0) >= 6,
     sort: (a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0),
@@ -73,6 +83,8 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
   "electric-trucks": {
     title: "Electric Pickup Trucks",
     blurb:
+      "Every electric pickup truck on sale in the US, then the ones coming soon — from work trucks to luxury pickups, ranked by EPA range.",
+    legacyBlurb:
       "Every electric pickup truck on the market and coming soon — from work trucks to luxury pickups.",
     filter: (c) => c.vehicle_class?.toLowerCase().includes("pickup") && c.availability_desc !== "discontinued",
     sort: (a, b) => {

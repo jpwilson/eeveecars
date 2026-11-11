@@ -314,3 +314,21 @@ export interface CatalogMeta {
   dataAsOf: string | null;
   data_updated_at: string | null;
 }
+
+export interface CatalogBestItem {
+  model: CatalogModelCard;
+  /** the ranked figure: price (unit = currency), range (unit = mi) or 0-60 (unit = s) */
+  value: number | null;
+  unit: string | null;
+  variant: VariantRef | null;
+  rank: number | null;
+}
+
+export interface CatalogBestResponse {
+  key: string;
+  title: string | null;
+  market: string | null;
+  metric: "price" | "range" | "accel" | string | null;
+  items: CatalogBestItem[];
+  count: number | null;
+}

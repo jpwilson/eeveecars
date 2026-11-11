@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import catalogClient from "../services/catalog-client";
 import {
+  CatalogBestResponse,
   CatalogMakeResponse,
   CatalogMakesResponse,
   CatalogMeta,
@@ -120,6 +121,35 @@ export function useCatalogResolve(kind: "model" | "make" | "variant", key: strin
     retry,
     staleTime: 60 * 60 * 1000,
   });
+}
+
+/** Best-of list (`/catalog/best/{key}`): US figures, each naming its variant. */
+export function useCatalogBest(key: string | undefined, limit?: number) {
+  return useQuery({
+    queryKey: ["catalog", "best", key, limit ?? null],
+    queryFn: ({ signal }) =>
+      get<CatalogBestResponse>(`/catalog/best/${encodeURIComponent(key ?? "")}`, limit ? { limit } : undefined, signal),
+    enabled: !!key,
+    retry,
+  });
+}
+
+/**
+ * A model by its API slug (`tesla-model-3`, also legacy slugs such as
+ * `polestar-two`): the resolver gives the model path, then the full tree loads.
+ * `error` is the first failure (404 = no such model, 503 = catalog not migrated).
+ */
+export function useCatalogModelBySlug(slug: string | undefined) {
+  const resolved = useCatalogResolve("model", slug ? slug.toLowerCase() : undefined);
+  const m = /^\/make\/([^/]+)\/([^/]+)$/.exec(resolved.data?.path ?? "");
+  const model = useCatalogModel(m?.[1], m?.[2]);
+  const wrongPath = !!resolved.data && !m;
+  return {
+    data: model.data,
+    error: resolved.error ?? model.error,
+    notFound: isNotFound(resolved.error) || isNotFound(model.error) || wrongPath,
+    isLoading: resolved.isLoading || (!!m && model.isLoading),
+  };
 }
 
 export function useCatalogMeta() {
