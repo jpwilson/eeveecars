@@ -10,32 +10,35 @@ import {
 } from "@chakra-ui/react";
 import { FaStar } from "react-icons/fa";
 import { Link as RouterLink } from "react-router-dom";
-import useData from "../hooks/useData";
-import { Car } from "../hooks/useCars";
+import { useHomeCatalog } from "../hooks/useHomeCars";
+import { popularityRank } from "../data/popularity";
 import CarCard from "./CarCard";
 import { track } from "../utils/analytics";
 
 /**
- * "Top Picks" — the homepage's featured slot. Currently editorial (top-rated
- * available models); designed to become the paid Featured Vehicle placement
- * sold on /advertise. The "Sponsor this spot" link is the storefront hook.
+ * "Top Picks": the homepage's featured slot. Editorial (the most popular
+ * models on sale in the selected market, with a photo); designed to become the
+ * paid Featured Vehicle placement sold on /advertise.
  */
-export default function FeaturedRow() {
-  const { data, isLoading } = useData<Car>("/cars/cards");
+export default function FeaturedRow({ market }: { market: string }) {
+  const { cars, isLoading } = useHomeCatalog(market);
   const subText = useColorModeValue("gray.600", "gray.400");
 
   if (isLoading) return null;
 
-  const picks = data
+  const picks = cars
     .filter(
       (c) =>
-        c.average_rating &&
-        c.image_url &&
-        c.availability_desc !== "previous_generation" &&
-        c.availability_desc !== "discontinued" &&
-        c.availability_desc !== "Not yet released"
+        c.catalog?.image?.url &&
+        (c.catalog.market_status ?? c.catalog.status) === "current" &&
+        !c.catalog.is_commercial &&
+        c.current_price
     )
-    .sort((a, b) => (b.average_rating ?? 0) - (a.average_rating ?? 0))
+    .sort(
+      (a, b) =>
+        popularityRank(a.make_model_slug, a.catalog?.make?.slug) -
+        popularityRank(b.make_model_slug, b.catalog?.make?.slug)
+    )
     .slice(0, 3);
 
   if (picks.length < 3) return null;
@@ -49,7 +52,7 @@ export default function FeaturedRow() {
             Top Picks
           </Heading>
           <Text fontSize="xs" color={subText}>
-            highest-rated EVs right now
+            popular EVs on sale now
           </Text>
         </HStack>
         <ChakraLink
@@ -66,7 +69,7 @@ export default function FeaturedRow() {
       <SimpleGrid columns={3} spacing={4} display={{ base: "none", md: "grid" }}>
         {picks.map((car) => (
           <Box
-            key={car.id}
+            key={car.make_model_slug}
             onClickCapture={() =>
               track("featured_card_click", { slug: car.make_model_slug })
             }

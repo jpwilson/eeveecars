@@ -1,4 +1,4 @@
-import useFeatures from "../hooks/useFeatures";
+import { useHomeFeatures } from "../hooks/useHomeCars";
 import { BsChevronDown } from "react-icons/bs";
 import {
   Accordion,
@@ -21,9 +21,32 @@ import { SelectedFeature } from "../hooks/useCars";
 
 const MAX_FILTERS = 6;
 
+const money = (currency: string, v: string) => {
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(v));
+  } catch {
+    return `${v} ${currency}`;
+  }
+};
+
 /** Format raw bucket names into readable labels */
 export function formatBucketLabel(featureName: string, bucketName: string): string {
   const parts = bucketName.split("_");
+
+  // Catalog buckets: "prices_USD" (one currency) and "range_mi_EPA" (one unit + test cycle)
+  if (featureName.startsWith("prices_")) {
+    const cur = featureName.slice("prices_".length);
+    if (parts[0] === "under") return `Under ${money(cur, parts[1])}`;
+    if (parts[0] === "over") return `Over ${money(cur, parts[1])}`;
+    return `${money(cur, parts[0])} – ${money(cur, parts[1])}`;
+  }
+
+  if (featureName.startsWith("range_")) {
+    const u = featureName.split("_").slice(1).join(" ");
+    if (parts[0] === "under") return `Under ${parts[1]} ${u}`;
+    if (parts[0] === "over") return `Over ${parts[1]} ${u}`;
+    return `${parts[0]} – ${parts[1]} ${u}`;
+  }
 
   if (featureName === "prices") {
     if (parts[0] === "under") return `Under $${parts[1]}`;
@@ -49,19 +72,22 @@ export function formatBucketLabel(featureName: string, bucketName: string): stri
 
 /** Format feature category names */
 function formatFeatureName(name: string): string {
-  if (name === "prices") return "Price";
+  if (name === "prices" || name.startsWith("prices_")) return "Price";
+  if (name.startsWith("range_")) return `Range (${name.split("_").slice(2).join(" ")})`;
   if (name === "acceleration") return "Acceleration (0-60)";
   if (name === "top_speed") return "Top Speed";
   return name.replace(/_/g, " ");
 }
 
 interface Props {
+  /** home page market ("" = all markets); buckets are computed from its cards */
+  market: string;
   selectedFeatures: SelectedFeature[];
   onToggleFeature: (featureName: string, bucketName: string, carIds: number[]) => void;
 }
 
-const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
-  const { features, isLoading, error } = useFeatures();
+const FeatureSelector = ({ market, selectedFeatures, onToggleFeature }: Props) => {
+  const { features, isLoading, error } = useHomeFeatures(market);
 
   const btnBg = useColorModeValue("white", "gray.700");
   const btnBorder = useColorModeValue("rgba(22, 163, 74, 0.25)", "rgba(22, 163, 74, 0.4)");
@@ -75,7 +101,7 @@ const FeatureSelector = ({ selectedFeatures, onToggleFeature }: Props) => {
 
   if (isLoading) return null;
   if (error) return null;
-  if (!features) return null;
+  if (!features || Object.keys(features).length === 0) return null;
 
   const isSelected = (featureName: string, bucketName: string) =>
     selectedFeatures.some(

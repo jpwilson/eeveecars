@@ -14,6 +14,38 @@ import CarScore from "./CarScore";
 import { Link } from "react-router-dom";
 import { formatPrice } from "../utils/formatPrice";
 import { useCompare } from "../contexts/CompareContext";
+import StatusBadge from "./catalog/StatusBadge";
+import CatalogImage from "./catalog/CatalogImage";
+import { formatMoney, formatYears, modelDisplayName, num } from "../utils/catalogFormat";
+
+/** Price / stats for a card. Catalog cards keep their own currency, unit and test cycle. */
+function cardFigures(car: Car) {
+  const m = car.catalog;
+  if (!m) {
+    return {
+      price: formatPrice(car.current_price),
+      stats: [
+        { value: car.epa_range ? `${car.epa_range}` : "—", label: "mi range" },
+        { value: car.acceleration_0_60 ? `${car.acceleration_0_60}s` : "—", label: "0–60 mph" },
+        { value: car.top_speed ? `${car.top_speed}` : "—", label: "mph top" },
+      ],
+    };
+  }
+  const r = m.max_range;
+  const accel = m.quickest_0_60?.value
+    ? { value: `${num(m.quickest_0_60.value, 2)}s`, label: "0–60 mph" }
+    : m.quickest_0_100?.value
+    ? { value: `${num(m.quickest_0_100.value, 2)}s`, label: "0–100 km/h" }
+    : { value: "—", label: "0–60 mph" };
+  return {
+    price: formatMoney(m.from_price?.value, m.from_price?.currency) ?? "TBA",
+    stats: [
+      { value: r?.value ? Math.round(r.value).toLocaleString("en-US") : "—", label: r?.value ? `${r.unit ?? ""} ${r.cycle ?? ""}`.trim() : "range" },
+      accel,
+      { value: formatYears(m.years, m.status)?.replace("–present", "–") ?? "—", label: "years" },
+    ],
+  };
+}
 
 interface Props {
   car: Car;
@@ -31,6 +63,9 @@ const CarCard = ({ car }: Props) => {
   const toast = useToast();
 
   const selected = isCarSelected(car.id);
+  const figures = cardFigures(car);
+  const status = car.catalog ? car.catalog.market_status ?? car.catalog.status : null;
+  const title = car.catalog ? modelDisplayName(car.make_name, car.model) : `${car.make_name} ${car.model}`;
 
   const cardBg = useColorModeValue(
     "rgba(255, 255, 255, 0.7)",
@@ -65,6 +100,14 @@ const CarCard = ({ car }: Props) => {
 
     if (selected) {
       removeCar(car.id);
+    } else if (car.id <= 0) {
+      toast({
+        title: "No specs to compare yet",
+        description: "This model has no variant figures recorded yet.",
+        status: "info",
+        duration: 3000,
+        isClosable: true,
+      });
     } else {
       const added = addCar(car);
       if (!added) {
@@ -99,16 +142,25 @@ const CarCard = ({ car }: Props) => {
       position="relative"
     >
       <Box position="relative" overflow="hidden">
-        <Image
-          src={car.image_url}
-          alt={`${car.make_name} ${car.model}`}
-          loading="lazy"
-          height="180px"
-          width="full"
-          objectFit="cover"
-          opacity={isCompareMode && selected ? 0.8 : 1}
-          transition="transform 0.4s ease"
-        />
+        {car.catalog ? (
+          <Box opacity={isCompareMode && selected ? 0.8 : 1}>
+            <CatalogImage image={car.catalog.image} fallbackAlt={title} placeholder="No photo yet" />
+          </Box>
+        ) : (
+          <Image
+            src={car.image_url}
+            alt={title}
+            loading="lazy"
+            height="180px"
+            width="full"
+            objectFit="cover"
+            opacity={isCompareMode && selected ? 0.8 : 1}
+            transition="transform 0.4s ease"
+          />
+        )}
+        {status && status !== "current" && (
+          <StatusBadge status={status} position="absolute" bottom={3} left={3} boxShadow="sm" />
+        )}
         {car.vehicle_class && car.vehicle_class !== "N/A" && (
           <Box
             position="absolute"
@@ -164,25 +216,18 @@ const CarCard = ({ car }: Props) => {
           mb={1}
           noOfLines={1}
         >
-          {car.make_name} {car.model}
+          {title}
         </Heading>
         <HStack spacing={1} mb={3} align="baseline">
           <Text fontSize="xs" color={subTextColor} fontWeight="500">
-            From
+            {status === "discontinued" || status === "cancelled" ? "Was from" : "From"}
           </Text>
           <Text fontSize="md" fontWeight="700" color="green.500">
-            {formatPrice(car.current_price)}
+            {figures.price}
           </Text>
         </HStack>
         <HStack spacing={0} align="stretch">
-          {[
-            { value: car.epa_range ? `${car.epa_range}` : "—", label: "mi range" },
-            {
-              value: car.acceleration_0_60 ? `${car.acceleration_0_60}s` : "—",
-              label: "0–60 mph",
-            },
-            { value: car.top_speed ? `${car.top_speed}` : "—", label: "mph top" },
-          ].map((stat, i) => (
+          {figures.stats.map((stat, i) => (
             <VStack
               key={stat.label}
               spacing={0}
@@ -213,7 +258,7 @@ const CarCard = ({ car }: Props) => {
 
   return (
     <Box role="group">
-      <Link to={`model_detail/${car.make_model_slug}`}>{cardContent}</Link>
+      <Link to={car.catalog?.path ?? `/model_detail/${car.make_model_slug}`}>{cardContent}</Link>
     </Box>
   );
 };

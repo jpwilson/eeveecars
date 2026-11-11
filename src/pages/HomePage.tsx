@@ -25,6 +25,7 @@ import {
   Text,
   Badge,
   Image,
+  Select,
 } from "@chakra-ui/react";
 import { FaThList, FaTh } from "react-icons/fa";
 import { Link as RouterLink } from "react-router-dom";
@@ -33,7 +34,9 @@ import CarGrid from "../components/CarGrid";
 import CarTable from "../components/CarTable";
 import ManufacturerList from "../components/ManufacturerList";
 import { useState } from "react";
-import { Make } from "../hooks/useMakes";
+import { CatalogMakeSummary } from "../types/catalog";
+import { HOME_MARKETS } from "../hooks/useHomeCars";
+import MakeLogo from "../components/catalog/MakeLogo";
 import FeatureSelector, { formatBucketLabel } from "../components/FeatureSelector";
 import SortSelector from "../components/SortSelector";
 import { SortOption } from "../types/types";
@@ -43,11 +46,12 @@ import CompareBar from "../components/CompareBar";
 import ComparisonModal from "../components/ComparisonModal";
 import NewsTicker from "../components/NewsTicker";
 import FeaturedRow from "../components/FeaturedRow";
-import { makeNameToSlug } from "../utils/makeSlug";
 import { track } from "../utils/analytics";
 
 function HomePage() {
-  const [selectedMake, setSelectedMake] = useState<Make | null>(null);
+  const [selectedMake, setSelectedMake] = useState<CatalogMakeSummary | null>(null);
+  // Headline market for prices / ranges (US by default; "" = all markets)
+  const [market, setMarket] = useState("US");
   const [selectedFeatures, setSelectedFeatures] = useState<SelectedFeature[]>([]);
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [showDiscontinuedCars, setShowDiscontinuedCars] = useState(false);
@@ -81,7 +85,7 @@ function HomePage() {
   const drawerBg = useColorModeValue("white", "gray.800");
   const heroBgOpacity = useColorModeValue(0.04, 0.06);
 
-  const handleMobileSelectMake = (make: Make | null) => {
+  const handleMobileSelectMake = (make: CatalogMakeSummary | null) => {
     setSelectedMake(make);
     onBrandsClose();
   };
@@ -230,7 +234,7 @@ function HomePage() {
 
             {/* Featured slot (desktop) — Top Picks / sellable sponsor placement */}
             <Box display={{ base: "none", md: "block" }} mt={4}>
-              <FeaturedRow />
+              <FeaturedRow market={market} />
             </Box>
 
             {/* Toolbar — no background card */}
@@ -269,7 +273,33 @@ function HomePage() {
               )}
 
               {/* Feature Filter + Compare in both views */}
+              {/* Market: prices and ranges are shown as published there, never converted */}
+              <Select
+                size="sm"
+                w="auto"
+                value={market}
+                onChange={(e) => {
+                  setMarket(e.target.value);
+                  setSelectedFeatures([]);
+                  track("filter_used", { action: "market", market: e.target.value || "all" });
+                }}
+                aria-label="Market"
+                bg={btnBg}
+                color={textColor}
+                borderColor={btnBorder}
+                borderRadius="10px"
+                fontWeight="500"
+                _hover={{ borderColor: "green.400" }}
+              >
+                {HOME_MARKETS.map((m) => (
+                  <option key={m.value || "all"} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </Select>
+
               <FeatureSelector
+                market={market}
                 selectedFeatures={selectedFeatures}
                 onToggleFeature={handleToggleFeature}
               />
@@ -323,7 +353,7 @@ function HomePage() {
               <Show above="lg">
                 {selectedMake && (
                   <Box ml="auto">
-                    <RouterLink to={`/manufacturer/${makeNameToSlug(selectedMake.name)}`} style={{ textDecoration: "none" }}>
+                    <RouterLink to={selectedMake.path} style={{ textDecoration: "none" }}>
                       <HStack
                         spacing={2}
                         px={3}
@@ -336,14 +366,7 @@ function HomePage() {
                         transition="all 0.2s"
                         cursor="pointer"
                       >
-                        <Image
-                          src={selectedMake.lrg_logo_img_url}
-                          alt={selectedMake.name}
-                          boxSize="20px"
-                          objectFit="contain"
-                          bg="white"
-                          borderRadius="4px"
-                        />
+                        <MakeLogo name={selectedMake.name} url={selectedMake.logo_url} size="20px" />
                         <Text fontSize="sm" fontWeight="500" color="#16a34a">
                           {selectedMake.name}
                         </Text>
@@ -381,6 +404,7 @@ function HomePage() {
 
             {viewMode === "cards" ? (
               <CarGrid
+                market={market}
                 selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 sortOption={sortOption}
@@ -390,6 +414,7 @@ function HomePage() {
               />
             ) : (
               <CarTable
+                market={market}
                 selectedFeatures={selectedFeatures}
                 selectedMake={selectedMake}
                 searchTerm={searchTerm}

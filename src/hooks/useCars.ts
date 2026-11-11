@@ -1,5 +1,6 @@
 import useData from "./useData";
 import { Make } from "./useMakes";
+import type { CatalogModelCard } from "../types/catalog";
 
 export interface Car {
   id: number;
@@ -20,6 +21,8 @@ export interface Car {
     number_of_full_adult_seats?: number | null;
     production_availability?: boolean;
     availability_desc?: string;
+    /** Set when the car comes from the catalog API (home page): the model card it was mapped from. */
+    catalog?: CatalogModelCard;
 }
 
 // Add an interface for SelectedFeature to detail the expected shape

@@ -15,13 +15,15 @@ import {
 import { FaSadTear, FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import useCars, { SelectedFeature } from "../hooks/useCars";
-import { Make } from "../hooks/useMakes";
-import { formatPrice } from "../utils/formatPrice";
-import CarScore from "./CarScore";
+import { SelectedFeature } from "../hooks/useCars";
+import useHomeCars from "../hooks/useHomeCars";
+import { CatalogMakeSummary } from "../types/catalog";
+import { formatMoney, formatRangeFigure, formatYears, modelDisplayName, num } from "../utils/catalogFormat";
+import StatusBadge from "./catalog/StatusBadge";
 
 interface Props {
-  selectedMake: Make | null;
+  market: string;
+  selectedMake: CatalogMakeSummary | null;
   selectedFeatures: SelectedFeature[];
   searchTerm: string;
   showDiscontinuedCars?: boolean;
@@ -32,15 +34,14 @@ type SortField =
   | "name"
   | "current_price"
   | "epa_range"
-  | "average_rating"
   | "acceleration_0_60"
-  | "top_speed"
   | "trim_first_released";
 
 type SortDir = "asc" | "desc";
 
-const CarTable = ({ selectedMake, selectedFeatures, searchTerm, showDiscontinuedCars, showComingSoonCars }: Props) => {
-  const { data, error, isLoading } = useCars(
+const CarTable = ({ market, selectedMake, selectedFeatures, searchTerm, showDiscontinuedCars, showComingSoonCars }: Props) => {
+  const { data, error, isLoading } = useHomeCars(
+    market,
     selectedMake,
     selectedFeatures,
     searchTerm,
@@ -102,8 +103,10 @@ const CarTable = ({ selectedMake, selectedFeatures, searchTerm, showDiscontinued
         return dateA.localeCompare(dateB) * mult;
       }
 
-      const valA = (a[sortField] as number) ?? 0;
-      const valB = (b[sortField] as number) ?? 0;
+      const valA = (a[sortField] as number) || 0;
+      const valB = (b[sortField] as number) || 0;
+      // Missing figures always go last
+      if (!valA !== !valB) return valA ? -1 : 1;
       return (valA - valB) * mult;
     });
   })();
@@ -198,68 +201,53 @@ const CarTable = ({ selectedMake, selectedFeatures, searchTerm, showDiscontinued
               <SortHeader field="epa_range" isNumeric>
                 Range
               </SortHeader>
-              <SortHeader field="average_rating" isNumeric>
-                Rating
-              </SortHeader>
               <SortHeader field="acceleration_0_60" isNumeric>
                 0-60
               </SortHeader>
-              <SortHeader field="top_speed" isNumeric>
-                Top Speed
-              </SortHeader>
-              <SortHeader field="trim_first_released">Released</SortHeader>
+              <SortHeader field="trim_first_released">Years</SortHeader>
+              <Th fontSize="xs" color={subTextColor} borderColor={borderColor}>
+                Status
+              </Th>
             </Tr>
           </Thead>
           <Tbody>
-            {sortedData.map((car) => (
-              <Tr
-                key={car.id}
-                _hover={{ bg: rowHoverBg }}
-                transition="background 0.15s"
-                cursor="pointer"
-              >
-                <Td borderColor={borderColor}>
-                  <Link to={`model_detail/${car.make_model_slug}`}>
-                    <Text
-                      color={linkColor}
-                      fontWeight="600"
-                      fontSize="sm"
-                      _hover={{ textDecoration: "underline" }}
-                    >
-                      {car.make_name} {car.model}
+            {sortedData.map((car) => {
+              const m = car.catalog;
+              return (
+                <Tr key={car.make_model_slug} _hover={{ bg: rowHoverBg }} transition="background 0.15s">
+                  <Td borderColor={borderColor}>
+                    <Link to={m?.path ?? `/model_detail/${car.make_model_slug}`}>
+                      <Text color={linkColor} fontWeight="600" fontSize="sm" _hover={{ textDecoration: "underline" }}>
+                        {modelDisplayName(car.make_name, car.model)}
+                      </Text>
+                    </Link>
+                  </Td>
+                  <Td isNumeric borderColor={borderColor}>
+                    <Text fontSize="sm" fontWeight="500" color={textColor}>
+                      {formatMoney(m?.from_price?.value, m?.from_price?.currency) ?? "—"}
                     </Text>
-                  </Link>
-                </Td>
-                <Td isNumeric borderColor={borderColor}>
-                  <Text fontSize="sm" fontWeight="500" color={textColor}>
-                    {formatPrice(car.current_price)}
-                  </Text>
-                </Td>
-                <Td isNumeric borderColor={borderColor}>
-                  <Text fontSize="sm" color={textColor}>
-                    {car.epa_range} mi
-                  </Text>
-                </Td>
-                <Td isNumeric borderColor={borderColor}>
-                  <CarScore score={car.average_rating} />
-                </Td>
-                <Td isNumeric borderColor={borderColor}>
-                  <Text fontSize="sm" color={textColor}>
-                    {car.acceleration_0_60 ? `${car.acceleration_0_60}s` : "—"}
-                  </Text>
-                </Td>
-                <Td isNumeric borderColor={borderColor}>
-                  <Text fontSize="sm" color={textColor}>
-                    {car.top_speed ? `${car.top_speed} mph` : "—"}
-                  </Text>
-                </Td>
-                <Td borderColor={borderColor}>
-                  <Text fontSize="sm" color={subTextColor}>
-                    {car.trim_first_released || "—"}
-                  </Text>
-                </Td>
-              </Tr>
-            ))}
+                  </Td>
+                  <Td isNumeric borderColor={borderColor}>
+                    <Text fontSize="sm" color={textColor} whiteSpace="nowrap">
+                      {formatRangeFigure(m?.max_range) ?? "—"}
+                    </Text>
+                  </Td>
+                  <Td isNumeric borderColor={borderColor}>
+                    <Text fontSize="sm" color={textColor}>
+                      {m?.quickest_0_60?.value ? `${num(m.quickest_0_60.value, 2)}s` : "—"}
+                    </Text>
+                  </Td>
+                  <Td borderColor={borderColor}>
+                    <Text fontSize="sm" color={subTextColor} whiteSpace="nowrap">
+                      {formatYears(m?.years, m?.status) ?? "—"}
+                    </Text>
+                  </Td>
+                  <Td borderColor={borderColor}>
+                    <StatusBadge status={m?.market_status ?? m?.status} />
+                  </Td>
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
     </Box>

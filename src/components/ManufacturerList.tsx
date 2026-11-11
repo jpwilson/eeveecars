@@ -3,7 +3,6 @@ import {
   Box,
   Collapse,
   HStack,
-  Image,
   List,
   ListItem,
   Spinner,
@@ -12,8 +11,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
-import useMakes, { Make } from "../hooks/useMakes";
 import ColorModeSwitch from "./ColorModeSwitch";
+import MakeLogo from "./catalog/MakeLogo";
+import { useCatalogMakes } from "../hooks/useCatalog";
+import { CatalogMakeSummary } from "../types/catalog";
+
+type Make = CatalogMakeSummary;
 
 interface Props {
   onSelectMake: (make: Make | null) => void;
@@ -25,6 +28,7 @@ interface Props {
   onToggleComingSoonCars?: (show: boolean) => void;
 }
 
+// Dot next to a brand: what the company is (from the catalog), not what it sells
 const STATUS_COLORS: Record<string, string> = {
   defunct: "red.400",
   acquired: "orange.400",
@@ -40,7 +44,8 @@ const ManufacturerList = ({
   showComingSoonCars = false,
   onToggleComingSoonCars,
 }: Props) => {
-  const { data, isLoading, error } = useMakes();
+  const { data: makesData, isLoading, error } = useCatalogMakes();
+  const data = makesData?.makes;
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [showDefunct, setShowDefunct] = useState(false);
 
@@ -66,29 +71,28 @@ const ManufacturerList = ({
 
   const sortBrands = (brands: Make[]) =>
     [...brands].sort((a, b) => {
-      if (a.name === "Tesla") return -1;
-      if (b.name === "Tesla") return 1;
-      if (a.name === "Rivian") return -1;
-      if (b.name === "Rivian") return 1;
-      return a.name.localeCompare(b.name);
+      if (a.slug === "tesla") return -1;
+      if (b.slug === "tesla") return 1;
+      if (a.slug === "rivian") return -1;
+      if (b.slug === "rivian") return 1;
+      return (a.name ?? a.slug).localeCompare(b.name ?? b.slug);
     });
 
+  // Grouped by what each brand sells today (display_status from the API):
+  // current = has a model on sale; upcoming = only future models;
+  // discontinued / defunct = nothing on sale (defunct brands included).
   const allBrands = data ?? [];
-  const activeBrands = sortBrands(
-    allBrands.filter((m) => (m.status ?? "active") === "active")
-  );
-  const comingSoonBrands = sortBrands(
-    allBrands.filter((m) => m.status === "pre-production")
-  );
+  const activeBrands = sortBrands(allBrands.filter((m) => m.display_status === "current"));
+  const comingSoonBrands = sortBrands(allBrands.filter((m) => m.display_status === "upcoming"));
   const defunctBrands = sortBrands(
-    allBrands.filter((m) => m.status === "defunct" || m.status === "acquired")
+    allBrands.filter((m) => m.display_status === "discontinued" || m.display_status === "defunct")
   );
 
   const renderBrandItem = (make: Make, dimmed = false) => {
-    const isSelected = make.id === selectedMake?.id;
+    const isSelected = make.slug === selectedMake?.slug;
     const statusColor = STATUS_COLORS[make.status ?? ""];
     return (
-      <ListItem key={make.id}>
+      <ListItem key={make.slug}>
         <HStack
           as="button"
           w="full"
@@ -105,21 +109,9 @@ const ManufacturerList = ({
           justify="center"
           opacity={dimmed && !isSelected ? 0.6 : 1}
         >
-          <Image
-            bg="white"
-            border="1px solid"
-            borderColor="gray.200"
-            width="28px"
-            height="28px"
-            borderRadius="6px"
-            p={0.5}
-            src={make.lrg_logo_img_url}
-            alt={`${make.name} logo`}
-            loading="lazy"
-            objectFit="contain"
-            flexShrink={0}
-            filter={dimmed && !isSelected ? "grayscale(50%)" : "none"}
-          />
+          <Box filter={dimmed && !isSelected ? "grayscale(50%)" : "none"} flexShrink={0}>
+            <MakeLogo name={make.name} url={make.logo_url} size="28px" />
+          </Box>
           <Text
             fontWeight={isSelected ? "600" : "400"}
             fontSize="sm"
@@ -134,7 +126,7 @@ const ManufacturerList = ({
               borderRadius="full"
               bg={statusColor}
               flexShrink={0}
-              title={make.status}
+              title={make.status ?? undefined}
             />
           )}
         </HStack>
@@ -240,7 +232,7 @@ const ManufacturerList = ({
       {/* Discontinued section */}
       {defunctBrands.length > 0 &&
         renderCollapsibleSection(
-          "Discontinued",
+          "No EVs on sale / defunct",
           defunctBrands,
           showDefunct,
           () => setShowDefunct(!showDefunct),

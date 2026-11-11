@@ -188,13 +188,14 @@ function topMakes(cars, limit = 12) {
  * it, what's tracked, and links to every list/comparison/explainer page.
  * Only facts derived from the live database (`cars`) or from the app itself.
  */
-export function homeSections(cars) {
-  const brands = new Set(cars.map((c) => c.make_name).filter(Boolean)).size;
+export function homeSections(cars, totals) {
+  const brands = (totals && totals.makes) || new Set(cars.map((c) => c.make_name).filter(Boolean)).size;
+  const modelCount = (totals && totals.models) || cars.length;
   const withRange = cars.filter((c) => c.epa_range).length;
 
   return `
   <h2>What is EV Lineup?</h2>
-  <p>${esc(ONE_LINER)} Every model in the database carries the same spec fields — starting price (MSRP), EPA range, 0–60 mph, horsepower, battery capacity in kWh, maximum DC fast-charging speed, drive type and adult seat count — so two cars can be compared line by line instead of by reading two reviews written months apart. The database currently holds ${cars.length} electric models from ${brands} brands, ${withRange} of them with a published range figure.</p>
+  <p>${esc(ONE_LINER)} Every model in the database carries the same spec fields — starting price (MSRP), EPA range, 0–60 mph, horsepower, battery capacity in kWh, maximum DC fast-charging speed, drive type and adult seat count — so two cars can be compared line by line instead of by reading two reviews written months apart. The database currently holds ${modelCount} electric models from ${brands} brands.</p>
   <p>It is free, no account is needed to browse, and there are no dealer lead forms. EV Lineup is independent and is not affiliated with any manufacturer. <a href="/what-is-ev-lineup">More about what EV Lineup is and who it is for →</a></p>
 
   <h2>Who it is for</h2>
