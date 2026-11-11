@@ -44,14 +44,33 @@ async function fetchWithTimeout(url, ms = 6000) {
   }
 }
 
-async function getTemplate(host) {
+// The SPA shell is built as app.html (renamed from index.html) so the
+// filesystem never wins over the "/" rewrite to this function.
+// The Host header a function sees can be the deployment's own *.vercel.app
+// address, which sits behind Vercel's login wall and answers 200 with a login
+// page. So: try the public host the visitor used first, accept a response only
+// if it really is our shell, and fall back to the canonical domain.
+const SHELL_MARK = '<div id="root"></div>';
+
+async function getTemplate(req) {
   if (templateCache) return templateCache;
-  // The SPA shell is built as app.html (renamed from index.html) so the
-  // filesystem never wins over the "/" rewrite to this function.
-  const res = await fetchWithTimeout(`https://${host}/app.html`);
-  if (!res.ok) throw new Error(`template fetch ${res.status}`);
-  templateCache = await res.text();
-  return templateCache;
+  const h = (req && req.headers) || {};
+  const fwd = String(h["x-forwarded-host"] || "").split(",")[0].trim();
+  const hosts = [...new Set([fwd, h.host, "www.evlineup.org"].filter(Boolean))];
+  for (const host of hosts) {
+    try {
+      const res = await fetchWithTimeout(`https://${host}/app.html`);
+      if (!res.ok) continue;
+      const text = await res.text();
+      if (text.includes(SHELL_MARK)) {
+        templateCache = text;
+        return text;
+      }
+    } catch (e) {
+      // try the next host
+    }
+  }
+  throw new Error("template fetch failed");
 }
 
 function esc(s) {
@@ -1810,7 +1829,7 @@ export default async function handler(req, res) {
   const { page, slug } = q;
   let template;
   try {
-    template = await getTemplate(req.headers.host);
+    template = await getTemplate(req);
   } catch (e) {
     // Can't even get the shell — minimal hard fallback
     res.status(200).setHeader("Content-Type", "text/html").send("<!DOCTYPE html><html><body>EV Lineup</body></html>");
