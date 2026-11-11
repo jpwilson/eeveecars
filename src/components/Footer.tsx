@@ -27,11 +27,34 @@ const linkColumns: {
     ],
   },
   {
+    // href (not `to`) on purpose: these are static prerendered pages served
+    // outside the SPA router, so they need a real navigation.
+    heading: "Guides",
+    links: [
+      { label: "What is EV Lineup?", href: "/what-is-ev-lineup" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Best EV comparison tools", href: "/alternatives" },
+      { label: "Longest range EVs", to: "/best/longest-range-evs" },
+      { label: "Cheapest EVs", to: "/best/cheapest-evs" },
+      { label: "EVs under $40,000", to: "/best/evs-under-40k" },
+      { label: "Electric pickup trucks", to: "/best/electric-trucks" },
+    ],
+  },
+  {
     heading: "Company",
     links: [
       { label: "About", to: "/about" },
       { label: "Advertise", to: "/advertise" },
       { label: "Contact", href: "mailto:jeanpaulwilson@gmail.com" },
+    ],
+  },
+  {
+    heading: "EV Lineup vs",
+    links: [
+      { label: "vs Edmunds", href: "/vs/edmunds" },
+      { label: "vs Kelley Blue Book", href: "/vs/kelley-blue-book" },
+      { label: "vs Car and Driver", href: "/vs/car-and-driver" },
+      { label: "vs fueleconomy.gov", href: "/vs/fueleconomy-gov" },
     ],
   },
   {
@@ -68,7 +91,7 @@ export default function Footer() {
         >
           <NewsletterSignup />
         </Box>
-        <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={8}>
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 5 }} spacing={8}>
           <Stack spacing={3}>
             <HStack>
               <Icon as={FaBolt} color="green.500" boxSize={5} />

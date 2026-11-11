@@ -4,10 +4,27 @@
  * Serves the SPA's index.html with per-page <head> meta (title, description,
  * canonical, OG/Twitter, JSON-LD) and a semantic HTML content block inside
  * #root. Everyone — bots and humans — gets the same HTML (no UA sniffing, no
- * cloaking); React replaces the block when the bundle loads.
+ * cloaking); React replaces the #root block when the bundle loads.
+ *
+ * The prose sections, FAQ and internal-link block go in a sibling
+ * <div id="seo-content"> *outside* #root, so they survive hydration and stay
+ * visible to readers — structured data must describe content people can see.
  *
  * Fails open: any error returns the untouched SPA shell.
  */
+
+import {
+  siteJsonLd,
+  breadcrumbJsonLd,
+  linksBlock,
+  homeSections,
+  compareIntro,
+  bestIntro,
+  makeIntro,
+  num,
+  safeUrl,
+  LINKS_STYLE,
+} from "./_seo.js";
 
 // EV_API_BASE (server-side env, optional) lets a preview or a local test point
 // the prerenderer at another backend; production uses the live API.
@@ -42,7 +59,8 @@ function esc(s) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Commons originals are large and rate-limited when hotlinked; use a standard-width thumbnail.
@@ -52,15 +70,32 @@ function commonsThumb(url, width) {
   return `https://upload.wikimedia.org/wikipedia/commons/thumb/${m[1]}/${m[2]}/${m[3]}/${width}px-${m[3]}`;
 }
 
+/**
+ * JSON-LD <script> tag. `<`, `>` and `&` are written as \u escapes so a
+ * database value containing "</script>" can't break out of the block —
+ * JSON.stringify alone does not escape them.
+ */
+function jsonLdScript(obj) {
+  const json = JSON.stringify(obj)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+  return `<script type="application/ld+json">${json}</script>`;
+}
+
+const FALLBACK_IMAGE = `${CANONICAL_HOST}/pub_assets/hero-ev.png`;
+
 // Absolute image URL: Commons originals → 1280px thumbnail, remote URLs as-is,
 // site paths (/pub_assets/...: legacy photos, press photos stored on the site,
 // logos) → https://www.evlineup.org/...
 function absImage(url) {
-  if (!url) return `${CANONICAL_HOST}/pub_assets/hero-ev.png`;
-  const thumb = commonsThumb(url, 1280);
+  const raw = String(url ?? "").trim();
+  if (!raw) return FALLBACK_IMAGE;
+  const thumb = commonsThumb(raw, 1280);
   if (thumb) return thumb;
-  if (/^https?:\/\//i.test(url)) return url;
-  return `${CANONICAL_HOST}${url.startsWith("/") ? "" : "/"}${url}`;
+  if (/^https?:\/\//i.test(raw)) return safeUrl(raw) || FALLBACK_IMAGE;
+  if (/^[\w.+-]+:/.test(raw)) return FALLBACK_IMAGE; // javascript:, data:, ...
+  return `${CANONICAL_HOST}${raw.startsWith("/") ? "" : "/"}${raw}`;
 }
 
 // A make logo as a page's og:image fallback. Social cards do not render SVG,
@@ -73,18 +108,16 @@ function metaBlock({ title, description, canonical, image, ogType, jsonLd }) {
   const t = esc(title);
   const d = esc(description);
   const img = esc(image);
-  const jsonLdTags = (jsonLd || [])
-    .map(
-      (obj) =>
-        `<script type="application/ld+json">${JSON.stringify(obj)}</script>`
-    )
+  const url = esc(canonical);
+  const jsonLdTags = [...siteJsonLd(), ...(jsonLd || [])]
+    .map(jsonLdScript)
     .join("\n    ");
   return `<title>${t}</title>
     <meta name="description" content="${d}" />
-    <link rel="canonical" href="${canonical}" />
+    <link rel="canonical" href="${url}" />
     <meta property="og:site_name" content="${SITE_NAME}" />
     <meta property="og:type" content="${ogType || "website"}" />
-    <meta property="og:url" content="${canonical}" />
+    <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${t}" />
     <meta property="og:description" content="${d}" />
     <meta property="og:image" content="${img}" />
@@ -104,7 +137,8 @@ const CONTENT_STYLE = `<style>
 .prerender th,.prerender td{text-align:left;padding:8px 10px;border-bottom:1px solid #e2e8f0;font-size:.95rem}
 .prerender a{color:#16a34a}
 .prerender .crumbs{font-size:.85rem;margin-bottom:12px}
-</style>`;
+.prerender p{margin:10px 0}
+</style>${LINKS_STYLE}`;
 
 function specRow(label, value, unit = "") {
   if (value === null || value === undefined || value === "" || value === 0)
@@ -113,8 +147,8 @@ function specRow(label, value, unit = "") {
 }
 
 function fmtPrice(p) {
-  if (!p) return null;
-  return `$${Number(p).toLocaleString("en-US")}`;
+  const v = num(p);
+  return v ? `$${v.toLocaleString("en-US")}` : null;
 }
 
 // ---------- page builders ----------
@@ -219,7 +253,7 @@ async function buildModelPage(slug) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › <a href="/manufacturer/${slugify(rep.make_name)}">${esc(rep.make_name)}</a> › ${esc(rep.model)}</p>
   <h1>${esc(name)}</h1>
   <p class="sub">${esc(rep.vehicle_class || "Electric vehicle")}${rep.generation ? ` · ${esc(rep.generation)}` : ""}${price ? ` · from ${esc(price)}` : ""}</p>
@@ -251,6 +285,7 @@ async function buildModelPage(slug) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -275,10 +310,17 @@ async function buildMakePage(slug) {
 
   const canonical = `${CANONICAL_HOST}/manufacturer/${slug}`;
   const title = `${make.name} Electric Vehicles — All ${make.name} EV Models | ${SITE_NAME}`;
-  const description = `Every ${make.name} electric vehicle: ${models
-    .slice(0, 4)
-    .map((m) => m.model)
-    .join(", ")}${models.length > 4 ? " and more" : ""} — specs, range, and prices compared.`;
+  const ranges = models.map((m) => m.epa_range).filter(Boolean);
+  const description = models.length
+    ? `${models.length === 1 ? "The" : `All ${models.length}`} ${make.name} electric ${
+        models.length === 1 ? "vehicle" : "vehicles"
+      } in the ${SITE_NAME} database: ${models
+        .slice(0, 4)
+        .map((m) => m.model)
+        .join(", ")}${models.length > 4 ? " and more" : ""}. Compare starting price, EPA range${
+        ranges.length > 1 ? ` (${Math.min(...ranges)}–${Math.max(...ranges)} mi)` : ""
+      }, 0-60 mph, battery size and charging speed.`
+    : `${make.name} on ${SITE_NAME}: company profile and electric vehicle status, plus every other EV brand's lineup with prices, EPA range, 0-60 mph, battery size and charging speed.`;
 
   const jsonLd = [
     {
@@ -301,6 +343,13 @@ async function buildMakePage(slug) {
     },
   ];
 
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/manufacturer/${slug}`, `${make.name} EVs`],
+    ])
+  );
+
   const rows = models
     .map(
       (m) =>
@@ -308,11 +357,12 @@ async function buildMakePage(slug) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › ${esc(make.name)}</p>
   <h1>${esc(make.name)} Electric Vehicles</h1>
   <p class="sub">${esc(make.headquarters || "")}${make.founding_date ? ` · founded ${esc(make.founding_date)}` : ""}</p>
   <p>${esc(make.description || "")}</p>
+  ${makeIntro(make, models)}
   <h2>${esc(make.name)} EV lineup</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>Status</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
@@ -327,6 +377,7 @@ async function buildMakePage(slug) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -340,6 +391,7 @@ async function homeRowsFromCatalog() {
     const rows = list.models.map((m) => ({
       name: displayName(m.make && m.make.name, m.name),
       url: m.path,
+      make_name: m.make && m.make.name,
       price: m.from_price && m.from_price.value ? money(m.from_price.value, m.from_price.currency) : null,
       range: m.max_range && m.max_range.value ? rangeText(m.max_range.value, m.max_range.unit, m.max_range.cycle) : null,
       accel: m.quickest_0_60 && m.quickest_0_60.value ? `${m.quickest_0_60.value}s` : null,
@@ -366,9 +418,10 @@ async function homeRowsFromLegacy() {
       price: fmtPrice(m.current_price),
       range: m.epa_range ? `${m.epa_range} mi` : null,
       accel: m.acceleration_0_60 ? `${m.acceleration_0_60}s` : null,
+      make_name: m.make_name,
     })),
     models: cars.length,
-    makes: 37,
+    makes: new Set(cars.map((c) => c.make_name).filter(Boolean)).size,
     onSale: cars.length,
   };
 }
@@ -380,17 +433,11 @@ async function buildHomePage() {
   const nModels = data.models;
   const nMakes = data.makes;
   const fromMakes = nMakes ? ` from ${nMakes} manufacturers` : "";
+  // Legacy-shaped rows for the shared home prose (brand links, counts).
+  const seoCars = data.rows.map((r) => ({ make_name: r.make_name, epa_range: r.range }));
 
   const canonical = `${CANONICAL_HOST}/`;
   const jsonLd = [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: SITE_NAME,
-      url: canonical,
-      description:
-        "Every electric vehicle, current and past: specs, range, price, and charging — compared side by side.",
-    },
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -410,16 +457,16 @@ async function buildHomePage() {
           name: "What is EV Lineup?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "EV Lineup is an electric vehicle database: specs, prices and range for electric cars on sale today, plus earlier versions, discontinued and cancelled models, and brands that have gone out of business.",
-          },
+            text: "EV Lineup is a free electric vehicle database and comparison site. Every model has the same spec fields — MSRP, EPA range, 0-60 mph, power, battery capacity, DC charging speed and seats — so any two EVs can be compared line by line. It is free, needs no account, and is independent of every manufacturer."
+          }
         },
         {
           "@type": "Question",
           name: "How many electric cars are there?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: `We track ${nModels} electric car models${fromMakes}, including sedans, SUVs, trucks, vans and sports cars; ${data.onSale} are on sale in the US.`,
-          },
+            text: `The database holds ${nModels} electric vehicle models${fromMakes}, including sedans, SUVs, trucks, vans and sports cars; ${data.onSale} are on sale in the US.`
+          }
         },
         {
           "@type": "Question",
@@ -464,30 +511,36 @@ async function buildHomePage() {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
-  <h1>Every Electric Vehicle, Compared</h1>
+  const content = `<div class="prerender">
+  <h1>EV Lineup — Every Electric Vehicle, Compared</h1>
   <p class="sub">Specs, range, price, and charging for ${nModels} EV models${fromMakes} — side by side.</p>
-  <p><strong>EV Lineup is a database of electric vehicles, current and past.</strong> Compare specs, range, pricing, charging speeds, and performance, and see every earlier version of each model. <a href="/cars">Browse all electric cars</a> or <a href="/make">every maker</a>.</p>
-  <h2>Electric Vehicles on Sale in the US</h2>
+  <p><strong>EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.</strong> Compare specs, range, pricing, charging speed, seats and performance across ${nModels} models${fromMakes}, current and past, and see every earlier version of each model. <a href="/cars">Browse all electric cars</a>, <a href="/make">every maker</a>, a <a href="/best/longest-range-evs">ranked list</a>, a <a href="/compare/bmw-i4-vs-tesla-model-3">side-by-side comparison</a> or the <a href="/faq">FAQ</a>.</p>
+  <h2>Electric vehicles on sale in the US</h2>
   <table><tr><th>Model</th><th>From</th><th>Range</th><th>0–60</th></tr>${rows}</table>
-  <h2>Frequently Asked Questions</h2>
-  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is an electric vehicle database: specs, prices and range for electric cars on sale today, plus earlier versions, discontinued and cancelled models, and brands that have gone out of business.</p></details>
-  <details><summary><strong>How many electric cars are there?</strong></summary><p>We track ${nModels} electric car models${fromMakes}; ${data.onSale} are on sale in the US.</p></details>
-  <details><summary><strong>What's the cheapest electric car?</strong></summary><p><a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
-  <details><summary><strong>Which EV has the longest range?</strong></summary><p><a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
-  <details><summary><strong>What's the fastest electric car?</strong></summary><p><a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
-  <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p><a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
 </div>`;
+
+  // Lives outside #root, so it is still on the page after React mounts —
+  // the FAQPage JSON-LD above describes these visible answers.
+  const tail = `${homeSections(seoCars, { models: nModels, makes: nMakes })}
+  <h2>Frequently Asked Questions</h2>
+  <details><summary><strong>What is EV Lineup?</strong></summary><p>EV Lineup is a free electric vehicle database and comparison site. Every model has the same spec fields — MSRP, EPA range, 0–60 mph, power, battery capacity, DC charging speed and seats — so any two EVs can be compared line by line. It is free, needs no account, and is independent of every manufacturer.</p></details>
+  <details><summary><strong>How many electric cars are there?</strong></summary><p>The database holds ${nModels} electric vehicle models${fromMakes}, including sedans, SUVs, trucks, vans and sports cars; ${data.onSale} are on sale in the US.</p></details>
+  <details><summary><strong>What's the cheapest electric car?</strong></summary><p>The most affordable EVs start under $30,000 MSRP before incentives. <a href="/best/cheapest-evs">See the full list of cheapest electric cars</a>.</p></details>
+  <details><summary><strong>Which EV has the longest range?</strong></summary><p>Several EVs exceed 300 miles EPA range, with the longest reaching 400+ miles on a charge. <a href="/best/longest-range-evs">See all long-range electric vehicles</a>.</p></details>
+  <details><summary><strong>What's the fastest electric car?</strong></summary><p>The fastest EVs accelerate 0-60 mph in under 2 seconds. <a href="/best/fastest-evs">See the fastest electric cars ranked</a>.</p></details>
+  <details><summary><strong>Are there 3-row electric SUVs?</strong></summary><p>Yes, several electric SUVs offer 6+ seats with three rows for families. <a href="/best/3-row-evs">See all 3-row electric SUVs</a>.</p></details>
+  <p><a href="/faq">All frequently asked questions about EV Lineup →</a></p>`;
 
   return {
     meta: metaBlock({
       title: `${SITE_NAME} — Every Electric Vehicle, Compared`,
-      description: `Browse every electric vehicle, current and past: specs, range, price, and charging for ${nModels} EV models${fromMakes}. Compare models side by side and find your next EV.`,
+      description: `Free EV database: specs, range, price and charging speed for ${nModels} electric models${fromMakes}, current and past. Compare any two EVs side by side and see ranked best-of lists.`,
       canonical,
       image: `${CANONICAL_HOST}/pub_assets/hero-ev.png`,
       jsonLd,
     }),
     content,
+    tail: `${tail}\n${linksBlock()}`,
   };
 }
 
@@ -573,6 +626,12 @@ async function buildLegacyComparePage(pair) {
       })),
     },
   ];
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/compare/${pair}`, `${nameA} vs ${nameB}`],
+    ])
+  );
   if (faq.length)
     jsonLd.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq });
 
@@ -587,10 +646,11 @@ async function buildLegacyComparePage(pair) {
     return `<tr><th>${esc(label)}</th><td>${esc(va)}${wa}</td><td>${esc(vb)}${wb}</td></tr>`;
   }).join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › Compare</p>
   <h1>${esc(nameA)} vs ${esc(nameB)}</h1>
-  <p class="sub">Side-by-side specs from the live ${SITE_NAME} database.</p>
+  <p class="sub">Side-by-side specs from the ${SITE_NAME} database.</p>
+  ${compareIntro(A, B)}
   <table>
     <tr><th></th><th><a href="/model_detail/${esc(A.make_model_slug)}">${esc(nameA)}</a></th><th><a href="/model_detail/${esc(B.make_model_slug)}">${esc(nameB)}</a></th></tr>
     ${rows}
@@ -607,6 +667,7 @@ async function buildLegacyComparePage(pair) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -680,7 +741,7 @@ async function buildLegacyBestPage(criteria) {
   const canonical = `${CANONICAL_HOST}/best/${criteria}`;
   const title = `${cfg.title} (${new Date().getFullYear()}) | ${SITE_NAME}`;
   const blurb = cfg.legacyBlurb || cfg.blurb;
-  const description = `${blurb} Generated live from the ${SITE_NAME} database of every EV on the market.`;
+  const description = `${blurb} Ranked from the ${SITE_NAME} database of every EV on the market and refreshed periodically.`;
 
   const jsonLd = [
     {
@@ -696,6 +757,13 @@ async function buildLegacyBestPage(criteria) {
     },
   ];
 
+  jsonLd.push(
+    breadcrumbJsonLd([
+      ["/", "EV Lineup"],
+      [`/best/${criteria}`, cfg.title],
+    ])
+  );
+
   const rows = ranked
     .map(
       (m, i) =>
@@ -703,10 +771,11 @@ async function buildLegacyBestPage(criteria) {
     )
     .join("");
 
-  const content = `${CONTENT_STYLE}<div class="prerender">
+  const content = `<div class="prerender">
   <p class="crumbs"><a href="/">All EVs</a> › Rankings</p>
   <h1>${esc(cfg.title)}</h1>
   <p class="sub">${esc(blurb)}</p>
+  ${bestIntro(cfg.title, blurb, ranked, cars.length)}
   <table><tr><th>#</th><th>Model</th><th>From</th><th>Range</th><th>0–60</th><th>Score</th></tr>${rows}</table>
   <p><a href="/">Browse all electric vehicles →</a></p>
 </div>`;
@@ -720,6 +789,7 @@ async function buildLegacyBestPage(criteria) {
       jsonLd,
     }),
     content,
+    tail: linksBlock(),
   };
 }
 
@@ -1429,7 +1499,7 @@ function noindex(meta) {
 
 const BEST_METRIC_CAPTION = { price: "Lowest price", range: "Longest range", accel: "Quickest 0–60" };
 
-function num(v, digits = 1) {
+function fmtNum(v, digits = 1) {
   if (v === null || v === undefined) return null;
   return Number(Number(v).toFixed(digits)).toLocaleString("en-US");
 }
@@ -1447,7 +1517,7 @@ function bestRankedText(item, metric) {
     const same = r && r.value === item.value && r.unit === item.unit;
     return rangeText(item.value, item.unit, same ? r.cycle : null);
   }
-  return `${num(item.value, 2)} ${item.unit || "s"}`;
+  return `${fmtNum(item.value, 2)} ${item.unit || "s"}`;
 }
 
 async function buildBestPage(criteria) {
@@ -1496,7 +1566,7 @@ async function buildBestPage(criteria) {
       const r = m.max_range;
       const range = r ? rangeText(r.value, r.unit, r.cycle) : null;
       const q = m.quickest_0_60;
-      const accel = q && q.value ? `${num(q.value, 2)} s` : null;
+      const accel = q && q.value ? `${fmtNum(q.value, 2)} s` : null;
       const ranked = bestRankedText(it, metric);
       const trim =
         it.variant && ranked
@@ -1577,16 +1647,16 @@ const CATALOG_COMPARE_ROWS = [
   }],
   ["0–60 mph", "low", (s) => {
     const q = s.data.headline && s.data.headline.quickest_0_60;
-    return q && q.value ? { text: `${num(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
+    return q && q.value ? { text: `${fmtNum(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
   }],
   ["0–100 km/h", "low", (s) => {
     const q = s.data.headline && s.data.headline.quickest_0_100;
-    return q && q.value ? { text: `${num(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
+    return q && q.value ? { text: `${fmtNum(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
   }],
-  ["Top speed", "high", (s) => bestSpec(s, "top_speed_mph", (n) => `${num(n)} mph`)],
-  ["Power", "high", (s) => bestSpec(s, "power_hp", (n) => `${num(n, 0)} hp`)],
-  ["Battery", "high", (s) => bestSpec(s, "battery_kwh", (n, v) => `${num(n)} kWh${v.battery_basis ? ` (${v.battery_basis})` : ""}`, (v) => v.battery_basis || "")],
-  ["Max DC charging", "high", (s) => bestSpec(s, "dc_kw", (n) => `${num(n, 0)} kW`)],
+  ["Top speed", "high", (s) => bestSpec(s, "top_speed_mph", (n) => `${fmtNum(n)} mph`)],
+  ["Power", "high", (s) => bestSpec(s, "power_hp", (n) => `${fmtNum(n, 0)} hp`)],
+  ["Battery", "high", (s) => bestSpec(s, "battery_kwh", (n, v) => `${fmtNum(n)} kWh${v.battery_basis ? ` (${v.battery_basis})` : ""}`, (v) => v.battery_basis || "")],
+  ["Max DC charging", "high", (s) => bestSpec(s, "dc_kw", (n) => `${fmtNum(n, 0)} kW`)],
   ["Seats", "none", (s) => {
     const seats = [...new Set(s.variants.map((v) => v.seats).filter(Boolean))].sort((a, b) => a - b);
     return { text: seats.length ? seats.join(" / ") : null, value: null };
@@ -1810,9 +1880,14 @@ export default async function handler(req, res) {
   if (built) {
     html = html.replace(
       /<!-- meta:start[\s\S]*?meta:end -->/,
-      `<!-- meta:start -->\n    ${built.meta}\n    <!-- meta:end -->`
+      `<!-- meta:start -->\n    ${built.meta}\n    ${CONTENT_STYLE}\n    <!-- meta:end -->`
     );
-    html = html.replace('<div id="root"></div>', `<div id="root">${built.content}</div>`);
+    // #root is replaced by React on mount; #seo-content is a sibling, so the
+    // prose, FAQ and internal links stay on the page for readers too.
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root">${built.content}</div>\n    <div id="seo-content" class="prerender">${built.tail ?? linksBlock()}</div>`
+    );
   } else if (status === 404) {
     html = html.replace(
       /<!-- meta:start[\s\S]*?meta:end -->/,

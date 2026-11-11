@@ -1,0 +1,682 @@
+# EV Lineup — full text of public pages
+# https://www.evlineup.org
+# Last updated: 2026-10-21
+#
+# EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.
+# This file contains the complete visible text of EV Lineup's static public
+# pages. Model, manufacturer, comparison and best-of pages are generated from
+# the live database; see https://www.evlineup.org/llms.txt for their URL patterns and the
+# free JSON API.
+
+
+================================================================
+URL: https://www.evlineup.org/what-is-ev-lineup
+================================================================
+
+EV Lineup › What is EV Lineup?
+
+What is EV Lineup?
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.
+
+Last updated October 21, 2026
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+Who it is for
+
+- First-time EV shoppers who need to know what range, charging speed and battery size actually mean before walking into a dealership.
+
+- People choosing between two cars — the comparison pages put two models in one table and mark which one wins each row.
+
+- Buyers with a hard requirement: a budget under $40,000, three rows of seats, a pickup bed, or 300+ miles of range. Each of those is a ready-made list.
+
+- Researchers, journalists and developers who want the whole EV market as structured data rather than as prose.
+
+What is on the site
+
+Page type | What it shows | Example |
+
+Model page | Full spec sheet, description, trim-by-trim table | Tesla Model 3 |
+
+Manufacturer page | A brand's entire EV lineup, with company background | Hyundai EVs |
+
+Comparison | Two models side by side on identical specs | Tesla Model 3 vs BMW i4 |
+
+Best-of list | A ranking generated from the database | Longest range electric cars |
+
+Which specs are tracked
+
+Every model record has the same fields, which is what makes a side-by-side table meaningful:
+
+- MSRP (starting price, USD)
+
+- EPA range in miles
+
+- 0–60 mph acceleration
+
+- Top speed
+
+- Power in horsepower
+
+- Usable battery capacity in kWh
+
+- Maximum DC fast-charging speed in kW
+
+- Drive type (RWD, FWD, AWD)
+
+- Adult seat count
+
+- Vehicle class and generation
+
+- Availability status (available, coming soon, discontinued)
+
+- Trim/variant breakdown for each model
+
+Range figures are EPA ratings where an EPA rating exists. Prices are manufacturer starting prices (MSRP) in US dollars, before taxes, fees and incentives.
+
+How to use it in three steps
+
+- Start from a list or a brand. Browse every EV, or jump to a list such as EVs under $40,000 or three-row electric SUVs.
+
+- Open the model pages for the two or three cars that fit, and check the trim table — the cheapest trim and the long-range trim are often very different cars.
+
+- Compare them head to head at /compare/model-a-vs-model-b, then confirm the final price and availability with the manufacturer.
+
+Data, API and AI assistants
+
+The same database is available as a free read-only JSON API, so a developer or an AI assistant can answer EV questions from it directly:
+
+- GET /api/ev/all — every model in the database with its headline specs
+
+- GET /api/ev/search?q= — search models by name, with optional minRange, maxPrice, minSeats and availability filters
+
+- GET /api/ev/specs?slug= — the full spec sheet for one model
+
+- GET /api/ev/compare?models=slug-a,slug-b — a side-by-side comparison of two models
+
+- GET /api/ev/best?criteria= — a ranked best-of list (cheapest-evs, longest-range-evs, fastest-evs, evs-under-40k, 3-row-evs, electric-trucks, 300-mile-range-evs)
+
+There is an OpenAPI description at /openapi.json, an MCP manifest at /mcp.json, and a plain-text summary of the site at /llms.txt and /llms-full.txt.
+
+What EV Lineup is not
+
+It is not a dealer, a classifieds site or a valuation service. It does not price used cars, show dealer stock, broker a sale or pass your details to a salesperson. If you need a trade-in value or local inventory, a site such as Kelley Blue Book or Edmunds is the right tool — /alternatives compares them honestly.
+
+Who runs it
+
+EV Lineup is built and maintained by Jean-Paul Wilson. It is independent of every manufacturer. Corrections are welcome at jeanpaulwilson@gmail.com; see About for more, or /advertise for advertising enquiries.
+
+Common questions
+
+- What is EV Lineup?
+
+- Is EV Lineup free, and do I need an account?
+
+- How many electric cars are in the EV Lineup database?
+
+- Which brands and regions does EV Lineup cover?
+
+- Where does EV Lineup's data come from?
+
+- How do I compare two electric cars side by side?
+
+Read the full EV Lineup FAQ →
+
+================================================================
+URL: https://www.evlineup.org/faq
+================================================================
+
+EV Lineup › FAQ
+
+EV Lineup FAQ
+
+Frequently asked questions about EV Lineup — the free electric vehicle database — and about the 87 EV models it covers.
+
+Last updated October 21, 2026
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms. These are the questions people actually ask about it, answered plainly. For a longer introduction see what is EV Lineup.
+
+What is EV Lineup?
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. Every model page carries the same spec fields — starting price, EPA range, 0–60 mph, horsepower, battery capacity in kWh, maximum DC charging speed, drive type and seat count — so two cars can be compared line by line instead of by reading two reviews. The database covers 87 electric models from 32 brands and profiles 35 manufacturers.
+
+Is EV Lineup free, and do I need an account?
+
+Yes, it is free, and no account is needed. Every model page, manufacturer page, comparison and best-of list is open to anyone. Signing in is optional: the account dashboard lists favorites, a garage, private notes and saved comparisons as planned features marked “coming soon”, so no data on the site sits behind a login today. There is no paywall, trial or subscription, and no form to fill in before you see the data.
+
+How many electric cars are in the EV Lineup database?
+
+As of October 21, 2026 the database holds 87 electric model pages from 32 brands, with profiles for 35 manufacturers. Models are added as they are announced, which means the catalog includes cars that are on sale, coming soon and discontinued — each one is labelled with its availability status.
+
+Which brands and regions does EV Lineup cover?
+
+The focus is the US market — Tesla, Ford, Chevrolet, GMC, Cadillac, Rivian, Lucid, Hyundai, Kia, Genesis, BMW, Mercedes, Audi, Porsche, Volvo, Polestar, Nissan, Subaru, Toyota, Mini, Jaguar, Volkswagen and more. Notable models from Europe and China are also listed, including Renault, Citroën, BYD, NIO, XPeng, Geely and Rimac, which are useful for context but are not all sold in the United States.
+
+Where does EV Lineup's data come from?
+
+Specs are researched from manufacturer material and public sources, and range figures are the EPA ratings where an EPA rating exists. Because prices and specs change often, always confirm the final numbers with the manufacturer or dealer before you buy. If you spot something wrong, email jeanpaulwilson@gmail.com and it gets fixed.
+
+How do I compare two electric cars side by side?
+
+Open a comparison URL directly — for example /compare/tesla-model-3-vs-bmw-i4 — or pick two cars in the database and use the compare bar. The comparison table puts price, EPA range, 0–60 mph, top speed, power, battery capacity, DC charging speed and seat count in one view and marks which car wins each row.
+
+Which electric car has the longest range?
+
+The /best/longest-range-evs page ranks every model in the database by EPA range and is generated from the database rather than hand-curated, so it keeps up as models change. As of October 21, 2026 several models in the database are rated above 400 miles of EPA range. Real-world range is lower than the EPA figure in cold weather and at highway speeds.
+
+What is the cheapest electric car?
+
+The /best/cheapest-evs page ranks models by MSRP, and /best/evs-under-40k lists everything under $40,000. As of October 21, 2026 the entry end of the US market in the database sits around $34,000–$35,000 MSRP before taxes, fees and incentives; a federal or state incentive can lower the real cost further. Micro-EVs sold only outside the US, such as the Citroën AMI, are cheaper still.
+
+Are there electric SUVs with three rows of seats?
+
+Yes. The /best/3-row-evs page lists every model in the database with six or more adult seats; the Kia EV9 and Rivian R1S are both seven-seaters. Each listing shows its seat count so you can check before visiting a dealer.
+
+Does EV Lineup cover electric pickup trucks?
+
+Yes. /best/electric-trucks lists the electric pickups in the database — including the Ford F-150 Lightning, Rivian R1T, Tesla Cybertruck and GMC Hummer EV — with their availability status, because some are on sale and others are announced or cancelled.
+
+Does EV Lineup show used EV prices or dealer inventory?
+
+No. EV Lineup lists manufacturer starting prices (MSRP) for new models. It does not value used cars, track trade-in prices, or show dealer stock. For a used-car valuation, a site such as Kelley Blue Book or Edmunds is the better tool; see /alternatives for an honest comparison.
+
+Does EV Lineup have an API for developers and AI assistants?
+
+Yes. There is a free read-only JSON API at /api/ev/all, /api/ev/search, /api/ev/specs, /api/ev/compare and /api/ev/best, documented by an OpenAPI description at /openapi.json and an MCP manifest at /mcp.json, so assistants and scripts can query the same data the site shows.
+
+Is EV Lineup independent of the car makers?
+
+Yes. EV Lineup is an independent site run by Jean-Paul Wilson and is not owned by, or affiliated with, any manufacturer. It is not a dealer and does not sell cars or sell your details as a sales lead. Advertising enquiries are handled on /advertise.
+
+How often is the data updated?
+
+Model, price and availability records are maintained by hand and revised as manufacturers announce changes; the best-of lists and comparison tables are generated from the database and refreshed periodically (pages are cached for up to an hour), so a corrected price or spec moves the ranking without anyone rewriting an article. Treat prices as a guide and confirm them with the seller.
+
+Where to go next
+
+- Browse every electric vehicle in the database
+
+- Best EV comparison tools, compared honestly
+
+- Longest range electric cars
+
+- Cheapest electric cars
+
+- Best EVs under $40,000
+
+- Fastest electric cars (0–60 mph)
+
+================================================================
+URL: https://www.evlineup.org/alternatives
+================================================================
+
+EV Lineup › EV comparison tools
+
+Best EV comparison tools and sites
+
+Which electric car research site should you use? Here is what each of the main options does best — including the jobs EV Lineup is not the right tool for.
+
+Last updated October 21, 2026
+
+There is no single best EV research site, because the sites are good at different jobs. Below is what each tool is actually for, including where EV Lineup is the wrong choice. Everything here describes publicly visible features as of October 21, 2026, per each site's own website.
+
+Quick answer
+
+If you want to… | Use |
+
+Compare two EVs on identical specs, or rank the whole EV market by range, price, speed or seats | EV Lineup |
+
+Value a used car or a trade-in | Kelley Blue Book, Edmunds |
+
+See dealer inventory near you | Edmunds and similar shopping sites |
+
+Read measured 0–60, braking and handling numbers, and an opinion on how a car drives | Car and Driver |
+
+Confirm an official EPA range rating or a federal tax credit | fueleconomy.gov |
+
+Follow EV news and sales trends | InsideEVs and similar |
+
+Where EV Lineup fits
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+Its one job is comparison across the whole EV market. Because every model record has the same fields — price, EPA range, 0–60 mph, power, battery kWh, peak DC charging kW, seats, availability — a ranking or a two-car table is apples-to-apples, and the best-of lists re-rank themselves from that same data rather than from a hand-written article. It is free, needs no account, has no lead forms, and exposes the same data through a documented JSON API and an MCP manifest.
+
+Where it is weaker, plainly: no used-car valuations, no dealer inventory, no in-house instrumented testing, and a catalog of 87 model pages that includes some models sold outside the US and some that are announced but not yet on sale. For those jobs, use one of the sites below.
+
+The alternatives, one by one
+
+Edmunds
+
+Edmunds is a long-established US car-shopping site. As of October 2026, per its website, it covers new and used cars of every fuel type, publishes expert reviews and road tests, appraises used cars and trade-ins, and connects shoppers with dealer inventory and dealer quotes.
+
+Stronger than EV Lineup at: Used-car and trade-in pricing, which EV Lineup does not do at all. Dealer inventory and local listings, so you can see what is actually on a lot near you.
+
+Use EV Lineup instead when: If you want a used-car valuation, dealer stock near you or a 2,000-word review of one car, use Edmunds. If you want to put two EVs side by side on identical specs, or see every EV under $40,000 ranked, EV Lineup is faster and has no sales funnel attached.
+
+Full comparison: EV Lineup vs Edmunds · Visit Edmunds
+
+Kelley Blue Book
+
+Kelley Blue Book (kbb.com) is best known for vehicle valuations. As of October 2026, per its website, it publishes Blue Book values for new and used cars, trade-in and private-party estimates, expert and owner reviews, and dealer listings across all fuel types.
+
+Stronger than EV Lineup at: Vehicle valuations and trade-in estimates — the thing KBB is famous for, and something EV Lineup deliberately does not attempt. Resale-value and ownership-cost guidance, useful when an EV's depreciation is the deciding factor.
+
+Use EV Lineup instead when: Use KBB when the question is what a car is worth — new, used or as a trade-in. Use EV Lineup when the question is which EV has the range, charging speed, seats or price you need.
+
+Full comparison: EV Lineup vs Kelley Blue Book · Visit Kelley Blue Book
+
+Car and Driver
+
+Car and Driver is an American automotive magazine and website. As of October 2026, per its website, it publishes instrumented road tests, reviews, rankings and buyer's guides across every category of car, carried out by its own testing staff.
+
+Stronger than EV Lineup at: Independent instrumented testing — its 0–60 mph, braking and handling numbers are measured by its own testers rather than taken from a manufacturer. Editorial judgment: how a car actually drives, which no spec table can tell you.
+
+Use EV Lineup instead when: Read Car and Driver for measured test numbers and an opinion on how a car drives. Use EV Lineup to shortlist which EVs are worth reading about, by comparing range, price, charging and seats across the whole market in one table.
+
+Full comparison: EV Lineup vs Car and Driver · Visit Car and Driver
+
+fueleconomy.gov
+
+fueleconomy.gov is the official US fuel-economy site run by the Department of Energy and the EPA. As of October 2026, per the site, it publishes EPA range and efficiency (MPGe) ratings for vehicles sold in the US, a side-by-side comparison tool, fuel-cost estimators and information on federal tax credits.
+
+Stronger than EV Lineup at: It is the authoritative source for EPA ratings — every range figure elsewhere, including on EV Lineup, traces back to it. Federal tax-credit and incentive information, which EV Lineup does not track.
+
+Use EV Lineup instead when: Use fueleconomy.gov to confirm an official EPA rating or check a tax credit. Use EV Lineup to compare EVs on everything else and to see models that are not yet EPA-rated. Checking both is a reasonable habit; they disagree only when a manufacturer figure has not been EPA-certified yet.
+
+Full comparison: EV Lineup vs fueleconomy.gov · Visit fueleconomy.gov
+
+InsideEVs
+
+An EV-focused news site. As of October 2026, per its website, it publishes electric-vehicle news, reviews and sales data, and keeps model listings. Strong for news and market trends; EV Lineup is the better tool for a structured spec-by-spec comparison.
+
+Visit InsideEVs
+
+Manufacturer configurators
+
+Every automaker's own site is the final word on trim pricing and current availability for its own cars, and should always be the last check before you buy. What they cannot do is show you a rival's car in the same table.
+
+Visit Manufacturer configurators
+
+EV Database (ev-database.org)
+
+A long-running European EV spec database with its own range estimates. As of October 2026, per its website, its focus is the European market; EV Lineup's price and range data is US-first, using MSRP in dollars and EPA ratings.
+
+Visit EV Database (ev-database.org)
+
+How to pick, in one paragraph
+
+Start with the question you are trying to answer. "Which EVs fit my budget, range and seat requirements?" is a database question — use EV Lineup's under-$40,000, longest-range or three-row lists, then a side-by-side comparison. "What is this car worth?" is a valuation question — use Kelley Blue Book or Edmunds. "How does it drive?" is an editorial question — use Car and Driver. "Is that range figure official?" is a regulatory question — use fueleconomy.gov. Most careful buyers end up using three of them.
+
+More from EV Lineup
+
+- What is EV Lineup?
+
+- EV Lineup FAQ
+
+- Longest range electric cars
+
+- Cheapest electric cars
+
+- Best EVs under $40,000
+
+- Fastest electric cars (0–60 mph)
+
+- Best 3-row electric SUVs (6+ seats)
+
+- Electric pickup trucks
+
+- EVs with 300+ miles of range
+
+================================================================
+URL: https://www.evlineup.org/vs/edmunds
+================================================================
+
+EV Lineup › EV comparison tools › EV Lineup vs Edmunds
+
+EV Lineup vs Edmunds
+
+A fair comparison of EV Lineup and Edmunds for electric car research — what each does best, and when to use the other one.
+
+Last updated October 21, 2026
+
+What each one is
+
+EV Lineup
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+Edmunds
+
+Edmunds is a long-established US car-shopping site. As of October 2026, per its website, it covers new and used cars of every fuel type, publishes expert reviews and road tests, appraises used cars and trade-ins, and connects shoppers with dealer inventory and dealer quotes. See Edmunds for its own description.
+
+Side by side
+
+| EV Lineup | Edmunds |
+
+Scope | Electric vehicles only | All fuel types, EVs included |
+
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+
+Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
+
+Two-car side-by-side comparison | Yes, any two models in the database | Yes, in its own tools |
+
+Price shown | Manufacturer MSRP (new) | New and used pricing |
+
+Used values / dealer inventory | No | Yes |
+
+Own road testing | No | Yes |
+
+Cost and sign-up | Free, no account needed | Free to read |
+
+Rows describing Edmunds reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.edmunds.com for the current position.
+
+Where Edmunds is stronger
+
+- Used-car and trade-in pricing, which EV Lineup does not do at all.
+
+- Dealer inventory and local listings, so you can see what is actually on a lot near you.
+
+- Long-form expert reviews and in-house road testing — as of October 2026, per its website, that includes its own real-world EV range testing.
+
+- Coverage of gasoline, hybrid and diesel cars, which matters if you have not settled on an EV.
+
+Where EV Lineup is stronger
+
+- EV-only: nothing in the database is a gas car, so filters and rankings are about range, charging speed and battery size rather than MPG.
+
+- Every one of the 87 models carries the same spec fields, so a side-by-side table is apples-to-apples instead of two reviews written months apart.
+
+- Best-of lists are generated from the database rather than hand-curated, so a price change moves the ranking.
+
+- No account, no lead form and no dealer handoff; a read-only public API and MCP manifest make the same data available to scripts and AI assistants.
+
+Which should you use?
+
+If you want a used-car valuation, dealer stock near you or a 2,000-word review of one car, use Edmunds. If you want to put two EVs side by side on identical specs, or see every EV under $40,000 ranked, EV Lineup is faster and has no sales funnel attached.
+
+In practice the two are complements rather than substitutes: shortlist on EV Lineup, then check the car with Edmunds before you buy.
+
+Try the comparison yourself
+
+- Tesla Model 3 vs BMW i4
+
+- Hyundai Ioniq 5 vs Kia EV6
+
+- Tesla Model Y vs Ford Mustang Mach-E
+
+- Rivian R1S vs Tesla Model X
+
+- Tesla Model 3 vs Hyundai Ioniq 6
+
+- Longest range electric cars, ranked
+
+- All EV comparison tools, compared
+
+Other comparisons: EV Lineup vs Kelley Blue Book · EV Lineup vs Car and Driver · EV Lineup vs fueleconomy.gov. Questions about EV Lineup itself are answered in the FAQ.
+
+================================================================
+URL: https://www.evlineup.org/vs/kelley-blue-book
+================================================================
+
+EV Lineup › EV comparison tools › EV Lineup vs Kelley Blue Book
+
+EV Lineup vs Kelley Blue Book
+
+A fair comparison of EV Lineup and Kelley Blue Book for electric car research — what each does best, and when to use the other one.
+
+Last updated October 21, 2026
+
+What each one is
+
+EV Lineup
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+Kelley Blue Book
+
+Kelley Blue Book (kbb.com) is best known for vehicle valuations. As of October 2026, per its website, it publishes Blue Book values for new and used cars, trade-in and private-party estimates, expert and owner reviews, and dealer listings across all fuel types. See Kelley Blue Book for its own description.
+
+Side by side
+
+| EV Lineup | Kelley Blue Book |
+
+Scope | Electric vehicles only | All fuel types, EVs included |
+
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+
+Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
+
+Two-car side-by-side comparison | Yes, any two models in the database | Yes, in its own tools |
+
+Price shown | Manufacturer MSRP (new) | New and used pricing |
+
+Used values / dealer inventory | No | Yes |
+
+Own road testing | No | Yes |
+
+Cost and sign-up | Free, no account needed | Free to read |
+
+Rows describing Kelley Blue Book reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.kbb.com for the current position.
+
+Where Kelley Blue Book is stronger
+
+- Vehicle valuations and trade-in estimates — the thing KBB is famous for, and something EV Lineup deliberately does not attempt.
+
+- Resale-value and ownership-cost guidance, useful when an EV's depreciation is the deciding factor.
+
+- Dealer listings and shopping tools for buying the car once you have chosen it.
+
+- All-fuel coverage, including hybrids, for shoppers still weighing an EV against a gas car.
+
+Where EV Lineup is stronger
+
+- A single standard spec table for every EV, including battery capacity in kWh and maximum DC charging speed — fields general car sites often omit.
+
+- Comparison pages for any two models in the database, with the better figure in each row marked.
+
+- Data-driven lists such as /best/longest-range-evs and /best/3-row-evs that re-rank themselves from the database.
+
+- Free, no sign-in, no lead capture, and a documented public API for developers and AI assistants.
+
+Which should you use?
+
+Use KBB when the question is what a car is worth — new, used or as a trade-in. Use EV Lineup when the question is which EV has the range, charging speed, seats or price you need.
+
+In practice the two are complements rather than substitutes: shortlist on EV Lineup, then check the car with Kelley Blue Book before you buy.
+
+Try the comparison yourself
+
+- Tesla Model 3 vs BMW i4
+
+- Hyundai Ioniq 5 vs Kia EV6
+
+- Tesla Model Y vs Ford Mustang Mach-E
+
+- Rivian R1S vs Tesla Model X
+
+- Tesla Model 3 vs Hyundai Ioniq 6
+
+- Longest range electric cars, ranked
+
+- All EV comparison tools, compared
+
+Other comparisons: EV Lineup vs Edmunds · EV Lineup vs Car and Driver · EV Lineup vs fueleconomy.gov. Questions about EV Lineup itself are answered in the FAQ.
+
+================================================================
+URL: https://www.evlineup.org/vs/car-and-driver
+================================================================
+
+EV Lineup › EV comparison tools › EV Lineup vs Car and Driver
+
+EV Lineup vs Car and Driver
+
+A fair comparison of EV Lineup and Car and Driver for electric car research — what each does best, and when to use the other one.
+
+Last updated October 21, 2026
+
+What each one is
+
+EV Lineup
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+Car and Driver
+
+Car and Driver is an American automotive magazine and website. As of October 2026, per its website, it publishes instrumented road tests, reviews, rankings and buyer's guides across every category of car, carried out by its own testing staff. See Car and Driver for its own description.
+
+Side by side
+
+| EV Lineup | Car and Driver |
+
+Scope | Electric vehicles only | All fuel types, EVs included |
+
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+
+Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
+
+Two-car side-by-side comparison | Yes, any two models in the database | Yes, in its own tools |
+
+Price shown | Manufacturer MSRP (new) | New and used pricing |
+
+Used values / dealer inventory | No | No / limited |
+
+Own road testing | No | Yes |
+
+Cost and sign-up | Free, no account needed | Free to read |
+
+Rows describing Car and Driver reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.caranddriver.com for the current position.
+
+Where Car and Driver is stronger
+
+- Independent instrumented testing — its 0–60 mph, braking and handling numbers are measured by its own testers rather than taken from a manufacturer.
+
+- Editorial judgment: how a car actually drives, which no spec table can tell you.
+
+- Decades of archive, long-term tests and news coverage.
+
+- Comparison tests that put rivals head to head on a track on the same day.
+
+Where EV Lineup is stronger
+
+- Complete, structured coverage: every EV in the database gets the same fields filled in, including models a magazine has not got round to testing.
+
+- Instant side-by-side tables for any two EVs, and lists you can sort by the thing you care about.
+
+- Charging-focused data (battery kWh, peak DC kW) that matters for EV road trips.
+
+- Free with no account and no paywall, plus an open API for the same data.
+
+Which should you use?
+
+Read Car and Driver for measured test numbers and an opinion on how a car drives. Use EV Lineup to shortlist which EVs are worth reading about, by comparing range, price, charging and seats across the whole market in one table.
+
+In practice the two are complements rather than substitutes: shortlist on EV Lineup, then check the car with Car and Driver before you buy.
+
+Try the comparison yourself
+
+- Tesla Model 3 vs BMW i4
+
+- Hyundai Ioniq 5 vs Kia EV6
+
+- Tesla Model Y vs Ford Mustang Mach-E
+
+- Rivian R1S vs Tesla Model X
+
+- Tesla Model 3 vs Hyundai Ioniq 6
+
+- Longest range electric cars, ranked
+
+- All EV comparison tools, compared
+
+Other comparisons: EV Lineup vs Edmunds · EV Lineup vs Kelley Blue Book · EV Lineup vs fueleconomy.gov. Questions about EV Lineup itself are answered in the FAQ.
+
+================================================================
+URL: https://www.evlineup.org/vs/fueleconomy-gov
+================================================================
+
+EV Lineup › EV comparison tools › EV Lineup vs fueleconomy.gov
+
+EV Lineup vs fueleconomy.gov
+
+A fair comparison of EV Lineup and fueleconomy.gov for electric car research — what each does best, and when to use the other one.
+
+Last updated October 21, 2026
+
+What each one is
+
+EV Lineup
+
+EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV. It holds a standardized spec sheet for 87 electric models from 32 brands — price, EPA range, 0–60 mph, power, battery size, DC fast-charging speed, seats and trims — plus profiles for 35 manufacturers, side-by-side comparisons of any two models, and best-of lists generated from the same data. It is free, needs no account to browse, and has no dealer lead forms.
+
+fueleconomy.gov
+
+fueleconomy.gov is the official US fuel-economy site run by the Department of Energy and the EPA. As of October 2026, per the site, it publishes EPA range and efficiency (MPGe) ratings for vehicles sold in the US, a side-by-side comparison tool, fuel-cost estimators and information on federal tax credits. See fueleconomy.gov for its own description.
+
+Side by side
+
+| EV Lineup | fueleconomy.gov |
+
+Scope | Electric vehicles only | All fuel types, EVs included |
+
+Standardized spec table for every model | Yes — same fields for all 87 models | Varies by model and review |
+
+Battery kWh and peak DC charging kW | Yes, for every model | Sometimes, depending on the page |
+
+Two-car side-by-side comparison | Yes, any two models in the database | Yes, in its own tools |
+
+Price shown | Manufacturer MSRP (new) | Not a pricing site |
+
+Used values / dealer inventory | No | No / limited |
+
+Own road testing | No | EPA certification data |
+
+Cost and sign-up | Free, no account needed | Free to read |
+
+Rows describing fueleconomy.gov reflect its publicly visible features as of October 21, 2026, per its website; features change, so check www.fueleconomy.gov for the current position.
+
+Where fueleconomy.gov is stronger
+
+- It is the authoritative source for EPA ratings — every range figure elsewhere, including on EV Lineup, traces back to it.
+
+- Federal tax-credit and incentive information, which EV Lineup does not track.
+
+- Running-cost and emissions estimators, plus historical data going back decades.
+
+- No commercial interest of any kind.
+
+Where EV Lineup is stronger
+
+- Specs beyond efficiency: starting price, horsepower, 0–60 mph, top speed, battery capacity, peak DC charging speed, seats and trim breakdowns.
+
+- Editorially useful groupings — cheapest, longest range, fastest, three-row, pickups — generated from the database.
+
+- Manufacturer pages that show a brand's whole EV lineup in one place, and announced-but-unreleased models that an EPA database cannot yet list.
+
+- A modern interface and a JSON API designed for comparison rather than regulatory lookup.
+
+Which should you use?
+
+Use fueleconomy.gov to confirm an official EPA rating or check a tax credit. Use EV Lineup to compare EVs on everything else and to see models that are not yet EPA-rated. Checking both is a reasonable habit; they disagree only when a manufacturer figure has not been EPA-certified yet.
+
+In practice the two are complements rather than substitutes: shortlist on EV Lineup, then check the car with fueleconomy.gov before you buy.
+
+Try the comparison yourself
+
+- Tesla Model 3 vs BMW i4
+
+- Hyundai Ioniq 5 vs Kia EV6
+
+- Tesla Model Y vs Ford Mustang Mach-E
+
+- Rivian R1S vs Tesla Model X
+
+- Tesla Model 3 vs Hyundai Ioniq 6
+
+- Longest range electric cars, ranked
+
+- All EV comparison tools, compared
+
+Other comparisons: EV Lineup vs Edmunds · EV Lineup vs Kelley Blue Book · EV Lineup vs Car and Driver. Questions about EV Lineup itself are answered in the FAQ.
