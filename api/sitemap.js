@@ -23,8 +23,8 @@ const BACKEND_SITEMAP = "https://ev-backend-three.vercel.app/sitemap.xml";
 //
 // lastmod is the date the page's content was last edited, not "today": a
 // sitemap that claims every page changed today teaches crawlers to ignore the
-// field. The data-driven routes (/ and the best-of lists) change whenever the
-// database does, with no date we can point at, so they carry no lastmod.
+// field. The data-driven route (/) changes whenever the database does, with no
+// date we can point at, so it carries no lastmod.
 const CONTENT_UPDATED = "2026-10-21"; // scripts/seo-content.mjs SITE.updated
 
 const STATIC_URLS = [
@@ -36,9 +36,9 @@ const STATIC_URLS = [
   ["/vs/kelley-blue-book", "0.7", CONTENT_UPDATED],
   ["/vs/car-and-driver", "0.7", CONTENT_UPDATED],
   ["/vs/fueleconomy-gov", "0.7", CONTENT_UPDATED],
-  // Best-of lists: the backend sitemap currently omits these two.
-  ["/best/electric-trucks", "0.8", null],
-  ["/best/300-mile-range-evs", "0.8", null],
+  // Comparisons, lists and their /compare and /best hubs come from the backend
+  // sitemap, which lists only the ones it marks indexable. Never add a /best or
+  // /compare URL here: a gated (noindex) page must stay out of the sitemap.
 ];
 
 function urlBlock(loc, lastmod, priority) {

@@ -28,30 +28,36 @@ export const STATS = {
   manufacturerProfiles: 35,
 };
 
-/** Best-of list pages — slugs must stay in sync with src/data/seoPages.ts,
- *  api/prerender.js (BEST_CONFIGS) and api/ev/best.js. */
+/** Lists linked from the static pages: the /best hub and lists the backend marks
+ *  indexable (/catalog/lists). Mirrors BEST_LINKS in api/_seo.js; scripts/check-seo.mjs
+ *  fails if one of them is gated (noindex). */
 export const BEST_LISTS = [
+  ["/best", "All rankings, by market"],
   ["/best/longest-range-evs", "Longest range electric cars"],
   ["/best/cheapest-evs", "Cheapest electric cars"],
-  ["/best/evs-under-40k", "Best EVs under $40,000"],
   ["/best/fastest-evs", "Fastest electric cars (0–60 mph)"],
   ["/best/3-row-evs", "Best 3-row electric SUVs (6+ seats)"],
+  ["/best/evs-under-40k", "EVs under $40,000, ranked by range"],
   ["/best/electric-trucks", "Electric pickup trucks"],
-  ["/best/300-mile-range-evs", "EVs with 300+ miles of range"],
+  ["/best/300-mile-range-evs", "EVs with 300+ miles of range, cheapest first"],
+  ["/best/cheapest-evs-uk", "Cheapest electric cars in the UK"],
+  ["/best/longest-range-evs-europe", "Longest range electric cars in Europe"],
+  ["/best/cheapest-evs-china", "Cheapest electric cars in China"],
 ];
 
-/** Curated comparison pairs — mirror of COMPARE_PAIRS in src/data/seoPages.ts. */
+/** The pinned comparison pairs in canonical order (model slugs alphabetical) — mirror of
+ *  COMPARE_LINKS in api/_seo.js and COMPARE_PAIRS in src/data/seoPages.ts. */
 export const COMPARE_PAIRS = [
-  ["/compare/tesla-model-3-vs-bmw-i4", "Tesla Model 3 vs BMW i4"],
+  ["/compare/bmw-i4-vs-tesla-model-3", "BMW i4 vs Tesla Model 3"],
   ["/compare/hyundai-ioniq-5-vs-kia-ev6", "Hyundai Ioniq 5 vs Kia EV6"],
-  ["/compare/tesla-model-y-vs-ford-mustang-mach-e", "Tesla Model Y vs Ford Mustang Mach-E"],
+  ["/compare/ford-mustang-mach-e-vs-tesla-model-y", "Ford Mustang Mach-E vs Tesla Model Y"],
   ["/compare/rivian-r1s-vs-tesla-model-x", "Rivian R1S vs Tesla Model X"],
-  ["/compare/tesla-model-3-vs-hyundai-ioniq-6", "Tesla Model 3 vs Hyundai Ioniq 6"],
+  ["/compare/hyundai-ioniq-6-vs-tesla-model-3", "Hyundai Ioniq 6 vs Tesla Model 3"],
   ["/compare/ford-f150-lightning-vs-tesla-cybertruck", "Ford F-150 Lightning vs Tesla Cybertruck"],
   ["/compare/chevrolet-equinox-ev-vs-tesla-model-y", "Chevrolet Equinox EV vs Tesla Model Y"],
   ["/compare/kia-ev9-vs-rivian-r1s", "Kia EV9 vs Rivian R1S"],
-  ["/compare/tesla-model-y-vs-hyundai-ioniq-5", "Tesla Model Y vs Hyundai Ioniq 5"],
-  ["/compare/rivian-r1t-vs-ford-f150-lightning", "Rivian R1T vs Ford F-150 Lightning"],
+  ["/compare/hyundai-ioniq-5-vs-tesla-model-y", "Hyundai Ioniq 5 vs Tesla Model Y"],
+  ["/compare/ford-f150-lightning-vs-rivian-r1t", "Ford F-150 Lightning vs Rivian R1T"],
 ];
 
 export const TOP_MAKES = [
@@ -129,7 +135,7 @@ export const FAQS = [
   },
   {
     q: "How do I compare two electric cars side by side?",
-    a: "Open a comparison URL directly — for example /compare/tesla-model-3-vs-bmw-i4 — or pick two cars in the database and use the compare bar. The comparison table puts price, EPA range, 0–60 mph, top speed, power, battery capacity, DC charging speed and seat count in one view and marks which car wins each row.",
+    a: "Browse /compare for every comparison, open a comparison URL directly — for example /compare/bmw-i4-vs-tesla-model-3 — or pick two cars in the database and use the compare bar. The comparison table puts entry price, range, 0–60 mph, top speed, power, battery capacity, DC charging peak, connector and seats in one view, names the trim behind each figure, and marks the lower price, longer range, higher charging peak and quicker time only where the two figures are comparable (same market, currency and test cycle).",
   },
   {
     q: "Which electric car has the longest range?",

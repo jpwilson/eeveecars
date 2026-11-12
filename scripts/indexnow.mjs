@@ -29,13 +29,20 @@ const DEFAULT_PATHS = [
   "/vs/kelley-blue-book",
   "/vs/car-and-driver",
   "/vs/fueleconomy-gov",
+  // Hubs and lists the backend marks indexable (same set as BEST_LINKS in api/_seo.js);
+  // --sitemap submits every indexable comparison and list.
+  "/compare",
+  "/best",
   "/best/longest-range-evs",
   "/best/cheapest-evs",
-  "/best/evs-under-40k",
   "/best/fastest-evs",
   "/best/3-row-evs",
+  "/best/evs-under-40k",
   "/best/electric-trucks",
   "/best/300-mile-range-evs",
+  "/best/cheapest-evs-uk",
+  "/best/longest-range-evs-europe",
+  "/best/cheapest-evs-china",
 ];
 
 function parseArgs(argv) {

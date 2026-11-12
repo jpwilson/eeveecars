@@ -7,7 +7,8 @@
  *
  *   node scripts/render-prerender.mjs                 # render the default set
  *   node scripts/render-prerender.mjs --out dist/__preview
- *   node scripts/render-prerender.mjs --page best --slug electric-trucks
+ *   node scripts/render-prerender.mjs --page best --slug cheapest-evs-uk
+ *   node scripts/render-prerender.mjs --query "page=compare-index"
  *   node scripts/render-prerender.mjs --query "page=catalog-changes&make=tesla&model=model-3&pair=2017-vs-2024"
  *
  * EV_API_BASE=http://localhost:8011 points the handler at another backend (e.g. a
@@ -27,13 +28,23 @@ export const DEFAULT_TARGETS = [
   { name: "model-tesla-model-3", page: "model", slug: "tesla-model-3", path: "/model_detail/tesla-model-3" },
   { name: "make-hyundai", page: "make", slug: "hyundai", path: "/manufacturer/hyundai" },
   {
-    // canonical (alphabetical) pair: the other order is a 301
+    // a pinned pair, canonical (alphabetical) order: the other order is a 301
     name: "compare-i4-vs-model-3",
     page: "compare",
     slug: "bmw-i4-vs-tesla-model-3",
     path: "/compare/bmw-i4-vs-tesla-model-3",
   },
+  // a generated (same-make) pair, indexable
+  { name: "compare-model-3-vs-model-y", page: "compare", slug: "tesla-model-3-vs-tesla-model-y", path: "/compare/tesla-model-3-vs-tesla-model-y" },
+  // an unselected pair: renders for people, but must be noindex (and is never linked)
+  { name: "compare-seagull-vs-model-3", page: "compare", slug: "byd-seagull-vs-tesla-model-3", path: "/compare/byd-seagull-vs-tesla-model-3", noindex: true },
   { name: "best-longest-range", page: "best", slug: "longest-range-evs", path: "/best/longest-range-evs" },
+  // a generated list in another market, indexable
+  { name: "best-cheapest-uk", page: "best", slug: "cheapest-evs-uk", path: "/best/cheapest-evs-uk" },
+  // a gated list (too few on sale): renders, but noindex
+  { name: "best-evs-under-30k", page: "best", slug: "evs-under-30k", path: "/best/evs-under-30k", noindex: true },
+  { name: "compare-hub", query: { page: "compare-index" }, path: "/compare" },
+  { name: "best-hub", query: { page: "best-index" }, path: "/best" },
   {
     name: "catalog-model-tesla-model-3",
     query: { page: "catalog-model", make: "tesla", model: "model-3" },

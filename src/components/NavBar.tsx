@@ -21,15 +21,18 @@ import { HamburgerIcon } from "@chakra-ui/icons";
 import ColorModeSwitch from "./ColorModeSwitch";
 import { Link } from "react-router-dom";
 import SearchInput from "./SearchInput";
-import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper, FaMapMarkedAlt, FaThLarge, FaIndustry } from "react-icons/fa";
+import { FaBolt, FaCar, FaUsers, FaStore, FaNewspaper, FaMapMarkedAlt, FaThLarge, FaIndustry, FaBalanceScale, FaListOl } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import UserMenu from "./UserMenu";
 import AuthModal from "./AuthModal";
 
-const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType; external?: boolean }[] = [
+// `wide`: in the desktop row only from xl up (the row runs out of room at lg); always in the drawer.
+const navLinks: { label: string; mobileLabel?: string; to: string; icon: React.ElementType; external?: boolean; wide?: boolean }[] = [
   { label: "Home", mobileLabel: "Database", to: "/", icon: FaCar },
   { label: "All Cars", mobileLabel: "All electric cars", to: "/cars", icon: FaThLarge },
   { label: "Makes", mobileLabel: "Car makers", to: "/make", icon: FaIndustry },
+  { label: "Compare", mobileLabel: "Compare two EVs", to: "/compare", icon: FaBalanceScale, wide: true },
+  { label: "Rankings", mobileLabel: "Rankings by market", to: "/best", icon: FaListOl, wide: true },
   { label: "People", to: "/people", icon: FaUsers },
   { label: "Marketplace", to: "/marketplace", icon: FaStore },
   // Separate app mounted under the same domain — needs a full page load, not a router Link.
@@ -94,7 +97,7 @@ const NavBar = ({ onSearch }: Props) => {
         )}
 
         {/* Desktop nav links + auth */}
-        {/* 8 links: the full row needs lg+; narrower screens use the drawer */}
+        {/* 8 links (10 from xl): the full row needs lg+; narrower screens use the drawer */}
         <Show above="lg">
           <HStack spacing={{ lg: 5, xl: 8 }} flexShrink={0}>
             {navLinks.map((link) => {
@@ -110,9 +113,10 @@ const NavBar = ({ onSearch }: Props) => {
                   {link.label}
                 </Text>
               );
-              return link.external
+              const el = link.external
                 ? <a key={link.label} href={link.to}>{text}</a>
                 : <Link key={link.label} to={link.to}>{text}</Link>;
+              return link.wide ? <Show key={link.label} above="xl">{el}</Show> : el;
             })}
             {/* Auth: Sign In button or User Menu */}
             {!isLoading && (

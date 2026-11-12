@@ -694,9 +694,9 @@ async function buildLegacyComparePage(pair) {
   };
 }
 
-// Mirror of src/data/seoPages.ts — keep slugs and logic in sync. `blurb` describes
-// the catalog list (/catalog/best/{key}); filter/sort and `legacyBlurb` are only
-// used by the legacy fallback while the catalog is not migrated.
+// The 7 original lists for the legacy fallback ONLY (catalog answers 503); the catalog
+// registry (/catalog/best/{key}, /catalog/lists) is the source of truth for every list.
+// Mirror of BEST_PAGES in src/data/seoPages.ts.
 const BEST_CONFIGS = {
   "evs-under-40k": {
     title: "Best EVs Under $40,000",
@@ -1191,8 +1191,53 @@ function generationLd(gen, ctx, data, gensNewestFirst) {
   };
 }
 
+/**
+ * The model page's "Compare the X with" / "Similar EVs in {market}" / "Ranked in"
+ * sections from /catalog/models/{make}/{model}/alternatives (the same as the React card).
+ * Only indexable pairs and lists come back from that endpoint.
+ */
+function alternativesHtml(alts, name) {
+  const out = [];
+  if ((alts.compare || []).length)
+    out.push(
+      `<h2>Compare the ${esc(name)} with</h2><ul>${alts.compare
+        .map((c) => `<li><a href="${esc(c.path)}">${esc(c.name || c.key)}</a></li>`)
+        .join("")}</ul>`
+    );
+  if ((alts.alternatives || []).length) {
+    const where = alts.market === "US" || alts.market === "UK" ? `the ${alts.market}` : MARKET_NAME[alts.market] || alts.market || "";
+    out.push(
+      `<h2>Similar EVs in ${esc(where)}</h2>${alts.rule ? `<p class="sub">${esc(alts.rule)}</p>` : ""}<ul>${alts.alternatives
+        .map((a) => {
+          const c = a.card || {};
+          const n = displayName(c.make && c.make.name, c.name);
+          const figs = [
+            a.price && a.price.value ? `from ${money(a.price.value, a.price.currency)}${a.price.basis ? ` (${PRICE_BASIS_TEXT[a.price.basis] || String(a.price.basis).replace(/_/g, " ")})` : ""}` : null,
+            a.range && a.range.value ? `up to ${rangeText(a.range.value, a.range.unit, a.range.cycle)}` : null,
+          ].filter(Boolean);
+          return `<li><a href="${esc(c.path)}">${esc(n)}</a>${figs.length ? `: ${esc(figs.join(", "))}` : ""}${
+            a.compare_path ? ` (<a href="${esc(a.compare_path)}">compare side by side</a>)` : ""
+          }</li>`;
+        })
+        .join("")}</ul>`
+    );
+  }
+  if ((alts.lists || []).length)
+    out.push(
+      `<h2>Ranked in</h2><ul>${alts.lists
+        .map((l) => `<li>#${esc(l.rank)} in <a href="${esc(l.path)}">${esc(l.title || l.key)}</a></li>`)
+        .join("")}</ul>`
+    );
+  return out.join("\n  ");
+}
+
 async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
   const legacyKey = modelSlug.startsWith(`${makeSlug}-`) ? modelSlug : `${makeSlug}-${modelSlug}`;
+  // Model page only: comparisons, similar cars and lists, fetched in parallel; the
+  // section is left out when this call fails.
+  const altsPromise = genSlug
+    ? Promise.resolve(null)
+    : catalogGet(`/catalog/models/${enc(makeSlug)}/${enc(modelSlug)}/alternatives`).catch(() => null);
   const data = await getOrAlias(
     `/catalog/models/${enc(makeSlug)}/${enc(modelSlug)}`,
     "model",
@@ -1294,6 +1339,9 @@ async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
         .join("")}</ul>`
     : "";
 
+  const alts = isGenPage ? null : await altsPromise;
+  const altsHtml = alts ? alternativesHtml(alts, name) : "";
+
   // Buy lines (model page only): the official link and, for a car offered in the US,
   // the dated federal-credit sentence. No payment or charging figures in crawler HTML.
   const soldInUs = !isGenPage && def && (def.variants || []).some((v) => (v.offerings || []).some((o) => o.market === "US"));
@@ -1324,6 +1372,7 @@ async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
   ${offeringsHtml}
   ${earlierHtml}
   ${changesHtml}
+  ${altsHtml}
   ${relHtml}
   ${sourcesHtml(sources)}
   ${data.updated_at ? `<p class="sub">Last updated ${esc(String(data.updated_at).slice(0, 10))}</p>` : ""}
@@ -1699,313 +1748,386 @@ function noindex(meta) {
   return `${meta}\n    <meta name="robots" content="noindex" />`;
 }
 
-// ---------- best lists and compare pages from the catalog ----------
+// ---------- comparisons, lists and their hubs from the catalog ----------
 //
-// /best/{key} reads /catalog/best/{key}; /compare/{a}-vs-{b} resolves each slug
-// and reads /catalog/models/{make}/{model}. A real 404 stays a 404; anything
-// else (not migrated = 503, backend trouble) falls back to the legacy builder.
+// The backend computes every row, sentence, FAQ entry, quality gate and link list
+// (/catalog/compare/{a}/{b}, /catalog/best/{key}, /catalog/compare-pairs,
+// /catalog/lists); these builders only display it. A page the backend marks not
+// indexable is served with noindex and is never linked from here. A real 404 stays a
+// 404; a 503 (catalog not migrated, or no answer) falls back to the legacy builder
+// where one exists.
 
-const BEST_METRIC_CAPTION = { price: "Lowest price", range: "Longest range", accel: "Quickest 0–60" };
+// Mirrors PRICE_BASIS_LABELS in src/utils/catalogFormat.ts.
+const PRICE_BASIS_TEXT = {
+  msrp_excl_destination: "MSRP excl. destination",
+  msrp_incl_destination: "MSRP incl. destination",
+  list_incl_vat: "list price incl. VAT",
+};
 
-function fmtNum(v, digits = 1) {
-  if (v === null || v === undefined) return null;
-  return Number(Number(v).toFixed(digits)).toLocaleString("en-US");
+const MARKET_NAME = { US: "United States", UK: "United Kingdom", EU: "Europe", CN: "China", CA: "Canada", JP: "Japan", KR: "South Korea", IN: "India", AU: "Australia" };
+
+/** A compare/changes row side as text, in its own unit, currency and cycle (never converted). */
+function sideText(side) {
+  if (!side || side.value === null || side.value === undefined) return null;
+  const v = side.value;
+  if (Array.isArray(v)) return v.length ? v.join(", ") : null;
+  if (typeof v === "string") return v;
+  const u = side.unit;
+  if (u && /^[A-Z]{3}$/.test(u)) return money(v, u);
+  if (u === "mi" || u === "km") return rangeText(v, u, side.cycle);
+  const n = Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 });
+  if (u === "trims") return n;
+  return [n, u].filter(Boolean).join(" ");
 }
 
-function bestRankedText(item, metric) {
-  const m = item.model || {};
-  if (item.value === null || item.value === undefined) return null;
-  if (metric === "price") {
-    const est = m.from_price && m.from_price.is_estimate && m.from_price.value === item.value ? " (est.)" : "";
-    const t = money(item.value, item.unit);
-    return t ? t + est : null;
-  }
-  if (metric === "range") {
-    const r = m.max_range;
-    const same = r && r.value === item.value && r.unit === item.unit;
-    return rangeText(item.value, item.unit, same ? r.cycle : null);
-  }
-  return `${fmtNum(item.value, 2)} ${item.unit || "s"}`;
+/** "Standard RWD, 2026 MY, manufacturer estimate" under a value. */
+function sideNote(side) {
+  if (!side) return "";
+  const bits = [
+    side.variant ? (side.variant.path ? `<a href="${esc(side.variant.path)}">${esc(side.variant.name || side.variant.slug)}</a>` : esc(side.variant.name || "")) : "",
+    side.model_year ? `${esc(side.model_year)} MY` : "",
+    side.price_kind === "launch" ? "launch price" : "",
+    side.is_estimate ? "manufacturer estimate" : "",
+  ].filter(Boolean);
+  return bits.length ? `<br><small>${bits.join(", ")}</small>` : "";
 }
 
-async function buildBestPage(criteria) {
-  const cfg = BEST_CONFIGS[criteria];
-  if (!cfg) return null;
+/** "Title | EV Lineup" within 75 characters as written in the HTML (an "&" counts as
+ * "&amp;"), trying each candidate in turn. */
+function fitTitle(candidates) {
+  const t = candidates.find((c) => c && esc(c).length <= 75);
+  return t || `${candidates[candidates.length - 1].slice(0, 74)}…`;
+}
+
+const HIGHLIGHT_TEXT = {
+  entry_price: "lower price",
+  longest_range: "longer range",
+  fastest_dc: "higher DC peak",
+  quickest_0_60: "quicker",
+  quickest_0_100: "quicker",
+};
+
+/**
+ * /compare/{a}-vs-{b}: either order and legacy slugs are accepted by the API, which
+ * answers with the canonical path (other forms 301). Not a selected pair, or past
+ * the cap, or too thin → noindex. FAQ in the tail (stays visible after React mounts).
+ */
+async function buildComparePage(pair) {
+  const parts = String(pair || "").split("-vs-");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
   let data;
   try {
-    data = await catalogGet(`/catalog/best/${enc(criteria)}${cfg.limit ? `?limit=${cfg.limit}` : ""}`);
+    data = await catalogGet(`/catalog/compare/${enc(parts[0].toLowerCase())}/${enc(parts[1].toLowerCase())}`);
   } catch (e) {
     if (e instanceof HttpError && e.status === 404) return null;
-    return buildLegacyBestPage(criteria);
+    if (e instanceof HttpError && e.status === 503) {
+      const legacy = await buildLegacyComparePage(pair);
+      if (legacy) return legacy;
+    }
+    throw e instanceof HttpError ? e : new HttpError(503);
   }
-  const items = (data && data.items) || [];
-  const metric = data.metric;
+  if (data.path !== `/compare/${pair}`) return { redirect: data.path };
 
-  const canonical = `${CANONICAL_HOST}/best/${criteria}`;
-  const title = `${cfg.title} (${new Date().getFullYear()}) | ${SITE_NAME}`;
-  const description = `${cfg.blurb} Generated live from the ${SITE_NAME} database of every EV on the market.`;
+  const nameA = data.a.name || data.a.model.name;
+  const nameB = data.b.name || data.b.model.name;
+  const h1 = `${nameA} vs ${nameB}`;
+  const canonical = abs(data.path);
+  const crumbs = [["Compare", "/compare"], [h1, data.path]];
+
+  const photo = (side) => {
+    const gen = side.generation || {};
+    const img = gen.image;
+    const pic =
+      img && img.url
+        ? `<img src="${esc(absImage(img.url))}" alt="${esc(img.alt || side.name)}" width="400" style="max-width:100%;border-radius:10px" loading="lazy" />${imageCreditHtml(img)}`
+        : `<p class="sub">No photo yet.</p>`;
+    const bits = [gen.name, gen.years, side.model.status && side.model.status !== "current" ? STATUS_TEXT[side.model.status] : null].filter(Boolean);
+    return `<figure style="margin:0">${pic}<figcaption><a href="${esc(side.model.path)}">${esc(side.name)}</a>${bits.length ? ` (${esc(bits.join(", "))})` : ""}</figcaption></figure>`;
+  };
+
+  const rows = (data.rows || []).filter((r) => r.a || r.b);
+  const cell = (r, which) => {
+    const side = r[which];
+    const missing = r.compare && r.compare.status === `missing_${which}`;
+    const text = missing ? null : sideText(side);
+    if (!text) return `<td>Not on file</td>`;
+    const hl = r.highlight === which && HIGHLIGHT_TEXT[r.key] ? ` <strong>(${HIGHLIGHT_TEXT[r.key]})</strong>` : "";
+    return `<td>${esc(text)}${hl}${sideNote(side)}</td>`;
+  };
+  const rowsHtml = rows.length
+    ? `<h2>Side by side${data.market ? ` (${esc(MARKET_NAME[data.market] || data.market)} figures)` : ""}</h2>
+  <table><tr><th></th><th>${esc(nameA)}</th><th>${esc(nameB)}</th></tr>${rows
+    .map(
+      (r) =>
+        `<tr><th>${esc(r.label || r.key)}${r.qualifier ? `<br><small>${esc(r.qualifier)}</small>` : ""}</th>${cell(r, "a")}${cell(r, "b")}</tr>${
+          r.compare && r.compare.reason ? `<tr><td colspan="3"><small>${esc(r.compare.reason)}</small></td></tr>` : ""
+        }`
+    )
+    .join("")}</table>
+  <p class="sub">Each figure is the highest (or lowest) on file across the current version's trims, with the trim it comes from. Prices, ranges and batteries are compared only on the same market, currency, price basis, test cycle and battery basis; nothing is converted.${
+    (data.notes || []).length ? ` ${esc(data.notes.join(" "))}` : ""
+  }</p>`
+    : "";
+
+  const listsHtml = (data.lists || []).length
+    ? `<h2>Where they rank</h2><ul>${data.lists
+        .map(
+          (l) =>
+            `<li><a href="${esc(l.path)}">${esc(l.title || l.key)}</a>: ${esc(
+              [l.a_rank ? `${nameA} #${l.a_rank}` : null, l.b_rank ? `${nameB} #${l.b_rank}` : null].filter(Boolean).join(", ")
+            )}</li>`
+        )
+        .join("")}</ul>`
+    : "";
+
+  // `more` is filled only on indexable pages and holds only indexable pairs.
+  const more = data.more || {};
+  const moreList = (title, list) =>
+    (list || []).length ? `<h3>${esc(title)}</h3><ul>${list.map((p) => `<li><a href="${esc(p.path)}">${esc(p.name || p.key)}</a></li>`).join("")}</ul>` : "";
+  const moreHtml = `<h2>More comparisons</h2>${moreList(`More ${nameA} comparisons`, more.a)}${moreList(`More ${nameB} comparisons`, more.b)}<p><a href="${esc(data.a.model.path)}">Everything on the ${esc(nameA)}</a> · <a href="${esc(data.b.model.path)}">Everything on the ${esc(nameB)}</a> · <a href="/compare">All comparisons</a></p>`;
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(h1)}</h1>
+  ${(data.summary || []).map((s) => `<p>${esc(s)}</p>`).join("")}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">${photo(data.a)}${photo(data.b)}</div>
+  ${rowsHtml}
+  ${listsHtml}
+  ${moreHtml}
+  ${sourcesHtml(data.sources)}
+  ${data.updated_at ? `<p class="sub">Last updated ${esc(String(data.updated_at).slice(0, 10))}</p>` : ""}
+</div>`;
+
+  const faq = data.faq || [];
+  const faqHtml = faq.length
+    ? `<section data-faq-for="${esc(data.path)}"><h2>Questions and answers: ${esc(h1)}</h2>${faq
+        .map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`)
+        .join("")}</section>`
+    : "";
+
+  const sides = [data.a, data.b];
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: h1,
+      numberOfItems: 2,
+      itemListElement: sides.map((s, i) => {
+        const img = s.generation && s.generation.image;
+        return {
+          "@type": "ListItem",
+          position: i + 1,
+          name: s.name,
+          url: abs(s.model.path),
+          ...(img && img.url ? { image: absImage(img.url) } : {}),
+        };
+      }),
+    },
+    breadcrumbLd(crumbs),
+  ];
+  if (faq.length)
+    jsonLd.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    });
+
+  const suffix = ` | ${SITE_NAME}`;
+  const title = fitTitle([`${h1}: Price, Range & Specs Compared${suffix}`, `${h1}: Specs Compared${suffix}`, `${h1}${suffix}`, h1]);
+  const description = fitDescription(data.summary || [], 80, 230, `Specs, prices and ranges of both compared side by side on ${SITE_NAME}.`);
+  const imgA = data.a.generation && data.a.generation.image;
+  const imgB = data.b.generation && data.b.generation.image;
+  const meta = metaBlock({
+    title,
+    description,
+    canonical,
+    image: absImage((imgA && imgA.url) || (imgB && imgB.url)),
+    jsonLd,
+  });
+  return { meta: data.indexable ? meta : noindex(meta), content, tail: `${faqHtml}${linksBlock()}` };
+}
+
+/** /best/{key}: any list in the backend's registry; noindex when the backend gates it. */
+async function buildBestPage(criteria) {
+  const key = String(criteria || "").toLowerCase();
+  let data;
+  try {
+    data = await catalogGet(`/catalog/best/${enc(key)}`);
+  } catch (e) {
+    if (e instanceof HttpError && e.status === 404) return null;
+    if (e instanceof HttpError && e.status === 503 && BEST_CONFIGS[key]) {
+      const legacy = await buildLegacyBestPage(key);
+      if (legacy) return legacy;
+    }
+    throw e instanceof HttpError ? e : new HttpError(503);
+  }
+  if (data.path && data.path !== `/best/${criteria}`) return { redirect: data.path };
+  const items = data.items || [];
+  const path = data.path || `/best/${key}`;
+  const canonical = abs(path);
+  const title = data.title || key;
+  const crumbs = [["Rankings", "/best"], [title, path]];
+  const ranked = data.ranked ?? items.length;
+
+  const rowHtml = (it, i) => {
+    const m = it.model || {};
+    const name = it.name || displayName(m.make && m.make.name, m.name);
+    const status = it.status || m.market_status || m.status;
+    const figure = it.display ? `${esc(it.display)}${it.qualifier || it.label ? `<br><small>${esc([it.label, it.qualifier].filter(Boolean).join(", "))}</small>` : ""}` : "No figure published";
+    const trim = it.variant ? `<a href="${esc(it.variant.path)}">${esc(it.variant.name || it.variant.slug)}</a>` : (it.markets || []).length ? esc(it.markets.map((x) => MARKET_NAME[x] || x).join(", ")) : "—";
+    return `<tr><td>${esc(it.rank || i + 1)}</td><td><a href="${esc(m.path)}">${esc(name)}</a>${
+      status && status !== "current" ? ` (${esc(STATUS_TEXT[status] || status)})` : ""
+    }</td><td>${figure}</td><td>${trim}</td></tr>`;
+  };
+  const isMarkets = data.metric === "markets";
+  const head = `<tr><th>#</th><th>Model</th><th>${isMarkets ? "Markets" : "Figure"}</th><th>${isMarkets ? "On sale in" : "Trim"}</th></tr>`;
+  const onSale = items.slice(0, ranked);
+  const upcoming = items.slice(ranked);
+  const tableHtml = `<table>${head}${onSale.map(rowHtml).join("")}</table>${
+    upcoming.length ? `<h2>Not on sale yet</h2><table>${head}${upcoming.map((it, i) => rowHtml(it, ranked + i)).join("")}</table>` : ""
+  }`;
+  const ex = data.excluded || {};
+  const footLines = [ex.reason, ...(ex.unknown || []), ...(data.notes || [])].filter(Boolean);
+  const related = data.related || [];
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(data.h1 || title)}</h1>
+  ${data.blurb ? `<p>${esc(data.blurb)}</p>` : ""}
+  ${data.rule ? `<p><strong>How it is ranked:</strong> ${esc(data.rule)}</p>` : ""}
+  ${tableHtml}
+  ${footLines.map((l) => `<p class="sub">${esc(l)}</p>`).join("")}
+  ${related.length ? `<h2>Related lists</h2><ul>${related.map((r) => `<li><a href="${esc(r.path)}">${esc(r.title || r.key)}</a></li>`).join("")}</ul>` : ""}
+  <p><a href="/best">Every ranking, by market</a> · <a href="/compare">Compare two cars</a> · <a href="/cars">All electric cars</a></p>
+</div>`;
 
   const jsonLd = [
     {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      name: cfg.title,
+      name: data.h1 || title,
       numberOfItems: items.length,
       itemListElement: items.map((it, i) => ({
         "@type": "ListItem",
         position: it.rank || i + 1,
-        name: displayName(it.model.make && it.model.make.name, it.model.name),
+        name: it.name || displayName(it.model.make && it.model.make.name, it.model.name),
         url: abs(it.model.path),
       })),
     },
-    breadcrumbLd([
-      ["All EVs", "/"],
-      [cfg.title, `/best/${criteria}`],
-    ]),
+    breadcrumbLd(crumbs),
   ];
+  const suffix = ` | ${SITE_NAME}`;
+  const year = new Date().getFullYear();
+  const first = items.find((it) => it.model && it.model.image && it.model.image.url);
+  const meta = metaBlock({
+    title: fitTitle([`${title} (${year})${suffix}`, `${title}${suffix}`, title]),
+    description: fitDescription([data.blurb, data.rule].filter(Boolean), 80, 230, `Generated from the ${SITE_NAME} database; every figure names its trim.`),
+    canonical,
+    image: absImage(first && first.model.image.url),
+    jsonLd,
+  });
+  return { meta: data.indexable === false ? noindex(meta) : meta, content };
+}
 
-  const rows = items
-    .map((it, i) => {
-      const m = it.model;
-      const name = displayName(m.make && m.make.name, m.name);
-      const status = m.market_status || m.status;
-      const fp = m.from_price;
-      const price = fp && fp.value ? `${money(fp.value, fp.currency)}${fp.is_estimate ? " (est.)" : ""}` : null;
-      const r = m.max_range;
-      const range = r ? rangeText(r.value, r.unit, r.cycle) : null;
-      const q = m.quickest_0_60;
-      const accel = q && q.value ? `${fmtNum(q.value, 2)} s` : null;
-      const ranked = bestRankedText(it, metric);
-      const trim =
-        it.variant && ranked
-          ? `${esc(BEST_METRIC_CAPTION[metric] || "Figure")}: <a href="${esc(it.variant.path)}">${esc(it.variant.name || it.variant.slug)}</a>`
-          : "—";
-      return `<tr><td>${it.rank || i + 1}</td><td><a href="${esc(m.path)}">${esc(name)}</a>${
-        status && status !== "current" ? ` (${esc(STATUS_TEXT[status] || status)})` : ""
-      }</td><td>${esc(price || "—")}</td><td>${esc(range || "—")}</td><td>${esc(accel || "—")}</td><td>${trim}</td></tr>`;
-    })
+/** /compare: every indexable pair, popular first, then twins, old and new, and by make. */
+async function buildCompareIndexPage() {
+  const data = await catalogGet("/catalog/compare-pairs?indexable=true");
+  const pairs = (data.pairs || []).filter((p) => p.indexable);
+  const canonical = abs("/compare");
+  const crumbs = [["Home", "/"], ["Compare", "/compare"]];
+  const li = (p) => `<li><a href="${esc(p.path)}">${esc(p.name || p.key)}</a></li>`;
+  const group = (title, note, list) =>
+    list.length ? `<h2>${esc(title)}</h2>${note ? `<p class="sub">${esc(note)}</p>` : ""}<ul>${list.map(li).join("")}</ul>` : "";
+  // Each pair once, under the make of its first model (pairs are in alphabetical slug order).
+  const rest = pairs.filter((p) => !["pinned", "twin", "successor"].includes(p.source));
+  const byMake = new Map();
+  for (const p of rest) {
+    const mk = (p.a.make && p.a.make.name) || p.a.name;
+    byMake.set(mk, [...(byMake.get(mk) || []), p]);
+  }
+  const makesHtml = [...byMake.entries()]
+    .sort((x, y) => x[0].localeCompare(y[0]))
+    .map(([mk, list]) => `<h3>${esc(mk)}</h3><ul>${list.map(li).join("")}</ul>`)
     .join("");
 
   const content = `${CONTENT_STYLE}<div class="prerender">
-  <p class="crumbs"><a href="/">All EVs</a> › Rankings</p>
-  <h1>${esc(cfg.title)}</h1>
-  <p class="sub">${esc(cfg.blurb)}</p>
-  <table><tr><th>#</th><th>Model</th><th>From</th><th>Range</th><th>0–60</th><th>Trim</th></tr>${rows}</table>
-  <p class="sub">US figures: price is the lowest current US MSRP (some makers include destination, some do not) and range is EPA. Each ranked figure names the trim it comes from.</p>
-  <p><a href="/cars">Browse all electric vehicles →</a></p>
+  ${crumbsHtml(crumbs)}
+  <h1>Compare electric cars side by side</h1>
+  <p>Two current models on the same figures: entry price, range, battery, power, acceleration, DC charging peak, connector and seats. Each figure names the trim it comes from, and prices and ranges are compared only within one market, currency and test cycle; nothing is converted and there is no overall winner.</p>
+  <p class="sub">${pairs.length} comparisons, chosen from twins, old and new versions, same-brand pairs and close rivals by price in each market.</p>
+  ${group("Popular comparisons", "", pairs.filter((p) => p.source === "pinned"))}
+  ${group("Same car, two brands", "Twins: closely related models sold under different badges.", pairs.filter((p) => p.source === "twin"))}
+  ${group("Old and new", "A model and the one that replaced it.", pairs.filter((p) => p.source === "successor"))}
+  ${makesHtml ? `<h2>Same brand and rivals, by make</h2>${makesHtml}` : ""}
+  <p><a href="/best">Rankings by market</a> · <a href="/cars">All electric cars</a></p>
 </div>`;
-
-  const first = items.find((it) => it.model && it.model.image && it.model.image.url);
   return {
     meta: metaBlock({
-      title,
-      description,
+      title: `Compare Electric Cars Side by Side: ${pairs.length} Comparisons | ${SITE_NAME}`,
+      description: `${pairs.length} side-by-side comparisons of current electric cars: price, range, battery, charging and acceleration, each figure naming its trim, compared only within one market.`,
       canonical,
-      image: absImage(first && first.model.image.url),
-      jsonLd,
+      image: FALLBACK_IMAGE,
+      jsonLd: [
+        breadcrumbLd(crumbs),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Electric car comparisons",
+          numberOfItems: pairs.length,
+          itemListElement: pairs.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: abs(p.path) })),
+        },
+      ],
     }),
     content,
   };
 }
 
-/** A model by API slug (legacy slugs too) → full /catalog/models tree. Throws HttpError. */
-async function catalogModelBySlug(slug) {
-  const r = await catalogGet(`/catalog/resolve?kind=model&key=${enc(String(slug).toLowerCase())}`);
-  const m = /^\/make\/([^/]+)\/([^/]+)$/.exec((r && r.path) || "");
-  if (!m) throw new HttpError(404);
-  return catalogGet(`/catalog/models/${m[1]}/${m[2]}`);
-}
-
-/** Current version (default generation), headline market (US where sold, else main market), its trims. */
-function compareSide(data) {
-  const gens = data.generations || [];
-  const gen = gens.find((g) => g.is_default) || gens.find((g) => g.slug === data.default_generation) || gens[0] || null;
-  const market = (data.headline && data.headline.market) || (data.model.markets && data.model.markets[0] && data.model.markets[0].market) || null;
-  const all = ((gen && gen.variants) || []).filter((v) => v.status !== "cancelled");
-  const inMarket = market ? all.filter((v) => (v.offerings || []).some((o) => o.market === market)) : [];
-  return {
-    data,
-    name: displayName(data.make && data.make.name, data.model.name),
-    gen,
-    market,
-    variants: inMarket.length ? inMarket : all,
-  };
-}
-
-function bestSpec(side, field, fmt, groupOf) {
-  let top = null;
-  for (const v of side.variants) {
-    const n = v[field];
-    if (n !== null && n !== undefined && (top === null || n > top[field])) top = v;
-  }
-  if (!top) return { text: null, value: null };
-  return { text: fmt(top[field], top), value: top[field], group: groupOf ? groupOf(top) : "", variant: top };
-}
-
-const CATALOG_COMPARE_ROWS = [
-  ["Starting price", "low", (s) => {
-    const p = s.data.headline && s.data.headline.from_price;
-    if (!p || !p.value) return { text: null, value: null };
-    return { text: `${money(p.value, p.currency)}${p.is_estimate ? " (est.)" : ""}`, value: p.value, group: p.currency || "", variant: p.variant };
-  }],
-  ["Range", "high", (s) => {
-    const r = s.data.headline && s.data.headline.max_range;
-    if (!r || !r.value) return { text: null, value: null };
-    return { text: `${rangeText(r.value, r.unit, r.cycle)}${r.is_estimate ? " (est.)" : ""}`, value: r.value, group: `${r.unit}|${r.cycle}`, variant: r.variant };
-  }],
-  ["0–60 mph", "low", (s) => {
-    const q = s.data.headline && s.data.headline.quickest_0_60;
-    return q && q.value ? { text: `${fmtNum(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
-  }],
-  ["0–100 km/h", "low", (s) => {
-    const q = s.data.headline && s.data.headline.quickest_0_100;
-    return q && q.value ? { text: `${fmtNum(q.value, 2)} s`, value: q.value, group: "", variant: q.variant } : { text: null, value: null };
-  }],
-  ["Top speed", "high", (s) => bestSpec(s, "top_speed_mph", (n) => `${fmtNum(n)} mph`)],
-  ["Power", "high", (s) => bestSpec(s, "power_hp", (n) => `${fmtNum(n, 0)} hp`)],
-  ["Battery", "high", (s) => bestSpec(s, "battery_kwh", (n, v) => `${fmtNum(n)} kWh${v.battery_basis ? ` (${v.battery_basis})` : ""}`, (v) => v.battery_basis || "")],
-  ["Max DC charging", "high", (s) => bestSpec(s, "dc_kw", (n) => `${fmtNum(n, 0)} kW`)],
-  ["Seats", "none", (s) => {
-    const seats = [...new Set(s.variants.map((v) => v.seats).filter(Boolean))].sort((a, b) => a - b);
-    return { text: seats.length ? seats.join(" / ") : null, value: null };
-  }],
-  ["Drive", "none", (s) => {
-    const d = [...new Set(s.variants.map((v) => v.drivetrain).filter(Boolean))];
-    return { text: d.length ? d.join(", ") : null, value: null };
-  }],
-];
-
-function compareWinner(better, fa, fb) {
-  if (better === "none" || !fa.value || !fb.value || fa.value === fb.value) return -1;
-  if ((fa.group || "") !== (fb.group || "")) return -1; // different currency / test cycle / battery basis
-  if (better === "high") return fa.value > fb.value ? 0 : 1;
-  return fa.value < fb.value ? 0 : 1;
-}
-
-async function buildComparePage(pair) {
-  const [slugA, slugB] = String(pair).split("-vs-");
-  if (!slugA || !slugB) return null;
-  let A, B;
-  try {
-    [A, B] = await Promise.all([catalogModelBySlug(slugA), catalogModelBySlug(slugB)]);
-  } catch (e) {
-    if (e instanceof HttpError && e.status === 404) return null;
-    return buildLegacyComparePage(pair);
-  }
-  // Canonical pair: current model slugs in alphabetical order (design 5); other forms 301.
-  const canon = [A.model.slug, B.model.slug].sort().join("-vs-");
-  if (canon !== pair) return { redirect: `/compare/${canon}` };
-
-  const sides = [compareSide(A), compareSide(B)];
-  const [nameA, nameB] = sides.map((s) => s.name);
-  const canonical = `${CANONICAL_HOST}/compare/${canon}`;
-  const rows = CATALOG_COMPARE_ROWS.map(([label, better, get]) => ({ label, better, figs: sides.map(get) })).filter(
-    (r) => r.figs[0].text || r.figs[1].text
-  );
-  const byLabel = Object.fromEntries(rows.map((r) => [r.label, r]));
-
-  const descParts = [];
-  const faq = [];
-  const range = byLabel["Range"];
-  if (range && range.figs[0].value && range.figs[1].value && range.figs[0].group === range.figs[1].group) {
-    descParts.push(`${range.figs[0].text} vs ${range.figs[1].text} range`);
-    const w = compareWinner("high", range.figs[0], range.figs[1]);
-    if (w !== -1) {
-      const [wf, lf] = [range.figs[w], range.figs[1 - w]];
-      faq.push({
-        "@type": "Question",
-        name: `Which has more range, the ${nameA} or the ${nameB}?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `The ${sides[w].name} goes further: up to ${wf.text} (${(wf.variant && wf.variant.name) || "best trim"}) vs ${lf.text} (${(lf.variant && lf.variant.name) || "best trim"}) for the ${sides[1 - w].name}.`,
-        },
-      });
-    }
-  }
-  const price = byLabel["Starting price"];
-  if (price && price.figs[0].value && price.figs[1].value && price.figs[0].group === price.figs[1].group) {
-    descParts.push(`from ${price.figs[0].text} vs ${price.figs[1].text}`);
-    const w = compareWinner("low", price.figs[0], price.figs[1]);
-    if (w !== -1) {
-      const mkt = sides[w].market === sides[1 - w].market && sides[w].market ? ` (${sides[w].market} prices)` : "";
-      faq.push({
-        "@type": "Question",
-        name: `Which is cheaper, the ${nameA} or the ${nameB}?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `The ${sides[w].name} starts lower at ${price.figs[w].text} vs ${price.figs[1 - w].text}${mkt}.`,
-        },
-      });
-    }
-  }
-  const title = `${nameA} vs ${nameB}: Price, Range & 0-60 Compared | ${SITE_NAME}`;
-  const description = `${nameA} vs ${nameB} side by side${descParts.length ? `: ${descParts.join(", ")}.` : "."} Full spec comparison of the current versions on ${SITE_NAME}.`;
-
-  const images = sides.map((s) => primaryImage(s.gen && s.gen.images));
-  const jsonLd = [
-    {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      name: `${nameA} vs ${nameB}`,
-      itemListElement: sides.map((s, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        item: {
-          "@type": "Car",
-          name: s.name,
-          brand: { "@type": "Brand", name: (s.data.make && s.data.make.name) || "" },
-          ...(images[i] && images[i].url ? { image: absImage(images[i].url) } : {}),
-          url: abs(s.data.model.path),
-          fuelType: "Electric",
-        },
-      })),
-    },
+/** /best: every indexable list, grouped by market. */
+async function buildBestIndexPage() {
+  const data = await catalogGet("/catalog/lists");
+  const lists = (data.lists || []).filter((l) => l.indexable);
+  const canonical = abs("/best");
+  const crumbs = [["Home", "/"], ["Rankings", "/best"]];
+  const groups = [
+    ["US", "United States"],
+    ["UK", "United Kingdom"],
+    ["EU", "Europe"],
+    ["CN", "China"],
+    [null, "Across markets"],
   ];
-  if (faq.length) jsonLd.push({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq });
-
-  const cell = (f, win) =>
-    `<td>${esc(f.text || "—")}${win ? " ✓" : ""}${
-      f.text && f.variant && f.variant.path ? `<br><small><a href="${esc(f.variant.path)}">${esc(f.variant.name || f.variant.slug)}</a></small>` : ""
-    }</td>`;
-  const rowsHtml = rows
-    .map((r) => {
-      const w = compareWinner(r.better, r.figs[0], r.figs[1]);
-      return `<tr><th>${esc(r.label)}</th>${cell(r.figs[0], w === 0)}${cell(r.figs[1], w === 1)}</tr>`;
-    })
-    .join("");
-  const head = sides
-    .map((s, i) => {
-      const img = images[i];
-      const years = s.gen ? yearsText(s.gen.start_year, s.gen.end_year, s.gen.status) : "";
-      const gen = s.gen ? `<br><small><a href="${esc(s.gen.path)}">${esc([s.gen.name, years].filter(Boolean).join(" · "))}</a></small>` : "";
-      const pic = img && img.url
-        ? `<img src="${esc(absImage(img.url))}" alt="${esc(img.alt || s.name)}" width="220" style="max-width:100%;border-radius:8px" /><br>`
+  const html = groups
+    .map(([mk, label]) => {
+      const list = lists.filter((l) => (l.market || null) === mk);
+      return list.length
+        ? `<h2>${esc(label)}</h2><ul>${list
+            .map((l) => `<li><a href="${esc(l.path)}">${esc(l.title || l.key)}</a>${l.blurb ? `: ${esc(l.blurb)}` : ""}</li>`)
+            .join("")}</ul>`
         : "";
-      const status = s.data.model.status && s.data.model.status !== "current" ? ` (${esc(STATUS_TEXT[s.data.model.status] || s.data.model.status)})` : "";
-      return `<th>${pic}<a href="${esc(s.data.model.path)}">${esc(s.name)}</a>${status}${gen}${s.market ? `<br><small>${esc(s.market)} figures</small>` : ""}</th>`;
     })
     .join("");
-  const credits = images.map(imageCreditHtml).filter(Boolean).join("");
-
   const content = `${CONTENT_STYLE}<div class="prerender">
-  <p class="crumbs"><a href="/">All EVs</a> › Compare</p>
-  <h1>${esc(nameA)} vs ${esc(nameB)}</h1>
-  <p class="sub">Side-by-side specs of the current version of each car from the live ${SITE_NAME} database, in the US where it is sold there, else its main market. Each figure names the trim it comes from; prices in different currencies and ranges on different test cycles are not compared.</p>
-  <table>
-    <tr><th></th>${head}</tr>
-    ${rowsHtml}
-  </table>
-  ${credits}
-  <p><a href="${esc(A.model.path)}">${esc(nameA)} details</a> · <a href="${esc(B.model.path)}">${esc(nameB)} details</a> · <a href="/cars">Browse all electric vehicles →</a></p>
+  ${crumbsHtml(crumbs)}
+  <h1>Electric car rankings</h1>
+  <p>Lists generated from the ${SITE_NAME} database, one market each: prices in that market's currency, ranges on its main test cycle (EPA in the US, WLTP in the UK and Europe, CLTC in China). Nothing is converted, and each list says how it is ranked and which cars it leaves out.</p>
+  ${html}
+  <p><a href="/compare">Compare two cars side by side</a> · <a href="/cars">All electric cars</a></p>
 </div>`;
-
   return {
     meta: metaBlock({
-      title,
-      description,
+      title: `Electric Car Rankings by Market: ${lists.length} Lists | ${SITE_NAME}`,
+      description: `${lists.length} electric car rankings for the US, the UK, Europe and China: cheapest, longest range, quickest, fastest charging and more, each in one market's currency and test cycle.`,
       canonical,
-      image: absImage(images[0] && images[0].url ? images[0].url : images[1] && images[1].url),
-      jsonLd,
+      image: FALLBACK_IMAGE,
+      jsonLd: [
+        breadcrumbLd(crumbs),
+        {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Electric car rankings",
+          numberOfItems: lists.length,
+          itemListElement: lists.map((l, i) => ({ "@type": "ListItem", position: i + 1, name: l.title, url: abs(l.path) })),
+        },
+      ],
     }),
     content,
   };
@@ -2054,13 +2176,27 @@ export default async function handler(req, res) {
     }
   }
 
-  const CATALOG_PAGES = ["makes", "catalog-make", "catalog-model", "catalog-generation", "catalog-variant", "catalog-changes", "cars"];
+  const CATALOG_PAGES = [
+    "makes",
+    "catalog-make",
+    "catalog-model",
+    "catalog-generation",
+    "catalog-variant",
+    "catalog-changes",
+    "cars",
+    "compare",
+    "best",
+    "compare-index",
+    "best-index",
+  ];
   try {
     if (status === 200) {
       if (legacyPage === "model" && slug) built = await buildModelPage(slug);
       else if (legacyPage === "make" && slug) built = await buildMakePage(slug);
       else if (page === "compare" && slug) built = await buildComparePage(slug);
       else if (page === "best" && slug) built = await buildBestPage(slug);
+      else if (page === "compare-index") built = await buildCompareIndexPage();
+      else if (page === "best-index") built = await buildBestIndexPage();
       else if (page === "home") built = await buildHomePage();
       else if (page === "makes") built = await buildMakesIndexPage();
       else if (page === "cars") built = await buildAllCarsPage();
