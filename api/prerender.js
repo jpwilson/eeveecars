@@ -56,11 +56,30 @@ async function fetchWithTimeout(url, ms = 6000) {
 // if it really is our shell, and fall back to the canonical domain.
 const SHELL_MARK = '<div id="root"></div>';
 
+// The production domains plus this deployment's own URLs, which Vercel sets.
+const OWN_HOSTS = new Set(
+  [
+    "www.evlineup.org",
+    "evlineup.org",
+    process.env.VERCEL_URL,
+    process.env.VERCEL_BRANCH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  ]
+    .filter(Boolean)
+    .map((x) => String(x).toLowerCase())
+);
+
+function isOwnHost(host) {
+  return Boolean(host) && OWN_HOSTS.has(String(host).toLowerCase());
+}
+
 async function getTemplate(req) {
   if (templateCache) return templateCache;
   const h = (req && req.headers) || {};
   const fwd = String(h["x-forwarded-host"] || "").split(",")[0].trim();
-  const hosts = [...new Set([fwd, h.host, "www.evlineup.org"].filter(Boolean))];
+  // Only fetch the shell from hosts we own: request headers are client input, and
+  // the fetched shell is cached for the life of the lambda instance.
+  const hosts = [...new Set([fwd, h.host, "www.evlineup.org"].filter(isOwnHost))];
   for (const host of hosts) {
     try {
       const res = await fetchWithTimeout(`https://${host}/app.html`);
@@ -928,7 +947,8 @@ function webPageLd(canonical, name, dateModified, sources) {
 function imageCreditHtml(img) {
   if (!img || !(img.credit || img.license)) return "";
   const text = esc([img.credit, img.license].filter(Boolean).join(" · "));
-  return `<p class="sub">Photo: ${img.page_url ? `<a href="${esc(img.page_url)}" rel="noopener">${text}</a>` : text}</p>`;
+  const href = safeUrl(img.page_url);
+  return `<p class="sub">Photo: ${href ? `<a href="${esc(href)}" rel="noopener">${text}</a>` : text}</p>`;
 }
 
 function heroHtml(img, alt) {
@@ -940,9 +960,10 @@ function sourcesHtml(sources) {
   const urls = [];
   const items = [];
   for (const s of sources || []) {
-    if (!s || !s.url || urls.includes(s.url)) continue;
-    urls.push(s.url);
-    items.push(`<li><a href="${esc(s.url)}" rel="noopener">${esc(s.name || s.url)}</a></li>`);
+    const href = s && safeUrl(s.url);
+    if (!href || urls.includes(href)) continue;
+    urls.push(href);
+    items.push(`<li><a href="${esc(href)}" rel="noopener">${esc(s.name || s.url)}</a></li>`);
   }
   return items.length ? `<h2>Sources</h2><ul>${items.join("")}</ul>` : "";
 }
