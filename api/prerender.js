@@ -1,5 +1,7 @@
 /**
- * Prerenderer for content routes (/, /model_detail/:slug, /manufacturer/:slug).
+ * Prerenderer for content routes (/, the catalog pages under /make, the
+ * "what changed" pages /make/:make/:model/changes/:older-vs-:newer, /cars,
+ * compare and best-of pages, and the legacy /model_detail, /manufacturer URLs).
  *
  * Serves the SPA's index.html with per-page <head> meta (title, description,
  * canonical, OG/Twitter, JSON-LD) and a semantic HTML content block inside
@@ -23,6 +25,8 @@ import {
   makeIntro,
   num,
   safeUrl,
+  officialLinkHtml,
+  usCreditHtml,
   LINKS_STYLE,
 } from "./_seo.js";
 
@@ -1276,6 +1280,25 @@ async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
       })()
     : "";
 
+  // "What changed" links: only pairs the API marks indexable. Model page: every pair;
+  // a version page: the pairs this version is part of.
+  const changeLinks = (data.changes || []).filter(
+    (c) => c.indexable && (!isGenPage || c.older.slug === gen.slug || c.newer.slug === gen.slug)
+  );
+  const changesHtml = changeLinks.length
+    ? `<h2>What changed between versions</h2><ul>${changeLinks
+        .map(
+          (c) =>
+            `<li><a href="${esc(c.path)}">${esc(name)}: ${esc(c.newer.name || c.newer.slug)} vs ${esc(c.older.name || c.older.slug)}, what changed</a></li>`
+        )
+        .join("")}</ul>`
+    : "";
+
+  // Buy lines (model page only): the official link and, for a car offered in the US,
+  // the dated federal-credit sentence. No payment or charging figures in crawler HTML.
+  const soldInUs = !isGenPage && def && (def.variants || []).some((v) => (v.offerings || []).some((o) => o.market === "US"));
+  const buyHtml = isGenPage ? "" : `${officialLinkHtml(model, make, name)}${soldInUs ? usCreditHtml() : ""}`;
+
   const relHtml = (data.relations || []).length
     ? `<h2>Related</h2><ul>${data.relations
         .map((r) => `<li>${esc({ twin: "Twin", successor: "Replaced by", predecessor: "Replaces" }[r.relation] || r.relation)}: <a href="${esc(r.model.path)}">${esc(displayName(r.model.make && r.model.make.name, r.model.name))}</a></li>`)
@@ -1296,9 +1319,11 @@ async function buildCatalogModelPage(makeSlug, modelSlug, genSlug) {
   ${heroHtml(img, h1)}
   ${figures.length ? `<p>${esc(figures.join(" · "))}</p>` : ""}
   <p>${esc(isGenPage ? gen.description || "" : model.description || "")}</p>
+  ${buyHtml}
   ${shown && (shown.variants || []).length ? `<h2>${esc(isGenPage || gens.length < 2 ? "Variants" : `${shown.name || shown.slug} variants`)}</h2><table>${VARIANT_TABLE_HEAD}${variantRowsHtml(shown.variants, market)}</table>` : ""}
   ${offeringsHtml}
   ${earlierHtml}
+  ${changesHtml}
   ${relHtml}
   ${sourcesHtml(sources)}
   ${data.updated_at ? `<p class="sub">Last updated ${esc(String(data.updated_at).slice(0, 10))}</p>` : ""}
@@ -1405,6 +1430,7 @@ async function buildCatalogVariantPage(makeSlug, modelSlug, genSlug, variantSlug
   <p class="sub">${esc([gen.name, yearsText(gen.start_year, gen.end_year, gen.status), STATUS_TEXT[v.status]].filter(Boolean).join(" · "))}</p>
   ${make.status === "defunct" || make.status === "acquired" ? `<p><strong>${esc(make.name)} is ${make.status === "acquired" ? "acquired" : "defunct"}${make.status_date ? ` since ${esc(make.status_date)}` : ""}.</strong> ${esc(make.status_details || "")}</p>` : ""}
   ${heroHtml(img, title)}
+  ${officialLinkHtml(model, make, name)}${(v.offerings || []).some((off) => off.market === "US") ? usCreditHtml() : ""}
   <h2>Specifications</h2>
   <table>
     ${specRow("Drivetrain", v.drivetrain)}
@@ -1436,7 +1462,12 @@ async function buildCatalogVariantPage(makeSlug, modelSlug, genSlug, variantSlug
   ].filter(Boolean);
   return {
     meta: metaBlock({
-      title: `${title} (${gen.name || gen.slug}): Full Specs | ${SITE_NAME}`,
+      // Long trim names: a shorter suffix keeps the title within 75 characters.
+      title: [
+        `${title} (${gen.name || gen.slug}): Full Specs | ${SITE_NAME}`,
+        `${title} (${gen.name || gen.slug}) Specs | ${SITE_NAME}`,
+        `${title} (${gen.name || gen.slug}) Specs`,
+      ].find((t) => t.length <= 75) || `${title} (${gen.name || gen.slug}) Specs`.slice(0, 75),
       description: `${bits}${facts.length ? `: ${facts.join(", ")}` : ""}. Full specifications, prices by market and sources.`,
       canonical,
       image: absImage(img && img.url),
@@ -1479,6 +1510,164 @@ async function buildAllCarsPage() {
       ],
     }),
     content,
+  };
+}
+
+// ---------- "what changed" between two adjacent versions ----------
+
+/** Whole sentences up to `max` chars (a long first sentence is cut at a word); padded to `min`. */
+function fitDescription(sentences, min, max, filler) {
+  let out = "";
+  for (const s of sentences.filter(Boolean)) {
+    const next = out ? `${out} ${s}` : s;
+    if (next.length <= max) {
+      out = next;
+      continue;
+    }
+    // "Largest changes …: a; b; and c." → keep the leading clauses that fit.
+    const clauses = s.replace(/\.$/, "").split("; ");
+    for (let k = clauses.length - 1; k >= 1; k--) {
+      const part = `${clauses.slice(0, k).join("; ")}.`;
+      const cand = out ? `${out} ${part}` : part;
+      if (cand.length <= max) {
+        out = cand;
+        break;
+      }
+    }
+    break;
+  }
+  if (!out && sentences[0]) {
+    const cut = sentences[0].slice(0, max - 1);
+    out = `${cut.slice(0, cut.lastIndexOf(" ") > 40 ? cut.lastIndexOf(" ") : cut.length).replace(/[,;:]$/, "")}…`;
+  }
+  if (out.length < min && `${out} ${filler}`.length <= max) out = `${out} ${filler}`.trim();
+  return out;
+}
+
+/**
+ * /make/:make/:model/changes/:older-vs-:newer. The backend computes everything
+ * (rows, summary, FAQ, indexable); this only displays it. Reversed order → 301 to
+ * the canonical older-first URL; non-adjacent or unknown → 404; not indexable →
+ * noindex. FAQ goes in the tail (#seo-content) so it stays visible after React mounts.
+ */
+async function buildCatalogChangesPage(makeSlug, modelSlug, pair) {
+  const parts = String(pair || "").split("-vs-");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) throw new HttpError(404);
+  const [data, tree] = await Promise.all([
+    catalogGet(`/catalog/changes/${enc(makeSlug)}/${enc(modelSlug)}/${enc(parts[0])}/${enc(parts[1])}`),
+    catalogGet(`/catalog/models/${enc(makeSlug)}/${enc(modelSlug)}`).catch(() => null),
+  ]);
+  if (data.path !== `/make/${makeSlug}/${modelSlug}/changes/${pair}`) return { redirect: data.path };
+
+  const { make, model, older, newer } = data;
+  const name = displayName(make.name, model.name);
+  const olderName = older.name || older.slug;
+  const newerName = newer.name || newer.slug;
+  const canonical = abs(data.path);
+  const h1 = `${name}: ${newerName} vs ${olderName}, what changed`;
+  const crumbs = [["Makes", "/make"], [make.name, make.path], [model.name, model.path], [`${newerName} vs ${olderName}`, data.path]];
+  const versionPath = (g) => (g.is_default ? model.path : g.path);
+  const years = (g) => g.years_text || yearsText(g.start_year, g.end_year, g.status);
+
+  const photo = (g) => {
+    const img = primaryImage(g.images);
+    const pic =
+      img && img.url
+        ? `<img src="${esc(absImage(img.url))}" alt="${esc(img.alt || `${name} ${g.name || g.slug}`)}" width="400" style="max-width:100%;border-radius:10px" loading="lazy" />${imageCreditHtml(img)}`
+        : `<p class="sub">No photo of this version yet.</p>`;
+    return `<figure style="margin:0">${pic}<figcaption><a href="${esc(versionPath(g))}">${esc(g.name || g.slug)}</a> (${esc(years(g))}, ${esc(STATUS_TEXT[g.status] || g.status || "")})</figcaption></figure>`;
+  };
+
+  const rows = (data.rows || []).filter((r) => r.text);
+  const rowsHtml = rows.length
+    ? `<h2>What changed${data.market ? ` (${esc(data.market)} figures)` : ""}</h2><ul>${rows.map((r) => `<li>${esc(r.text)}</li>`).join("")}</ul>${
+        (data.notes || []).length ? `<p class="sub">${esc(data.notes.join(" "))}</p>` : ""
+      }<p class="sub">Prices, ranges and batteries are compared only on the same market, currency, price basis, test cycle and battery basis; nothing is converted.</p>`
+    : "";
+
+  const trimLink = (t) => (t.path ? `<a href="${esc(t.path)}">${esc(t.name || t.slug)}</a>` : esc(t.name || t.slug));
+  const trims = data.trims || {};
+  const trimsHtml = [
+    (trims.matched || []).length
+      ? `<p>In both versions: ${trims.matched.map((m) => `${trimLink(m.older)} → ${trimLink(m.newer)}`).join("; ")}.</p>`
+      : "",
+    (trims.only_older || []).length ? `<p>Only in the ${esc(olderName)}: ${trims.only_older.map(trimLink).join(", ")}.</p>` : "",
+    (trims.only_newer || []).length ? `<p>Only in the ${esc(newerName)}: ${trims.only_newer.map(trimLink).join(", ")}.</p>` : "",
+  ].join("");
+
+  const aboutHtml = [older, newer]
+    .filter((g) => g.description)
+    .map((g) => `<h3>${esc(g.name || g.slug)} (${esc(years(g))})</h3><p>${esc(g.description)}</p>`)
+    .join("");
+
+  const otherPairs = ((tree && tree.changes) || []).filter((c) => c.indexable && c.path !== data.path);
+  const moreHtml = `<h2>More on the ${esc(name)}</h2><ul>${[older, newer]
+    .map((g) => `<li><a href="${esc(versionPath(g))}">${esc(name)} ${esc(g.name || g.slug)} (${esc(years(g))})</a></li>`)
+    .join("")}${older.is_default || newer.is_default ? "" : `<li><a href="${esc(model.path)}">${esc(name)}: every version</a></li>`}${otherPairs
+    .map((c) => `<li><a href="${esc(c.path)}">${esc(name)}: ${esc(c.newer.name || c.newer.slug)} vs ${esc(c.older.name || c.older.slug)}, what changed</a></li>`)
+    .join("")}</ul>`;
+
+  const content = `${CONTENT_STYLE}<div class="prerender">
+  ${crumbsHtml(crumbs)}
+  <h1>${esc(h1)}</h1>
+  ${(data.summary || []).map((s) => `<p>${esc(s)}</p>`).join("")}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">${photo(older)}${photo(newer)}</div>
+  ${rowsHtml}
+  ${trimsHtml ? `<h2>Trims</h2>${trimsHtml}` : ""}
+  ${aboutHtml ? `<h2>About each version</h2>${aboutHtml}` : ""}
+  ${moreHtml}
+  ${sourcesHtml(data.sources)}
+  ${data.updated_at ? `<p class="sub">Last updated ${esc(String(data.updated_at).slice(0, 10))}</p>` : ""}
+</div>`;
+
+  const faq = data.faq || [];
+  const faqHtml = faq.length
+    ? `<section data-faq-for="${esc(data.path)}"><h2>Questions and answers: ${esc(name)} ${esc(newerName)} vs ${esc(olderName)}</h2>${faq
+        .map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`)
+        .join("")}</section>`
+    : "";
+
+  const ctx = { name, makeName: make.name, modelPath: model.path };
+  const pairGens = [newer, older]; // newest first, as generationLd expects
+  const jsonLd = [
+    breadcrumbLd(crumbs),
+    {
+      ...webPageLd(canonical, h1, data.updated_at, data.sources),
+      about: pairGens.map((g) => ({ "@id": abs(g.path) + "#generation" })),
+    },
+    { "@context": "https://schema.org", "@graph": pairGens.map((g) => generationLd(g, ctx, data, pairGens)) },
+  ];
+  if (faq.length)
+    jsonLd.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    });
+
+  const suffix = ` | ${SITE_NAME}`;
+  let title = `${name} ${newerName} vs ${olderName}: What Changed${suffix}`;
+  if (title.length > 75) title = `${name} ${newer.start_year || newer.slug} vs ${older.start_year || older.slug}: What Changed${suffix}`;
+  if (title.length > 75) title = `${name} ${newer.start_year || newer.slug} vs ${older.start_year || older.slug}: What Changed`;
+  if (title.length > 75) title = `${title.slice(0, 74)}…`;
+
+  const description = fitDescription(
+    data.summary || [],
+    80,
+    230,
+    `Specs, prices and trims of both versions compared on ${SITE_NAME}.`
+  );
+  const newerImg = primaryImage(newer.images);
+  const meta = metaBlock({
+    title,
+    description,
+    canonical,
+    image: absImage(newerImg && newerImg.url),
+    jsonLd,
+  });
+  return {
+    meta: data.indexable ? meta : noindex(meta),
+    content,
+    tail: `${faqHtml}${linksBlock()}`,
   };
 }
 
@@ -1865,7 +2054,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const CATALOG_PAGES = ["makes", "catalog-make", "catalog-model", "catalog-generation", "catalog-variant", "cars"];
+  const CATALOG_PAGES = ["makes", "catalog-make", "catalog-model", "catalog-generation", "catalog-variant", "catalog-changes", "cars"];
   try {
     if (status === 200) {
       if (legacyPage === "model" && slug) built = await buildModelPage(slug);
@@ -1879,6 +2068,8 @@ export default async function handler(req, res) {
       else if (page === "catalog-model" && q.make && q.model) built = await buildCatalogModelPage(q.make, q.model, null);
       else if (page === "catalog-generation" && q.make && q.model && q.generation)
         built = await buildCatalogModelPage(q.make, q.model, q.generation);
+      else if (page === "catalog-changes" && q.make && q.model && q.pair)
+        built = await buildCatalogChangesPage(q.make, q.model, q.pair);
       else if (page === "catalog-variant" && q.make && q.model && q.generation && q.variant)
         built = await buildCatalogVariantPage(q.make, q.model, q.generation, q.variant);
       if (built && built.redirect) return redirect(built.redirect);

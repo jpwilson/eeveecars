@@ -82,6 +82,50 @@ export const safeUrl = (u) => {
   }
 };
 
+/**
+ * US federal clean vehicle credit: the one dated, sourced sentence (no per-model
+ * eligibility). Mirrors `usFederalCredit` in src/data/buyAssumptions.ts;
+ * scripts/check-seo.mjs fails if the two differ.
+ */
+export const US_CREDIT = {
+  text: "The New Clean Vehicle Credit is not available for vehicles acquired after Sept. 30, 2025.",
+  incentives: "State or utility incentives may apply.",
+  url: "https://www.irs.gov/credits-deductions/credits-for-new-clean-vehicles-purchased-in-2023-or-after",
+  checked: "2026-11-12",
+};
+
+export function usCreditHtml() {
+  return `<p>US federal tax credit: ${esc(US_CREDIT.text)} ${esc(US_CREDIT.incentives)} Source: <a href="${esc(US_CREDIT.url)}" rel="noopener noreferrer">IRS</a> (checked ${esc(US_CREDIT.checked)}).</p>`;
+}
+
+/**
+ * The buy block's official link as one crawler line (same rules as officialLink in
+ * src/utils/buyMath.ts): current model of a working brand → its own page; upcoming →
+ * "Official {name} page"; no model page → the brand's site; discontinued, cancelled,
+ * defunct or acquired → nothing.
+ */
+export function officialLinkHtml(model, make, name) {
+  if (!model || !make) return "";
+  if (make.status === "defunct" || make.status === "acquired") return "";
+  if (model.status !== "current" && model.status !== "upcoming") return "";
+  const domain = (u) => {
+    try {
+      return new URL(u).hostname.replace(/^www\./i, "");
+    } catch {
+      return null;
+    }
+  };
+  const own = safeUrl(model.official_url);
+  if (own && domain(own)) {
+    return model.status === "upcoming"
+      ? `<p><a href="${esc(own)}" rel="noopener noreferrer">Official ${esc(name)} page</a> (${esc(domain(own))}).</p>`
+      : `<p><a href="${esc(own)}" rel="noopener noreferrer">Check price and availability on ${esc(domain(own))}</a>. Availability and prices vary by country.</p>`;
+  }
+  const site = safeUrl(make.website_url);
+  if (site && domain(site)) return `<p><a href="${esc(site)}" rel="noopener noreferrer">Visit ${esc(domain(site))}</a>.</p>`;
+  return "";
+}
+
 /** "Official site: example.com" link, or "" when there is no usable URL. */
 function officialSite(url) {
   const safe = safeUrl(url);

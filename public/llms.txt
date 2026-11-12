@@ -41,9 +41,15 @@ Run by Jean-Paul Wilson. Independent of every manufacturer. Not a dealer: no use
 
 ## Page URL patterns
 
-- Model: https://www.evlineup.org/model_detail/{make-model-slug} — e.g. /model_detail/tesla-model-3
-- Manufacturer: https://www.evlineup.org/manufacturer/{make-slug} — e.g. /manufacturer/hyundai
-- Comparison: https://www.evlineup.org/compare/{model-a}-vs-{model-b}
+- All makes: https://www.evlineup.org/make
+- Manufacturer: https://www.evlineup.org/make/{make} — e.g. /make/hyundai
+- Model: https://www.evlineup.org/make/{make}/{model} — e.g. /make/tesla/model-3
+- Version (generation or refresh): https://www.evlineup.org/make/{make}/{model}/{version} — e.g. /make/tesla/model-3/2017
+- Trim: https://www.evlineup.org/make/{make}/{model}/{version}/{trim} — e.g. /make/tesla/model-3/2024/premium-awd
+- What changed between two consecutive versions: https://www.evlineup.org/make/{make}/{model}/changes/{older}-vs-{newer} — e.g. /make/tesla/model-3/changes/2017-vs-2024
+- All cars: https://www.evlineup.org/cars
+- Comparison: https://www.evlineup.org/compare/{model-a}-vs-{model-b} (alphabetical)
+- Older URLs (/model_detail/{slug}, /manufacturer/{slug}, /car_detail/{id}) redirect to the pages above.
 - Best-of list: https://www.evlineup.org/best/{criteria}
 
 ## Free read-only API

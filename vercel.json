@@ -29,6 +29,10 @@
       "destination": "/api/prerender?page=catalog-generation&make=:make&model=:model&generation=:generation"
     },
     {
+      "source": "/make/:make/:model/changes/:pair",
+      "destination": "/api/prerender?page=catalog-changes&make=:make&model=:model&pair=:pair"
+    },
+    {
       "source": "/make/:make/:model/:generation/:variant",
       "destination": "/api/prerender?page=catalog-variant&make=:make&model=:model&generation=:generation&variant=:variant"
     },

@@ -3,6 +3,7 @@ import axios from "axios";
 import catalogClient from "../services/catalog-client";
 import {
   CatalogBestResponse,
+  CatalogChangesResponse,
   CatalogMakeResponse,
   CatalogMakesResponse,
   CatalogMeta,
@@ -150,6 +151,34 @@ export function useCatalogModelBySlug(slug: string | undefined) {
     notFound: isNotFound(resolved.error) || isNotFound(model.error) || wrongPath,
     isLoading: resolved.isLoading || (!!m && model.isLoading),
   };
+}
+
+/**
+ * What changed between two adjacent versions. Either order is accepted; the response
+ * carries the canonical `path` (older first). `market` switches the rows shown.
+ */
+export function useCatalogChanges(
+  make: string | undefined,
+  model: string | undefined,
+  older: string | undefined,
+  newer: string | undefined,
+  market?: string | null
+) {
+  return useQuery({
+    queryKey: ["catalog", "changes", make, model, older, newer, market ?? null],
+    queryFn: ({ signal }) =>
+      get<CatalogChangesResponse>(
+        `/catalog/changes/${[make, model, older, newer].map((s) => encodeURIComponent(s ?? "")).join("/")}`,
+        market ? { market } : undefined,
+        signal
+      ),
+    enabled: !!make && !!model && !!older && !!newer,
+    retry,
+    // Switching market keeps the same pair on screen while the new rows load
+    // (never another pair's data: the page redirects on a path mismatch).
+    placeholderData: (prev, prevQuery) =>
+      prevQuery && [make, model, older, newer].every((v, i) => prevQuery.queryKey[i + 2] === v) ? prev : undefined,
+  });
 }
 
 export function useCatalogMeta() {

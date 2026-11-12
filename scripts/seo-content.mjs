@@ -137,7 +137,7 @@ export const FAQS = [
   },
   {
     q: "What is the cheapest electric car?",
-    a: "The /best/cheapest-evs page ranks models by MSRP, and /best/evs-under-40k lists everything under $40,000. As of " + SITE.updatedLabel + " the entry end of the US market in the database sits around $34,000–$35,000 MSRP before taxes, fees and incentives; a federal or state incentive can lower the real cost further. Micro-EVs sold only outside the US, such as the Citroën AMI, are cheaper still.",
+    a: "The /best/cheapest-evs page ranks models by MSRP, and /best/evs-under-40k lists everything under $40,000. As of " + SITE.updatedLabel + " the entry end of the US market in the database sits around $34,000–$35,000 MSRP before taxes, fees and incentives. The federal New Clean Vehicle Credit is not available for vehicles acquired after Sept. 30, 2025, per the IRS clean vehicle credits page (updated July 13, 2026); state or utility incentives may still lower the real cost. Micro-EVs sold only outside the US, such as the Citroën AMI, are cheaper still.",
   },
   {
     q: "Are there electric SUVs with three rows of seats?",

@@ -24,6 +24,7 @@ import CatalogImage from "../../components/catalog/CatalogImage";
 import GlassCard from "../../components/catalog/GlassCard";
 import StatusBadge, { BrandStatusBadge } from "../../components/catalog/StatusBadge";
 import SourcesList from "../../components/catalog/SourcesList";
+import BuyBlock from "../../components/catalog/BuyBlock";
 import CatalogError from "../../components/catalog/CatalogError";
 import { CatalogLoading } from "../../components/catalog/PageStates";
 import { DefunctBanner } from "./MakePage";
@@ -141,6 +142,7 @@ export default function VariantPage() {
         </GlassCard>
 
         <DefunctBanner make={make} />
+        <BuyBlock page="variant" displayName={modelName} model={model} make={make} trims={[v]} preferredMarket="US" />
 
         <GlassCard as="section">
           <Heading as="h2" size="md" mb={3}>

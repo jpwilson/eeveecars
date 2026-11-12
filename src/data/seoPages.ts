@@ -39,7 +39,7 @@ export const BEST_PAGES: Record<string, BestPageConfig> = {
     blurb:
       "Every electric vehicle you can buy in the US for under $40k MSRP, cheapest first. Prices are before taxes and incentives — some makers quote them with destination, some without.",
     legacyBlurb:
-      "Every electric vehicle you can buy for under $40k MSRP, ranked by review score. Prices exclude taxes, fees, and incentives — the federal tax credit can push these even lower.",
+      "Every electric vehicle you can buy for under $40k MSRP, ranked by review score. Prices exclude taxes, fees, and incentives. The federal clean vehicle credit is not available for vehicles acquired after Sept. 30, 2025 (IRS); state or utility incentives may apply.",
     filter: (c) => isAvailable(c) && !!c.current_price && c.current_price < 40000,
     sort: (a, b) =>
       (b.average_rating ?? 0) - (a.average_rating ?? 0) ||

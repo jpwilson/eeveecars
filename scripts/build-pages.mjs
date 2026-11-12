@@ -292,8 +292,9 @@ function whatIsPage() {
         <h2>What is on the site</h2>
         <table>
           <tr><th>Page type</th><th>What it shows</th><th>Example</th></tr>
-          <tr><td>Model page</td><td>Full spec sheet, description, trim-by-trim table</td><td><a href="/model_detail/tesla-model-3">Tesla Model 3</a></td></tr>
-          <tr><td>Manufacturer page</td><td>A brand's entire EV lineup, with company background</td><td><a href="/manufacturer/hyundai">Hyundai EVs</a></td></tr>
+          <tr><td>Model page</td><td>Full spec sheet, description, trim-by-trim table, every earlier version</td><td><a href="/make/tesla/model-3">Tesla Model 3</a></td></tr>
+          <tr><td>Manufacturer page</td><td>A brand's entire EV lineup, with company background</td><td><a href="/make/hyundai">Hyundai EVs</a></td></tr>
+          <tr><td>What changed</td><td>Two consecutive versions of one model, figure by figure, each value naming its trim and model year</td><td><a href="/make/tesla/model-3/changes/2017-vs-2024">Tesla Model 3: Highland vs Original</a></td></tr>
           <tr><td>Comparison</td><td>Two models side by side on identical specs</td><td><a href="/compare/tesla-model-3-vs-bmw-i4">Tesla Model 3 vs BMW i4</a></td></tr>
           <tr><td>Best-of list</td><td>A ranking generated from the database</td><td><a href="/best/longest-range-evs">Longest range electric cars</a></td></tr>
         </table>
@@ -628,9 +629,15 @@ ${COMPARE_PAIRS.map(([href, label]) => `- [${label}](${SITE.host}${href})`).join
 
 ## Page URL patterns
 
-- Model: ${SITE.host}/model_detail/{make-model-slug} — e.g. /model_detail/tesla-model-3
-- Manufacturer: ${SITE.host}/manufacturer/{make-slug} — e.g. /manufacturer/hyundai
-- Comparison: ${SITE.host}/compare/{model-a}-vs-{model-b}
+- All makes: ${SITE.host}/make
+- Manufacturer: ${SITE.host}/make/{make} — e.g. /make/hyundai
+- Model: ${SITE.host}/make/{make}/{model} — e.g. /make/tesla/model-3
+- Version (generation or refresh): ${SITE.host}/make/{make}/{model}/{version} — e.g. /make/tesla/model-3/2017
+- Trim: ${SITE.host}/make/{make}/{model}/{version}/{trim} — e.g. /make/tesla/model-3/2024/premium-awd
+- What changed between two consecutive versions: ${SITE.host}/make/{make}/{model}/changes/{older}-vs-{newer} — e.g. /make/tesla/model-3/changes/2017-vs-2024
+- All cars: ${SITE.host}/cars
+- Comparison: ${SITE.host}/compare/{model-a}-vs-{model-b} (alphabetical)
+- Older URLs (/model_detail/{slug}, /manufacturer/{slug}, /car_detail/{id}) redirect to the pages above.
 - Best-of list: ${SITE.host}/best/{criteria}
 
 ## Free read-only API
