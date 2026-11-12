@@ -2,7 +2,7 @@ import { Box, Link, Table, Tbody, Td, Text, Th, Thead, Tr, useColorModeValue } f
 import { Link as RouterLink } from "react-router-dom";
 import { CatalogVariant } from "../../types/catalog";
 import StatusBadge from "./StatusBadge";
-import { formatMoney, formatRange, headlineOffering, num } from "../../utils/catalogFormat";
+import { sortOfferings, formatMoney, formatRange, headlineOffering, num } from "../../utils/catalogFormat";
 
 interface Props {
   variants: CatalogVariant[];
@@ -50,9 +50,17 @@ export default function VariantsTable({ variants, market }: Props) {
         <Tbody>
           {variants.map((v) => {
             const o = headlineOffering(v.offerings, market);
-            const price = o ? formatMoney(o.price ?? o.launch_price, o.currency) : null;
-            const priceNote = o
-              ? [o.market, o.model_year ? `MY${o.model_year}` : null, !o.price && o.launch_price ? "launch" : null, o.is_estimate ? "est." : null]
+            // The newest model year often has a range before it has a price: show the
+            // newest year in the same market that does have one, labelled with its year.
+            const po =
+              (o &&
+                sortOfferings(v.offerings).find(
+                  (x) => x.market === o.market && (x.price != null || x.launch_price != null)
+                )) ||
+              o;
+            const price = po ? formatMoney(po.price ?? po.launch_price, po.currency) : null;
+            const priceNote = po
+              ? [po.market, po.model_year ? `MY${po.model_year}` : null, !po.price && po.launch_price ? "launch" : null, po.is_estimate ? "est." : null]
                   .filter(Boolean)
                   .join(" ")
               : null;
