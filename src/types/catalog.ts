@@ -251,6 +251,14 @@ export interface ModelRelation {
   };
 }
 
+/** One adjacent version pair on the model tree (newest first). Link only when `indexable`. */
+export interface ModelChangeLink {
+  path: string;
+  older: { slug: string; name: string | null };
+  newer: { slug: string; name: string | null };
+  indexable: boolean | null;
+}
+
 export interface CatalogModelResponse {
   make: CatalogMakeDetail;
   model: CatalogModelInfo;
@@ -258,6 +266,7 @@ export interface CatalogModelResponse {
   default_generation: string | null;
   generations: CatalogGeneration[];
   relations: ModelRelation[] | null;
+  changes?: ModelChangeLink[] | null;
   updated_at: string | null;
 }
 
@@ -331,4 +340,101 @@ export interface CatalogBestResponse {
   metric: "price" | "range" | "accel" | string | null;
   items: CatalogBestItem[];
   count: number | null;
+}
+
+// ---- version changes (`/catalog/changes/{make}/{model}/{older}/{newer}`)
+
+export type ChangeStatus =
+  | "increased"
+  | "decreased"
+  | "unchanged"
+  | "changed"
+  | "not_comparable"
+  | "missing_older"
+  | "missing_newer"
+  | "info"
+  | string;
+
+/** One side of a changes row. `value` is a number, a list (set rows) or text (span rows). */
+export interface ChangeSide {
+  value: number | string | (string | number)[] | null;
+  unit: string | null;
+  cycle: string | null;
+  market: string | null;
+  model_year: number | null;
+  price_kind: "price" | "launch" | string | null;
+  basis: string | null;
+  is_estimate: boolean | null;
+  variant: VariantRef | null;
+  from?: number | null;
+  to?: number | null;
+}
+
+export interface ChangeRow {
+  key: string;
+  label: string | null;
+  kind: "number" | "set" | "count" | "span" | string | null;
+  older: ChangeSide | null;
+  newer: ChangeSide | null;
+  change: {
+    status: ChangeStatus | null;
+    delta: number | null;
+    unit: string | null;
+    reason: string | null;
+    added?: (string | number)[] | null;
+    removed?: (string | number)[] | null;
+    basis_unknown?: boolean | null;
+  } | null;
+  qualifier: string | null;
+  text: string | null;
+}
+
+export interface ChangeGeneration extends Omit<CatalogGeneration, "variants"> {
+  model_years: Record<string, { from: number | null; to: number | null }> | null;
+  years_text: string | null;
+}
+
+export interface ChangeTrimRef {
+  id?: number | null;
+  slug: string;
+  name: string | null;
+  path?: string | null;
+  status?: CatalogStatus | null;
+}
+
+export interface CatalogChangesResponse {
+  path: string;
+  key: string;
+  indexable: boolean | null;
+  quality: {
+    comparable_facts: number | null;
+    default_market?: string | null;
+    default_market_comparable_facts?: number | null;
+    min_for_indexing?: number | null;
+  } | null;
+  make: MakeRef;
+  model: {
+    slug: string;
+    name: string | null;
+    path: string;
+    official_url: string | null;
+    status: CatalogStatus | null;
+    years: Years | null;
+  };
+  relation: "refresh" | "new_generation" | string | null;
+  older: ChangeGeneration;
+  newer: ChangeGeneration;
+  market: string | null;
+  markets: string[] | null;
+  summary: string[] | null;
+  rows: ChangeRow[] | null;
+  trims: {
+    matched: { older: ChangeTrimRef; newer: ChangeTrimRef; match: string | null; rows: ChangeRow[] | null }[] | null;
+    only_older: ChangeTrimRef[] | null;
+    only_newer: ChangeTrimRef[] | null;
+  } | null;
+  faq: { q: string; a: string }[] | null;
+  notes: string[] | null;
+  sources: CatalogSource[] | null;
+  updated_at: string | null;
 }

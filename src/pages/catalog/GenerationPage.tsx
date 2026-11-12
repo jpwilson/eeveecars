@@ -7,7 +7,7 @@ import CatalogError from "../../components/catalog/CatalogError";
 import { CatalogLoading } from "../../components/catalog/PageStates";
 import NotFoundPage from "../NotFoundPage";
 import { DefunctBanner } from "./MakePage";
-import { GenerationVariants, ModelHeader, generationTitle } from "./ModelPage";
+import { ChangeLink, GenerationVariants, ModelHeader, changeFrom, changeInto, generationTitle } from "./ModelPage";
 import { useCatalogModel } from "../../hooks/useCatalog";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { CatalogGeneration } from "../../types/catalog";
@@ -143,16 +143,26 @@ export default function GenerationPage() {
         {(newer || older) && (
           <Flex justify="space-between" gap={4} flexWrap="wrap" fontSize="sm">
             {older ? (
-              <Link as={RouterLink} to={older.path} color="green.600">
-                ← Previous: {generationTitle(older)}
-              </Link>
+              <Box>
+                <Link as={RouterLink} to={older.path} color="green.600">
+                  ← Previous: {generationTitle(older)}
+                </Link>
+                <Box>
+                  <ChangeLink change={changeInto(data, gen.slug)} />
+                </Box>
+              </Box>
             ) : (
               <span />
             )}
             {newer && (
-              <Link as={RouterLink} to={newer.path} color="green.600">
-                Next: {generationTitle(newer)} →
-              </Link>
+              <Box textAlign="right">
+                <Link as={RouterLink} to={newer.path} color="green.600">
+                  Next: {generationTitle(newer)} →
+                </Link>
+                <Box>
+                  <ChangeLink change={changeFrom(data, gen.slug)} label={`What changed in the ${newer.name ?? newer.slug}`} />
+                </Box>
+              </Box>
             )}
           </Flex>
         )}

@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 
 import { renderAll } from "./build-pages.mjs";
 import { SITE, COMPETITORS, FAQS } from "./seo-content.mjs";
-import { compareIntro, makeIntro, safeUrl } from "../api/_seo.js";
+import { compareIntro, makeIntro, safeUrl, US_CREDIT } from "../api/_seo.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
@@ -329,6 +329,12 @@ function checkVercelConfig() {
     STATIC_PAGES.every(([p]) => sources.indexOf(p) < catchAll),
     "static page rewrites come before the catch-all"
   );
+  // /make/:make/:model/changes/:pair would otherwise be read as a variant page.
+  const changes = sources.indexOf("/make/:make/:model/changes/:pair");
+  expect(
+    changes >= 0 && changes < sources.indexOf("/make/:make/:model/:generation/:variant"),
+    "what-changed rewrite comes before the variant rewrite"
+  );
 }
 
 function checkSitemapFunction() {
@@ -407,6 +413,23 @@ function checkFaqContent() {
   );
 }
 
+/* ----------------------------- buy block ------------------------------ */
+
+// The crawler copy of the dated tax-credit sentence (api/_seo.js) must match the
+// one the React buy block shows (src/data/buyAssumptions.ts).
+function checkBuyAssumptions() {
+  section("Buy block assumptions");
+  const src = readFileSync(join(ROOT, "src/data/buyAssumptions.ts"), "utf8");
+  const credit = src.slice(src.indexOf("usFederalCredit"));
+  for (const k of ["text", "incentives", "url", "checked"]) {
+    expect(credit.includes(JSON.stringify(US_CREDIT[k])), `US credit ${k} matches src/data/buyAssumptions.ts`, US_CREDIT[k]);
+  }
+  expect(
+    /pricePerKwh: [\d.]+,[\s\S]*?period: "[^"]+",[\s\S]*?url: "https:\/\/www\.eia\.gov\//.test(src),
+    "US electricity price carries its period and EIA source URL"
+  );
+}
+
 /* -------------------------- prerendered routes ------------------------- */
 
 async function checkPrerendered() {
@@ -416,7 +439,7 @@ async function checkPrerendered() {
   for (const t of DEFAULT_TARGETS) {
     let html;
     try {
-      const out = await renderPrerender(t.page, t.slug);
+      const out = await renderPrerender(t.query);
       if (out.status !== 200) {
         fail(`${t.path}: 200 from prerender`, `got ${out.status}`);
         continue;
@@ -480,6 +503,7 @@ checkVercelConfig();
 checkSitemapFunction();
 checkFaqContent();
 checkEscaping();
+checkBuyAssumptions();
 const preCounts = live ? await checkPrerendered() : (console.log("\nSkipping live prerender checks (--no-live)"), {});
 
 section("Crawler-visible word counts");

@@ -8,6 +8,10 @@
  *   node scripts/render-prerender.mjs                 # render the default set
  *   node scripts/render-prerender.mjs --out dist/__preview
  *   node scripts/render-prerender.mjs --page best --slug electric-trucks
+ *   node scripts/render-prerender.mjs --query "page=catalog-changes&make=tesla&model=model-3&pair=2017-vs-2024"
+ *
+ * EV_API_BASE=http://localhost:8011 points the handler at another backend (e.g. a
+ * local API); the shell still comes from the live host.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -17,23 +21,47 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HOST = "www.evlineup.org";
 
+// `query` is the query string vercel.json's rewrite passes to /api/prerender.
 export const DEFAULT_TARGETS = [
   { name: "home", page: "home", slug: "", path: "/" },
   { name: "model-tesla-model-3", page: "model", slug: "tesla-model-3", path: "/model_detail/tesla-model-3" },
   { name: "make-hyundai", page: "make", slug: "hyundai", path: "/manufacturer/hyundai" },
   {
-    name: "compare-model-3-vs-i4",
+    // canonical (alphabetical) pair: the other order is a 301
+    name: "compare-i4-vs-model-3",
     page: "compare",
-    slug: "tesla-model-3-vs-bmw-i4",
-    path: "/compare/tesla-model-3-vs-bmw-i4",
+    slug: "bmw-i4-vs-tesla-model-3",
+    path: "/compare/bmw-i4-vs-tesla-model-3",
   },
   { name: "best-longest-range", page: "best", slug: "longest-range-evs", path: "/best/longest-range-evs" },
-];
+  {
+    name: "catalog-model-tesla-model-3",
+    query: { page: "catalog-model", make: "tesla", model: "model-3" },
+    path: "/make/tesla/model-3",
+  },
+  {
+    name: "catalog-variant-tesla-model-3-premium-awd",
+    query: { page: "catalog-variant", make: "tesla", model: "model-3", generation: "2024", variant: "premium-awd" },
+    path: "/make/tesla/model-3/2024/premium-awd",
+  },
+  {
+    name: "catalog-changes-tesla-model-3",
+    query: { page: "catalog-changes", make: "tesla", model: "model-3", pair: "2017-vs-2024" },
+    path: "/make/tesla/model-3/changes/2017-vs-2024",
+  },
+].map((t) => ({ ...t, query: t.query ?? { page: t.page, ...(t.slug ? { slug: t.slug } : {}) } }));
 
-/** Calls the Vercel handler with a mock req/res and returns { status, html }. */
-export async function renderPrerender(page, slug) {
+/**
+ * Calls the Vercel handler with a mock req/res and returns { status, html, location }.
+ * Takes the full query object (`{ page, make, model, pair }`), or the older
+ * `(page, slug)` pair.
+ */
+export async function renderPrerender(pageOrQuery, slug) {
   const { default: handler } = await import("../api/prerender.js");
-  const req = { query: { page, ...(slug ? { slug } : {}) }, headers: { host: HOST } };
+  const query =
+    pageOrQuery && typeof pageOrQuery === "object" ? { ...pageOrQuery } : { page: pageOrQuery, ...(slug ? { slug } : {}) };
+  const req = { query, headers: { host: HOST } };
+  const headers = {};
   let status = 200;
   let body = "";
   const res = {
@@ -41,7 +69,8 @@ export async function renderPrerender(page, slug) {
       status = c;
       return res;
     },
-    setHeader() {
+    setHeader(k, v) {
+      headers[k.toLowerCase()] = v;
       return res;
     },
     send(b) {
@@ -50,7 +79,7 @@ export async function renderPrerender(page, slug) {
     },
   };
   await handler(req, res);
-  return { status, html: body };
+  return { status, html: body, location: headers.location ?? null };
 }
 
 async function main() {
@@ -59,25 +88,26 @@ async function main() {
   const out = outIdx >= 0 ? argv[outIdx + 1] : "dist/__preview";
   const pageIdx = argv.indexOf("--page");
   const slugIdx = argv.indexOf("--slug");
+  const queryIdx = argv.indexOf("--query");
 
-  const targets =
-    pageIdx >= 0
-      ? [
-          {
-            name: `${argv[pageIdx + 1]}-${argv[slugIdx + 1] || "index"}`,
-            page: argv[pageIdx + 1],
-            slug: slugIdx >= 0 ? argv[slugIdx + 1] : "",
-          },
-        ]
-      : DEFAULT_TARGETS;
+  let targets = DEFAULT_TARGETS;
+  if (queryIdx >= 0) {
+    const query = Object.fromEntries(new URLSearchParams(argv[queryIdx + 1] || ""));
+    targets = [{ name: Object.values(query).join("-").replace(/[^\w.-]+/g, "_") || "query", query }];
+  } else if (pageIdx >= 0) {
+    const page = argv[pageIdx + 1];
+    const slug = slugIdx >= 0 ? argv[slugIdx + 1] : "";
+    targets = [{ name: `${page}-${slug || "index"}`, query: { page, ...(slug ? { slug } : {}) } }];
+  }
 
   const dir = join(ROOT, out);
   mkdirSync(dir, { recursive: true });
   for (const t of targets) {
-    const { status, html } = await renderPrerender(t.page, t.slug);
+    const { status, html, location } = await renderPrerender(t.query);
     const file = join(dir, `${t.name}.html`);
     writeFileSync(file, html);
-    console.log(`  ${status} ${t.page}/${t.slug || "-"} -> ${out}/${t.name}.html (${html.length} bytes)`);
+    const label = new URLSearchParams(t.query).toString();
+    console.log(`  ${status}${location ? ` -> ${location}` : ""} ${label} -> ${out}/${t.name}.html (${html.length} bytes)`);
   }
 }
 

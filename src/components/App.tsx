@@ -37,6 +37,7 @@ const MakePage = lazy(() => import("../pages/catalog/MakePage"));
 const ModelPage = lazy(() => import("../pages/catalog/ModelPage"));
 const GenerationPage = lazy(() => import("../pages/catalog/GenerationPage"));
 const VariantPage = lazy(() => import("../pages/catalog/VariantPage"));
+const GenerationChangesPage = lazy(() => import("../pages/catalog/GenerationChangesPage"));
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -47,6 +48,7 @@ const router = createBrowserRouter(
       <Route path="/make" element={<MakesIndexPage />} />
       <Route path="/make/:make" element={<MakePage />} />
       <Route path="/make/:make/:model" element={<ModelPage />} />
+      <Route path="/make/:make/:model/changes/:pair" element={<GenerationChangesPage />} />
       <Route path="/make/:make/:model/:generation" element={<GenerationPage />} />
       <Route path="/make/:make/:model/:generation/:variant" element={<VariantPage />} />
       {/* Legacy URLs redirect to the catalog pages; the old pages remain as the

@@ -13,6 +13,7 @@
     "seo:pages": "node scripts/build-pages.mjs",
     "seo:render": "node scripts/render-prerender.mjs",
     "seo:check": "node scripts/check-seo.mjs",
+    "test:buy": "node --test --experimental-strip-types tests/buyMath.test.ts",
     "seo:indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {

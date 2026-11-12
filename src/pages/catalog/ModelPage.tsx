@@ -25,13 +25,14 @@ import GlassCard from "../../components/catalog/GlassCard";
 import StatusBadge, { BrandStatusBadge } from "../../components/catalog/StatusBadge";
 import VariantsTable from "../../components/catalog/VariantsTable";
 import SourcesList from "../../components/catalog/SourcesList";
+import BuyBlock from "../../components/catalog/BuyBlock";
 import CatalogError from "../../components/catalog/CatalogError";
 import { CatalogLoading } from "../../components/catalog/PageStates";
 import { HeadlineFigures, MarketPicker, defaultMarket, marketsOf, useGenerationSpans } from "../../components/catalog/GenerationBits";
 import { DefunctBanner } from "./MakePage";
 import { isNotFound, useCatalogModel, useCatalogResolve } from "../../hooks/useCatalog";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
-import { CatalogGeneration, CatalogModelResponse } from "../../types/catalog";
+import { CatalogGeneration, CatalogModelResponse, ModelChangeLink } from "../../types/catalog";
 import {
   bodyStyleLabel,
   formatDate,
@@ -57,6 +58,26 @@ export function KindBadge({ kind }: { kind: string | null | undefined }) {
   );
 }
 
+/** The indexable "what changed" pair whose newer side is `genSlug` (the change into that version). */
+export function changeInto(data: Pick<CatalogModelResponse, "changes">, genSlug: string | null | undefined) {
+  return (data.changes ?? []).find((c) => c.indexable && c.newer.slug === genSlug) ?? null;
+}
+
+/** The indexable pair whose older side is `genSlug` (what changed in the next version). */
+export function changeFrom(data: Pick<CatalogModelResponse, "changes">, genSlug: string | null | undefined) {
+  return (data.changes ?? []).find((c) => c.indexable && c.older.slug === genSlug) ?? null;
+}
+
+/** "What changed from the Original →" (links only to pairs the API marks indexable). */
+export function ChangeLink({ change, label }: { change: ModelChangeLink | null; label?: string }) {
+  if (!change) return null;
+  return (
+    <Link as={RouterLink} to={change.path} fontSize="sm" color="green.600">
+      {label ?? `What changed from the ${change.older.name ?? change.older.slug}`} →
+    </Link>
+  );
+}
+
 /** Variants table of one generation with a market picker. */
 export function GenerationVariants({ gen, preferredMarket }: { gen: CatalogGeneration; preferredMarket?: string | null }) {
   const markets = marketsOf(gen.variants);
@@ -69,7 +90,7 @@ export function GenerationVariants({ gen, preferredMarket }: { gen: CatalogGener
   );
 }
 
-function EarlierGeneration({ gen, modelName }: { gen: CatalogGeneration; modelName: string }) {
+function EarlierGeneration({ gen, modelName, change }: { gen: CatalogGeneration; modelName: string; change: ModelChangeLink | null }) {
   const { isOpen, onToggle } = useDisclosure();
   const spans = useGenerationSpans(gen);
   const sub = useColorModeValue("gray.600", "gray.400");
@@ -114,6 +135,11 @@ function EarlierGeneration({ gen, modelName }: { gen: CatalogGeneration; modelNa
             <Link as={RouterLink} to={gen.path} fontSize="xs" color="green.600">
               Full details →
             </Link>
+            {change && (
+              <Link as={RouterLink} to={change.path} fontSize="xs" color="green.600">
+                What changed from the {change.older.name ?? change.older.slug} →
+              </Link>
+            )}
           </HStack>
         </Box>
       </Grid>
@@ -227,7 +253,8 @@ export function ModelHeader({
               })}
             </Wrap>
           )}
-          {model.official_url && (
+          {/* On the model page the buy block carries the official link. */}
+          {generationMode && model.official_url && (
             <Link href={model.official_url} isExternal rel="noopener noreferrer" fontSize="sm" color="green.600">
               Official {make.name} page →
             </Link>
@@ -327,6 +354,15 @@ export default function ModelPage() {
       <VStack align="stretch" spacing={6}>
         <ModelHeader data={data} gen={def} />
         <DefunctBanner make={data.make} />
+        <BuyBlock
+          page="model"
+          displayName={name}
+          model={data.model}
+          make={data.make}
+          trims={def?.variants ?? []}
+          preferredMarket={data.headline?.market}
+          preferredTrim={data.headline?.from_price?.variant?.slug}
+        />
 
         {newer.map((g) => (
           <GlassCard key={g.path} borderColor="blue.200">
@@ -337,6 +373,7 @@ export default function ModelPage() {
               </Link>
               <StatusBadge status={g.status} />
             </HStack>
+            <ChangeLink change={changeInto(data, g.slug)} label={`What changed in the ${g.name ?? g.slug}`} />
             {g.description && (
               <Text fontSize="sm" color={sub} mt={1}>
                 {g.description}
@@ -362,9 +399,14 @@ export default function ModelPage() {
               )}
             </Flex>
             {def.description && (
-              <Text fontSize="sm" color={sub} mb={3}>
+              <Text fontSize="sm" color={sub} mb={changeInto(data, def.slug) ? 1 : 3}>
                 {def.description}
               </Text>
+            )}
+            {changeInto(data, def.slug) && (
+              <Box mb={3}>
+                <ChangeLink change={changeInto(data, def.slug)} />
+              </Box>
             )}
             <GenerationVariants gen={def} preferredMarket={data.headline?.market} />
           </GlassCard>
@@ -377,7 +419,7 @@ export default function ModelPage() {
             </Heading>
             <SimpleGrid columns={1} spacing={3}>
               {earlier.map((g) => (
-                <EarlierGeneration key={g.path} gen={g} modelName={name} />
+                <EarlierGeneration key={g.path} gen={g} modelName={name} change={changeInto(data, g.slug)} />
               ))}
             </SimpleGrid>
           </Box>

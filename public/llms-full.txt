@@ -37,9 +37,11 @@ What is on the site
 
 Page type | What it shows | Example |
 
-Model page | Full spec sheet, description, trim-by-trim table | Tesla Model 3 |
+Model page | Full spec sheet, description, trim-by-trim table, every earlier version | Tesla Model 3 |
 
 Manufacturer page | A brand's entire EV lineup, with company background | Hyundai EVs |
+
+What changed | Two consecutive versions of one model, figure by figure, each value naming its trim and model year | Tesla Model 3: Highland vs Original |
 
 Comparison | Two models side by side on identical specs | Tesla Model 3 vs BMW i4 |
 
@@ -167,7 +169,7 @@ The /best/longest-range-evs page ranks every model in the database by EPA range 
 
 What is the cheapest electric car?
 
-The /best/cheapest-evs page ranks models by MSRP, and /best/evs-under-40k lists everything under $40,000. As of October 21, 2026 the entry end of the US market in the database sits around $34,000–$35,000 MSRP before taxes, fees and incentives; a federal or state incentive can lower the real cost further. Micro-EVs sold only outside the US, such as the Citroën AMI, are cheaper still.
+The /best/cheapest-evs page ranks models by MSRP, and /best/evs-under-40k lists everything under $40,000. As of October 21, 2026 the entry end of the US market in the database sits around $34,000–$35,000 MSRP before taxes, fees and incentives. The federal New Clean Vehicle Credit is not available for vehicles acquired after Sept. 30, 2025, per the IRS clean vehicle credits page (updated July 13, 2026); state or utility incentives may still lower the real cost. Micro-EVs sold only outside the US, such as the Citroën AMI, are cheaper still.
 
 Are there electric SUVs with three rows of seats?
 
