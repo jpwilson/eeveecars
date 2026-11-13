@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 
 import { renderAll } from "./build-pages.mjs";
 import { SITE, COMPETITORS, FAQS } from "./seo-content.mjs";
-import { compareIntro, makeIntro, safeUrl, US_CREDIT } from "../api/_seo.js";
+import { compareIntro, makeIntro, safeUrl, US_CREDIT, BEST_LINKS, COMPARE_LINKS } from "../api/_seo.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
@@ -329,6 +329,15 @@ function checkVercelConfig() {
     STATIC_PAGES.every(([p]) => sources.indexOf(p) < catchAll),
     "static page rewrites come before the catch-all"
   );
+  for (const [src, page] of [["/compare", "compare-index"], ["/best", "best-index"]]) {
+    expect(
+      cfg.rewrites.some((r) => r.source === src && r.destination === `/api/prerender?page=${page}`),
+      `${src} hub is prerendered`
+    );
+  }
+  for (const src of ["/compare/", "/compare/:pair/", "/best/", "/best/:criteria/"]) {
+    expect(cfg.redirects.some((r) => r.source === src && r.permanent), `${src} redirects without the trailing slash`);
+  }
   // /make/:make/:model/changes/:pair would otherwise be read as a variant page.
   const changes = sources.indexOf("/make/:make/:model/changes/:pair");
   expect(
@@ -343,9 +352,9 @@ function checkSitemapFunction() {
   for (const [path] of STATIC_PAGES) {
     expect(src.includes(`"${path}"`), `sitemap lists ${path}`);
   }
-  for (const path of ["/best/electric-trucks", "/best/300-mile-range-evs"]) {
-    expect(src.includes(`"${path}"`), `sitemap lists ${path}`);
-  }
+  // Lists and comparisons come from the backend sitemap, which lists only indexable
+  // ones; a hard-coded /best or /compare URL here could re-add a gated (noindex) page.
+  expect(!/\["\/(best|compare)\//.test(src), "sitemap.js adds no /best or /compare URL of its own");
   // SPA-only routes are served from app.html, whose canonical is "/", so
   // listing them would submit non-self-canonical URLs.
   for (const path of ["/about", "/advertise", "/privacy", "/terms"]) {
@@ -413,6 +422,34 @@ function checkFaqContent() {
   );
 }
 
+/* ------------------------- comparison links ---------------------------- */
+
+// Crawler links must point at canonical URLs (the two model slugs alphabetical), never
+// at a redirect.
+function checkCompareLinkOrder() {
+  section("Hard-coded comparison links are canonical");
+  for (const [href] of COMPARE_LINKS) {
+    const [a, b] = href.replace("/compare/", "").split("-vs-");
+    expect(a < b, `${href} is in canonical (alphabetical) order`);
+  }
+}
+
+const API_BASE = (process.env.EV_API_BASE || "https://ev-backend-three.vercel.app").replace(/\/$/, "");
+
+/** The indexable pair paths and list paths, from the backend that renders the pages. */
+async function indexableSets() {
+  const get = async (path) => {
+    const res = await fetch(`${API_BASE}${path}`);
+    if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
+    return res.json();
+  };
+  const [pairs, lists] = await Promise.all([get("/catalog/compare-pairs?indexable=true"), get("/catalog/lists")]);
+  return {
+    pairs: new Set(pairs.pairs.filter((p) => p.indexable).map((p) => p.path)),
+    lists: new Set(lists.lists.filter((l) => l.indexable).map((l) => l.path)),
+  };
+}
+
 /* ----------------------------- buy block ------------------------------ */
 
 // The crawler copy of the dated tax-credit sentence (api/_seo.js) must match the
@@ -436,6 +473,41 @@ async function checkPrerendered() {
   section("Prerendered routes (api/prerender.js against the live API)");
   const { renderPrerender, DEFAULT_TARGETS } = await import("./render-prerender.mjs");
   const counts = {};
+  let sets = null;
+  try {
+    sets = await indexableSets();
+    ok(`indexable sets from ${API_BASE} (${sets.pairs.size} pairs, ${sets.lists.size} lists)`);
+  } catch (e) {
+    fail("indexable pairs and lists from the API", e.message);
+  }
+  if (sets) {
+    // Every page links these; a gated list or an unselected pair must never be among them.
+    for (const [href] of COMPARE_LINKS)
+      expect(sets.pairs.has(href), `COMPARE_LINKS ${href} is an indexable pair`);
+    for (const [href] of BEST_LINKS)
+      expect(href === "/best" || sets.lists.has(href), `BEST_LINKS ${href} is an indexable list`);
+  }
+  // Redirects and 404s of the comparison and list routes.
+  const statusCases = [
+    [{ page: "compare", slug: "tesla-model-y-vs-tesla-model-3" }, 301, "/compare/tesla-model-3-vs-tesla-model-y"],
+    [{ page: "compare", slug: "polestar-two-vs-tesla-model-3" }, 301, "/compare/polestar-2-vs-tesla-model-3"],
+    [{ page: "compare", slug: "no-such-car-vs-tesla-model-3" }, 404, null],
+    [{ page: "compare", slug: "tesla-model-3-vs-tesla-model-3" }, 404, null],
+    [{ page: "best", slug: "no-such-list" }, 404, null],
+  ];
+  for (const [query, want, location] of statusCases) {
+    try {
+      const out = await renderPrerender(query);
+      expect(
+        out.status === want && (location === null || out.location === location),
+        `${new URLSearchParams(query)}: ${want}${location ? ` -> ${location}` : ""}`,
+        `got ${out.status}${out.location ? ` -> ${out.location}` : ""}`
+      );
+      if (want === 404) expect(/<meta name="robots" content="noindex"/.test(out.html), `${query.slug}: 404 is noindex`);
+    } catch (e) {
+      fail(`${new URLSearchParams(query)}: prerender ran`, e.message);
+    }
+  }
   for (const t of DEFAULT_TARGETS) {
     let html;
     try {
@@ -454,6 +526,20 @@ async function checkPrerendered() {
       `${t.path}: content was injected into #root (not the bare SPA shell)`
     );
     counts[t.path] = checkPage(t.path, t.path, html);
+    const isNoindex = /<meta name="robots" content="noindex"/.test(html);
+    expect(isNoindex === !!t.noindex, `${t.path}: ${t.noindex ? "noindex (not indexable per the API)" : "indexable (no noindex)"}`);
+    if (sets) {
+      const hrefs = [...html.matchAll(/href="(\/(?:compare|best)\/[^"#?]+)"/g)].map((m) => m[1]);
+      const badPairs = [...new Set(hrefs.filter((h) => h.startsWith("/compare/") && !sets.pairs.has(h)))];
+      const badLists = [...new Set(hrefs.filter((h) => h.startsWith("/best/") && !sets.lists.has(h)))];
+      expect(!badPairs.length, `${t.path}: links only to indexable comparisons`, badPairs.join(" "));
+      expect(!badLists.length, `${t.path}: links only to indexable lists`, badLists.join(" "));
+    }
+    // A page that carries FAQPage JSON-LD must show the questions outside #root.
+    if (/"@type":"FAQPage"/.test(html) && /^\/(compare|make)\//.test(t.path) && /data-faq-for=/.test(html)) {
+      const tailStart = html.indexOf('<div id="seo-content"');
+      expect(tailStart > 0 && html.indexOf("data-faq-for=", tailStart) > 0, `${t.path}: FAQ is in #seo-content`);
+    }
     // Internal links to the new pages must be reachable from every page.
     expect(
       html.includes('href="/faq"') && html.includes('href="/what-is-ev-lineup"'),
@@ -502,6 +588,7 @@ checkIndexNow();
 checkVercelConfig();
 checkSitemapFunction();
 checkFaqContent();
+checkCompareLinkOrder();
 checkEscaping();
 checkBuyAssumptions();
 const preCounts = live ? await checkPrerendered() : (console.log("\nSkipping live prerender checks (--no-live)"), {});

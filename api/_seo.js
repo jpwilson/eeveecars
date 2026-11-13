@@ -14,27 +14,37 @@ const CONTACT = "jeanpaulwilson@gmail.com";
 const ONE_LINER =
   "EV Lineup is a free electric vehicle database and comparison site for anyone shopping for or researching an EV.";
 
+// Lists the backend marks indexable (/catalog/lists). The backend's gates decide
+// indexability; scripts/check-seo.mjs fails if any of these is not indexable, so a
+// gated list is never linked from every page. Mirrors BEST_LISTS in scripts/seo-content.mjs.
 export const BEST_LINKS = [
+  ["/best", "All rankings, by market"],
   ["/best/longest-range-evs", "Longest range electric cars"],
   ["/best/cheapest-evs", "Cheapest electric cars"],
-  ["/best/evs-under-40k", "Best EVs under $40,000"],
   ["/best/fastest-evs", "Fastest electric cars (0–60 mph)"],
   ["/best/3-row-evs", "Best 3-row electric SUVs (6+ seats)"],
+  ["/best/evs-under-40k", "EVs under $40,000, ranked by range"],
   ["/best/electric-trucks", "Electric pickup trucks"],
-  ["/best/300-mile-range-evs", "EVs with 300+ miles of range"],
+  ["/best/300-mile-range-evs", "EVs with 300+ miles of range, cheapest first"],
+  ["/best/cheapest-evs-uk", "Cheapest electric cars in the UK"],
+  ["/best/longest-range-evs-europe", "Longest range electric cars in Europe"],
+  ["/best/cheapest-evs-china", "Cheapest electric cars in China"],
 ];
 
+// The pinned pairs (ev_backend routers/seo.py COMPARE_PAIRS) in canonical order:
+// the two model slugs alphabetical, so no crawler link points at a redirect.
+// Mirrors COMPARE_PAIRS in src/data/seoPages.ts and scripts/seo-content.mjs.
 export const COMPARE_LINKS = [
-  ["/compare/tesla-model-3-vs-bmw-i4", "Tesla Model 3 vs BMW i4"],
+  ["/compare/bmw-i4-vs-tesla-model-3", "BMW i4 vs Tesla Model 3"],
   ["/compare/hyundai-ioniq-5-vs-kia-ev6", "Hyundai Ioniq 5 vs Kia EV6"],
-  ["/compare/tesla-model-y-vs-ford-mustang-mach-e", "Tesla Model Y vs Ford Mustang Mach-E"],
+  ["/compare/ford-mustang-mach-e-vs-tesla-model-y", "Ford Mustang Mach-E vs Tesla Model Y"],
   ["/compare/rivian-r1s-vs-tesla-model-x", "Rivian R1S vs Tesla Model X"],
-  ["/compare/tesla-model-3-vs-hyundai-ioniq-6", "Tesla Model 3 vs Hyundai Ioniq 6"],
+  ["/compare/hyundai-ioniq-6-vs-tesla-model-3", "Hyundai Ioniq 6 vs Tesla Model 3"],
   ["/compare/ford-f150-lightning-vs-tesla-cybertruck", "Ford F-150 Lightning vs Tesla Cybertruck"],
   ["/compare/chevrolet-equinox-ev-vs-tesla-model-y", "Chevrolet Equinox EV vs Tesla Model Y"],
   ["/compare/kia-ev9-vs-rivian-r1s", "Kia EV9 vs Rivian R1S"],
-  ["/compare/tesla-model-y-vs-hyundai-ioniq-5", "Tesla Model Y vs Hyundai Ioniq 5"],
-  ["/compare/rivian-r1t-vs-ford-f150-lightning", "Rivian R1T vs Ford F-150 Lightning"],
+  ["/compare/hyundai-ioniq-5-vs-tesla-model-y", "Hyundai Ioniq 5 vs Tesla Model Y"],
+  ["/compare/ford-f150-lightning-vs-rivian-r1t", "Ford F-150 Lightning vs Rivian R1T"],
 ];
 
 export const GUIDE_LINKS = [
@@ -182,7 +192,7 @@ export function breadcrumbJsonLd(trail) {
 export function linksBlock() {
   return `<nav class="seo-links" aria-label="More on EV Lineup">
   <div><h2>Best-of lists</h2><ul>${links(BEST_LINKS)}</ul></div>
-  <div><h2>Popular comparisons</h2><ul>${links(COMPARE_LINKS.slice(0, 6))}</ul></div>
+  <div><h2>Popular comparisons</h2><ul>${links([...COMPARE_LINKS.slice(0, 6), ["/compare", "All comparisons"]])}</ul></div>
   <div><h2>About EV Lineup</h2><ul>${links(GUIDE_LINKS)}</ul></div>
 </nav>
 <p class="seo-note">${esc(ONE_LINER)} Data is researched from manufacturer and public sources; confirm specs and pricing with the manufacturer or dealer. Corrections: <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>`;
@@ -245,7 +255,7 @@ export function homeSections(cars, totals) {
   <h2>Who it is for</h2>
   <ul class="plain">
     <li><strong>First-time EV buyers</strong> working out what range, battery size and charging speed mean in practice.</li>
-    <li><strong>Shoppers deciding between two cars</strong> — a comparison page puts both in one table and marks which wins each row.</li>
+    <li><strong>Shoppers deciding between two cars</strong> — a comparison page puts both in one table, names the trim behind each figure and marks the lower price, longer range, higher charging peak and quicker time where the figures are comparable.</li>
     <li><strong>Buyers with a hard requirement</strong>: a budget under $40,000, three rows of seats, a pickup bed, or 300+ miles of range.</li>
     <li><strong>Researchers and developers</strong> who want the EV market as structured data, through the <a href="/openapi.json">public JSON API</a>.</li>
   </ul>

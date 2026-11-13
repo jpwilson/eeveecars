@@ -34,6 +34,8 @@ const linkColumns: {
       { label: "What is EV Lineup?", href: "/what-is-ev-lineup" },
       { label: "FAQ", href: "/faq" },
       { label: "Best EV comparison tools", href: "/alternatives" },
+      { label: "Compare two EVs", to: "/compare" },
+      { label: "Rankings by market", to: "/best" },
       { label: "Longest range EVs", to: "/best/longest-range-evs" },
       { label: "Cheapest EVs", to: "/best/cheapest-evs" },
       { label: "EVs under $40,000", to: "/best/evs-under-40k" },

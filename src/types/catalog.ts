@@ -326,20 +326,214 @@ export interface CatalogMeta {
 
 export interface CatalogBestItem {
   model: CatalogModelCard;
-  /** the ranked figure: price (unit = currency), range (unit = mi) or 0-60 (unit = s) */
+  /** the ranked figure: price (unit = currency), range (mi/km), 0-60/0-100 (s), DC (kW), markets */
   value: number | null;
   unit: string | null;
   variant: VariantRef | null;
   rank: number | null;
+  name?: string | null;
+  status?: CatalogStatus | null;
+  /** the ranked figure as text, in its own currency / unit / cycle ("£17,245", "363 mi") */
+  display?: string | null;
+  /** what holds for the figure ("EPA, 2027 model year", "list price including VAT") */
+  qualifier?: string | null;
+  basis?: string | null;
+  cycle?: string | null;
+  model_year?: number | null;
+  is_estimate?: boolean | null;
+  /** acceleration lists: "0–60 mph" / "0–100 km/h" */
+  label?: string | null;
+  /** evs-not-sold-in-us: the markets it is on sale in */
+  markets?: string[] | null;
+}
+
+/** A link to a list (`related`, `lists` on compare and alternatives). */
+export interface ListRef {
+  key: string;
+  path: string;
+  title: string | null;
+  market?: string | null;
 }
 
 export interface CatalogBestResponse {
   key: string;
+  path?: string | null;
   title: string | null;
+  h1?: string | null;
+  blurb?: string | null;
   market: string | null;
-  metric: "price" | "range" | "accel" | string | null;
+  /** old short form: price | range | accel | dc | markets */
+  metric: "price" | "range" | "accel" | "dc" | "markets" | string | null;
+  /** registry metric: price_asc | range_desc | accel_asc | dc_desc | markets_desc */
+  ranking?: string | null;
+  rule?: string | null;
   items: CatalogBestItem[];
   count: number | null;
+  /** how many qualify (items shown may be fewer; upcoming items may follow the ranked ones) */
+  ranked?: number | null;
+  excluded?: { count: number | null; reason: string | null; unknown: string[] | null } | null;
+  indexable?: boolean | null;
+  reason?: string | null;
+  related?: ListRef[] | null;
+  notes?: string[] | null;
+}
+
+/** One entry of `/catalog/lists`. */
+export interface CatalogListSummary extends ListRef {
+  h1: string | null;
+  blurb: string | null;
+  metric: string | null;
+  rule: string | null;
+  count: number | null;
+  ranked: number | null;
+  indexable: boolean | null;
+  reason: string | null;
+  related: ListRef[] | null;
+}
+
+export interface CatalogListsResponse {
+  count: number;
+  indexable: number | null;
+  max: number | null;
+  lists: CatalogListSummary[];
+}
+
+// ---- model vs model (`/catalog/compare/{a}/{b}`)
+
+export type CompareStatus =
+  | "a_higher"
+  | "b_higher"
+  | "equal"
+  | "different"
+  | "not_comparable"
+  | "missing_a"
+  | "missing_b"
+  | "info"
+  | string;
+
+export interface CompareRow {
+  key: string;
+  label: string | null;
+  kind: "number" | "set" | "count" | "span" | string | null;
+  qualifier: string | null;
+  a: ChangeSide | null;
+  b: ChangeSide | null;
+  compare: {
+    status: CompareStatus | null;
+    /** b minus a, in `unit` */
+    delta: number | null;
+    unit: string | null;
+    reason: string | null;
+    only_a?: (string | number)[] | null;
+    only_b?: (string | number)[] | null;
+    basis_unknown?: boolean | null;
+  } | null;
+  /** the side with the lower price / longer range / higher DC peak / quicker time, on comparable rows only */
+  highlight: "a" | "b" | null;
+  text: string | null;
+}
+
+export interface CompareModelSide {
+  name: string | null;
+  make: MakeRef;
+  model: {
+    slug: string;
+    name: string | null;
+    path: string;
+    status: CatalogStatus | null;
+    body_style: string | null;
+    years: Years | null;
+    official_url: string | null;
+  };
+  generation: {
+    slug: string;
+    name: string | null;
+    path: string;
+    years: string | null;
+    status: CatalogStatus | null;
+    image: CatalogImageData | null;
+    description: string | null;
+  } | null;
+  market_status: CatalogStatus | null;
+  on_sale_in: string[] | null;
+}
+
+/** Another pair of one of the two models (`more.a` / `more.b`, alternatives `compare`). */
+export interface ComparePairRef {
+  path: string;
+  key: string;
+  name: string | null;
+  source?: string | null;
+  other: { slug: string; name: string | null; path: string };
+}
+
+export interface CatalogCompareResponse {
+  path: string;
+  key: string;
+  indexable: boolean | null;
+  quality: {
+    default_market: string | null;
+    comparable_facts: number | null;
+    has_price: boolean | null;
+    has_range: boolean | null;
+    source: "pinned" | "twin" | "successor" | "same_make" | "rival" | string | null;
+    reason: string | null;
+    min_for_indexing?: number | null;
+    comparable_facts_shown?: number | null;
+  } | null;
+  relation: { kind: "twin" | "successor" | "same_make" | string; newer: string | null } | null;
+  a: CompareModelSide;
+  b: CompareModelSide;
+  market: string | null;
+  markets: string[] | null;
+  summary: string[] | null;
+  rows: CompareRow[] | null;
+  faq: { q: string; a: string }[] | null;
+  more: { a: ComparePairRef[] | null; b: ComparePairRef[] | null } | null;
+  lists: (ListRef & { count: number | null; a_rank: number | null; b_rank: number | null })[] | null;
+  notes: string[] | null;
+  sources: CatalogSource[] | null;
+  updated_at: string | null;
+}
+
+export interface ComparePairSummary {
+  path: string;
+  key: string;
+  name: string | null;
+  a: { slug: string; name: string | null; path: string; make: { slug: string; name: string | null } };
+  b: { slug: string; name: string | null; path: string; make: { slug: string; name: string | null } };
+  source: string | null;
+  market: string | null;
+  selected_market: string | null;
+  comparable_facts: number | null;
+  indexable: boolean | null;
+  reason: string | null;
+}
+
+export interface CatalogComparePairsResponse {
+  count: number;
+  cap: number | null;
+  indexed: number | null;
+  pairs: ComparePairSummary[];
+}
+
+// ---- model-page links (`/catalog/models/{make}/{model}/alternatives`)
+
+export interface CatalogAlternativesResponse {
+  model: { slug: string; name: string | null; path: string };
+  market: string | null;
+  markets: string[] | null;
+  /** how the alternatives were chosen, with its numbers (show it) */
+  rule: string | null;
+  alternatives: {
+    card: CatalogModelCard;
+    price: PriceFigure | null;
+    range: RangeFigure | null;
+    compare_path: string | null;
+    relation: string | null;
+  }[];
+  compare: ComparePairRef[] | null;
+  lists: (ListRef & { rank: number | null; count: number | null })[] | null;
 }
 
 // ---- version changes (`/catalog/changes/{make}/{model}/{older}/{newer}`)

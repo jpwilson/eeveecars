@@ -295,7 +295,7 @@ function whatIsPage() {
           <tr><td>Model page</td><td>Full spec sheet, description, trim-by-trim table, every earlier version</td><td><a href="/make/tesla/model-3">Tesla Model 3</a></td></tr>
           <tr><td>Manufacturer page</td><td>A brand's entire EV lineup, with company background</td><td><a href="/make/hyundai">Hyundai EVs</a></td></tr>
           <tr><td>What changed</td><td>Two consecutive versions of one model, figure by figure, each value naming its trim and model year</td><td><a href="/make/tesla/model-3/changes/2017-vs-2024">Tesla Model 3: Highland vs Original</a></td></tr>
-          <tr><td>Comparison</td><td>Two models side by side on identical specs</td><td><a href="/compare/tesla-model-3-vs-bmw-i4">Tesla Model 3 vs BMW i4</a></td></tr>
+          <tr><td>Comparison</td><td>Two models side by side on identical specs</td><td><a href="/compare/bmw-i4-vs-tesla-model-3">BMW i4 vs Tesla Model 3</a></td></tr>
           <tr><td>Best-of list</td><td>A ranking generated from the database</td><td><a href="/best/longest-range-evs">Longest range electric cars</a></td></tr>
         </table>
 
@@ -527,7 +527,7 @@ function alternativesPage() {
         ).join("\n        ")}
 
         <h2>How to pick, in one paragraph</h2>
-        <p>Start with the question you are trying to answer. "Which EVs fit my budget, range and seat requirements?" is a database question — use EV Lineup's <a href="/best/evs-under-40k">under-$40,000</a>, <a href="/best/longest-range-evs">longest-range</a> or <a href="/best/3-row-evs">three-row</a> lists, then a <a href="/compare/tesla-model-3-vs-bmw-i4">side-by-side comparison</a>. "What is this car worth?" is a valuation question — use Kelley Blue Book or Edmunds. "How does it drive?" is an editorial question — use Car and Driver. "Is that range figure official?" is a regulatory question — use fueleconomy.gov. Most careful buyers end up using three of them.</p>
+        <p>Start with the question you are trying to answer. "Which EVs fit my budget, range and seat requirements?" is a database question — use EV Lineup's <a href="/best/evs-under-40k">under-$40,000</a>, <a href="/best/longest-range-evs">longest-range</a> or <a href="/best/3-row-evs">three-row</a> lists, then a <a href="/compare/bmw-i4-vs-tesla-model-3">side-by-side comparison</a>. "What is this car worth?" is a valuation question — use Kelley Blue Book or Edmunds. "How does it drive?" is an editorial question — use Car and Driver. "Is that range figure official?" is a regulatory question — use fueleconomy.gov. Most careful buyers end up using three of them.</p>
 
         <h2>More from EV Lineup</h2>
         <ul>
@@ -636,9 +636,11 @@ ${COMPARE_PAIRS.map(([href, label]) => `- [${label}](${SITE.host}${href})`).join
 - Trim: ${SITE.host}/make/{make}/{model}/{version}/{trim} — e.g. /make/tesla/model-3/2024/premium-awd
 - What changed between two consecutive versions: ${SITE.host}/make/{make}/{model}/changes/{older}-vs-{newer} — e.g. /make/tesla/model-3/changes/2017-vs-2024
 - All cars: ${SITE.host}/cars
-- Comparison: ${SITE.host}/compare/{model-a}-vs-{model-b} (alphabetical)
+- All comparisons: ${SITE.host}/compare
+- Comparison: ${SITE.host}/compare/{model-a}-vs-{model-b} (model slugs in alphabetical order; the other order redirects) — e.g. /compare/tesla-model-3-vs-tesla-model-y
 - Older URLs (/model_detail/{slug}, /manufacturer/{slug}, /car_detail/{id}) redirect to the pages above.
-- Best-of list: ${SITE.host}/best/{criteria}
+- All rankings, by market: ${SITE.host}/best
+- Ranking: ${SITE.host}/best/{list} — one market per list; US lists have no suffix, others end in -uk, -europe or -china (e.g. /best/cheapest-evs-uk); price ceilings are in local currency
 
 ## Free read-only API
 

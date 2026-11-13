@@ -1,8 +1,9 @@
 import { Car } from "../hooks/useCars";
 
-/** Curated comparison pairs, in canonical form: the two catalog model slugs in
- * alphabetical order (design 5: other orders 301 to this one). The backend
- * sitemap (routers/catalog.py) canonicalises routers/seo.py's list the same way. */
+/** The pinned comparison pairs (ev_backend routers/seo.py COMPARE_PAIRS), canonical
+ * form: the two catalog model slugs in alphabetical order. The backend is the source of
+ * truth for which pairs exist; this copy is used only by the legacy fallback (catalog
+ * answers 503) and the /compare hub's 503 fallback. */
 export const COMPARE_PAIRS: { pair: string; label: string }[] = [
   { pair: "bmw-i4-vs-tesla-model-3", label: "BMW i4 vs Tesla Model 3" },
   { pair: "hyundai-ioniq-5-vs-kia-ev6", label: "Ioniq 5 vs KIA EV6" },
@@ -18,7 +19,7 @@ export const COMPARE_PAIRS: { pair: string; label: string }[] = [
 
 export interface BestPageConfig {
   title: string;
-  /** describes the catalog list (`/catalog/best/{key}`: US offerings, USD, EPA) */
+  /** describes the legacy list (the catalog page shows the API's own blurb) */
   blurb: string;
   /** the old wording, shown only by the legacy fallback when it ranks differently */
   legacyBlurb?: string;
@@ -29,10 +30,10 @@ export interface BestPageConfig {
 
 const isAvailable = (c: Car) => c.availability_desc === "available";
 
-/** Best-of list pages — data-driven, always current. Slugs must match the
- * backend's /catalog/best keys and api/prerender.js. The lists come from the
- * catalog API; filter/sort/limit are only used by the legacy fallback (catalog
- * answers 503) and limit is also passed to the catalog. */
+/** The 7 original lists, used ONLY by the legacy fallback (catalog answers 503) and the
+ * /best hub's 503 fallback. The catalog registry (ev_backend services/catalog_lists.py,
+ * `/catalog/lists`) is the source of truth for every list, its title, blurb and ranking;
+ * `blurb` here describes the legacy list. Mirrors BEST_CONFIGS in api/prerender.js. */
 export const BEST_PAGES: Record<string, BestPageConfig> = {
   "evs-under-40k": {
     title: "Best EVs Under $40,000",

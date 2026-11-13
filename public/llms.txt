@@ -18,26 +18,30 @@ Run by Jean-Paul Wilson. Independent of every manufacturer. Not a dealer: no use
 
 ## Best-of lists (generated from the database)
 
+- [All rankings, by market](https://www.evlineup.org/best)
 - [Longest range electric cars](https://www.evlineup.org/best/longest-range-evs)
 - [Cheapest electric cars](https://www.evlineup.org/best/cheapest-evs)
-- [Best EVs under $40,000](https://www.evlineup.org/best/evs-under-40k)
 - [Fastest electric cars (0–60 mph)](https://www.evlineup.org/best/fastest-evs)
 - [Best 3-row electric SUVs (6+ seats)](https://www.evlineup.org/best/3-row-evs)
+- [EVs under $40,000, ranked by range](https://www.evlineup.org/best/evs-under-40k)
 - [Electric pickup trucks](https://www.evlineup.org/best/electric-trucks)
-- [EVs with 300+ miles of range](https://www.evlineup.org/best/300-mile-range-evs)
+- [EVs with 300+ miles of range, cheapest first](https://www.evlineup.org/best/300-mile-range-evs)
+- [Cheapest electric cars in the UK](https://www.evlineup.org/best/cheapest-evs-uk)
+- [Longest range electric cars in Europe](https://www.evlineup.org/best/longest-range-evs-europe)
+- [Cheapest electric cars in China](https://www.evlineup.org/best/cheapest-evs-china)
 
 ## Popular comparisons
 
-- [Tesla Model 3 vs BMW i4](https://www.evlineup.org/compare/tesla-model-3-vs-bmw-i4)
+- [BMW i4 vs Tesla Model 3](https://www.evlineup.org/compare/bmw-i4-vs-tesla-model-3)
 - [Hyundai Ioniq 5 vs Kia EV6](https://www.evlineup.org/compare/hyundai-ioniq-5-vs-kia-ev6)
-- [Tesla Model Y vs Ford Mustang Mach-E](https://www.evlineup.org/compare/tesla-model-y-vs-ford-mustang-mach-e)
+- [Ford Mustang Mach-E vs Tesla Model Y](https://www.evlineup.org/compare/ford-mustang-mach-e-vs-tesla-model-y)
 - [Rivian R1S vs Tesla Model X](https://www.evlineup.org/compare/rivian-r1s-vs-tesla-model-x)
-- [Tesla Model 3 vs Hyundai Ioniq 6](https://www.evlineup.org/compare/tesla-model-3-vs-hyundai-ioniq-6)
+- [Hyundai Ioniq 6 vs Tesla Model 3](https://www.evlineup.org/compare/hyundai-ioniq-6-vs-tesla-model-3)
 - [Ford F-150 Lightning vs Tesla Cybertruck](https://www.evlineup.org/compare/ford-f150-lightning-vs-tesla-cybertruck)
 - [Chevrolet Equinox EV vs Tesla Model Y](https://www.evlineup.org/compare/chevrolet-equinox-ev-vs-tesla-model-y)
 - [Kia EV9 vs Rivian R1S](https://www.evlineup.org/compare/kia-ev9-vs-rivian-r1s)
-- [Tesla Model Y vs Hyundai Ioniq 5](https://www.evlineup.org/compare/tesla-model-y-vs-hyundai-ioniq-5)
-- [Rivian R1T vs Ford F-150 Lightning](https://www.evlineup.org/compare/rivian-r1t-vs-ford-f150-lightning)
+- [Hyundai Ioniq 5 vs Tesla Model Y](https://www.evlineup.org/compare/hyundai-ioniq-5-vs-tesla-model-y)
+- [Ford F-150 Lightning vs Rivian R1T](https://www.evlineup.org/compare/ford-f150-lightning-vs-rivian-r1t)
 
 ## Page URL patterns
 
@@ -48,9 +52,11 @@ Run by Jean-Paul Wilson. Independent of every manufacturer. Not a dealer: no use
 - Trim: https://www.evlineup.org/make/{make}/{model}/{version}/{trim} — e.g. /make/tesla/model-3/2024/premium-awd
 - What changed between two consecutive versions: https://www.evlineup.org/make/{make}/{model}/changes/{older}-vs-{newer} — e.g. /make/tesla/model-3/changes/2017-vs-2024
 - All cars: https://www.evlineup.org/cars
-- Comparison: https://www.evlineup.org/compare/{model-a}-vs-{model-b} (alphabetical)
+- All comparisons: https://www.evlineup.org/compare
+- Comparison: https://www.evlineup.org/compare/{model-a}-vs-{model-b} (model slugs in alphabetical order; the other order redirects) — e.g. /compare/tesla-model-3-vs-tesla-model-y
 - Older URLs (/model_detail/{slug}, /manufacturer/{slug}, /car_detail/{id}) redirect to the pages above.
-- Best-of list: https://www.evlineup.org/best/{criteria}
+- All rankings, by market: https://www.evlineup.org/best
+- Ranking: https://www.evlineup.org/best/{list} — one market per list; US lists have no suffix, others end in -uk, -europe or -china (e.g. /best/cheapest-evs-uk); price ceilings are in local currency
 
 ## Free read-only API
 

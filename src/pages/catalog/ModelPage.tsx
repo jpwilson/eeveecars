@@ -26,6 +26,7 @@ import StatusBadge, { BrandStatusBadge } from "../../components/catalog/StatusBa
 import VariantsTable from "../../components/catalog/VariantsTable";
 import SourcesList from "../../components/catalog/SourcesList";
 import BuyBlock from "../../components/catalog/BuyBlock";
+import AlternativesCard from "../../components/catalog/AlternativesCard";
 import CatalogError from "../../components/catalog/CatalogError";
 import { CatalogLoading } from "../../components/catalog/PageStates";
 import { HeadlineFigures, MarketPicker, defaultMarket, marketsOf, useGenerationSpans } from "../../components/catalog/GenerationBits";
@@ -411,6 +412,9 @@ export default function ModelPage() {
             <GenerationVariants gen={def} preferredMarket={data.headline?.market} />
           </GlassCard>
         )}
+
+        {/* Comparisons, similar cars in one market and the lists it is ranked in. */}
+        <AlternativesCard make={data.make.slug} model={data.model.url_slug ?? modelSlug ?? ""} name={name} />
 
         {earlier.length > 0 && (
           <Box as="section">

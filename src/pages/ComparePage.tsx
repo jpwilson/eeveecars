@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Container,
   Heading,
@@ -13,6 +14,9 @@ import {
   HStack,
   VStack,
   Link,
+  ListItem,
+  SimpleGrid,
+  UnorderedList,
   Wrap,
   WrapItem,
   Tag,
@@ -24,17 +28,24 @@ import {
 } from "@chakra-ui/react";
 import { FaCheckCircle } from "react-icons/fa";
 import { useQuery } from "@tanstack/react-query";
-import { Link as RouterLink, Navigate, useLocation, useParams } from "react-router-dom";
+import { Link as RouterLink, Navigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import NotFoundPage from "./NotFoundPage";
+import CatalogPage from "../components/catalog/CatalogPage";
 import CatalogImage from "../components/catalog/CatalogImage";
 import CatalogError from "../components/catalog/CatalogError";
+import CompareTable from "../components/catalog/CompareTable";
+import GlassCard from "../components/catalog/GlassCard";
+import SourcesList from "../components/catalog/SourcesList";
 import StatusBadge from "../components/catalog/StatusBadge";
+import { MarketPicker } from "../components/catalog/GenerationBits";
+import { CatalogLoading } from "../components/catalog/PageStates";
 import apiClient from "../services/api-client";
-import { errorStatus, useCatalogModelBySlug } from "../hooks/useCatalog";
-import { CatalogGeneration, CatalogModelResponse, CatalogVariant } from "../types/catalog";
+import { errorStatus, useCatalogCompare } from "../hooks/useCatalog";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { CatalogCompareResponse, CompareModelSide, ComparePairRef } from "../types/catalog";
 import { formatPrice } from "../utils/formatPrice";
-import { formatGenYears, formatMoney, formatRange, marketLabel, modelDisplayName, num } from "../utils/catalogFormat";
+import { bodyStyleLabel, formatDate, marketLabel } from "../utils/catalogFormat";
 import { COMPARE_PAIRS } from "../data/seoPages";
 
 function Spinning() {
@@ -48,6 +59,7 @@ function Spinning() {
   );
 }
 
+/** Curated pairs, shown only by the legacy fallback (the catalog page uses the API's `more`). */
 function MoreComparisons({ current }: { current: string }) {
   return (
     <Box mt={12}>
@@ -76,317 +88,279 @@ function MoreComparisons({ current }: { current: string }) {
   );
 }
 
+/**
+ * /compare/:a-vs-:b. The backend computes every row, sentence and FAQ entry in one
+ * market; this page only displays them. Any order or legacy slug redirects to the
+ * canonical `data.path`. 503 (catalog not migrated) → the legacy comparison.
+ */
 export default function ComparePage() {
   const { pair } = useParams<{ pair: string }>();
-  const { search, hash } = useLocation();
-  const [slugA, slugB] = (pair ?? "").split("-vs-");
-  const a = useCatalogModelBySlug(slugA || undefined);
-  const b = useCatalogModelBySlug(slugB || undefined);
+  const location = useLocation();
+  const [search, setSearch] = useSearchParams();
+  const parts = (pair ?? "").split("-vs-");
+  const valid = parts.length === 2 && !!parts[0] && !!parts[1];
+  const market = search.get("market");
+  const { data, error, isLoading, isFetching } = useCatalogCompare(
+    valid ? parts[0].toLowerCase() : undefined,
+    valid ? parts[1].toLowerCase() : undefined,
+    market
+  );
+  useDocumentTitle(data ? `${data.a.name} vs ${data.b.name}: Specs Compared | EV Lineup` : null);
 
-  if (!pair || !slugA || !slugB) return <NotFoundPage />;
-  if (a.isLoading || b.isLoading) return <Spinning />;
-  if (a.notFound || b.notFound) return <NotFoundPage />;
-  if (a.data && b.data) {
-    // Canonical pair: the two catalog model slugs in alphabetical order (legacy slugs map to current ones)
-    const canonical = [a.data.model.slug, b.data.model.slug].sort().join("-vs-");
-    if (canonical !== pair) return <Navigate to={`/compare/${canonical}${search}${hash}`} replace />;
-    return <CatalogCompare pair={pair} A={a.data} B={b.data} />;
-  }
-  const error = a.error ?? b.error;
-  // 503 (catalog not migrated yet) or no answer: the old comparison, so the page never breaks
+  if (!pair || !valid) return <NotFoundPage />;
+  if (isLoading) return <CatalogLoading />;
   const s = errorStatus(error);
-  if (s === 503 || s === 0) return <LegacyComparePage pair={pair} slugA={slugA} slugB={slugB} />;
-  return <CatalogError error={error} />;
+  // An unknown market for this pair (400): drop it and show the default market.
+  if (s === 400 && market) return <Navigate to={location.pathname} replace />;
+  // 503 (catalog not migrated yet) or no answer: the old comparison, so the page never breaks
+  if (error && (s === 503 || s === 0)) return <LegacyComparePage pair={pair} slugA={parts[0]} slugB={parts[1]} />;
+  if (error || !data) return <CatalogError error={error} />;
+  // Reversed order, legacy slug or other non-canonical form → the canonical URL.
+  if (data.path !== location.pathname) return <Navigate to={`${data.path}${location.search}${location.hash}`} replace />;
+  return (
+    <CatalogCompare
+      data={data}
+      isFetching={isFetching}
+      onMarket={(m) => setSearch(m === data.quality?.default_market ? {} : { market: m }, { replace: true })}
+    />
+  );
 }
 
 // ---------- catalog comparison ----------
 
-interface Fig {
-  text: string | null;
-  /** number used to pick the better side */
-  value: number | null;
-  /** figures are only compared within one group (same currency / unit + cycle / battery basis) */
-  group?: string;
-  variant?: { name: string | null; path: string } | null;
-}
-
-interface Side {
-  data: CatalogModelResponse;
-  name: string;
-  gen: CatalogGeneration | null;
-  market: string | null;
-  variants: CatalogVariant[];
-}
-
 /**
- * The current version (default generation) and the market its headline uses:
- * US where the version is sold there, else its main market (the backend's
- * headline picks it the same way).
+ * True when the prerendered page already shows this FAQ in #seo-content (outside #root,
+ * kept after React mounts), so the React page does not show it a second time.
  */
-function sideOf(data: CatalogModelResponse): Side {
-  const gen = data.generations.find((g) => g.is_default) ?? data.generations.find((g) => g.slug === data.default_generation) ?? data.generations[0] ?? null;
-  const market = data.headline?.market ?? data.model.markets?.[0]?.market ?? null;
-  const all = (gen?.variants ?? []).filter((v) => v.status !== "cancelled");
-  const inMarket = market ? all.filter((v) => (v.offerings ?? []).some((o) => o.market === market)) : [];
-  return {
-    data,
-    name: modelDisplayName(data.make?.name, data.model.name),
-    gen,
-    market,
-    variants: inMarket.length ? inMarket : all,
-  };
-}
-
-/** Highest value of a variant spec across the version's trims, naming the trim. */
-function best(side: Side, pick: (v: CatalogVariant) => number | null, fmt: (n: number, v: CatalogVariant) => string, group?: (v: CatalogVariant) => string): Fig {
-  let top: CatalogVariant | null = null;
-  for (const v of side.variants) {
-    const n = pick(v);
-    if (n !== null && n !== undefined && (top === null || n > (pick(top) as number))) top = v;
-  }
-  if (!top) return { text: null, value: null };
-  const n = pick(top) as number;
-  return { text: fmt(n, top), value: n, group: group?.(top), variant: { name: top.name ?? top.slug, path: top.path } };
-}
-
-interface Row {
-  label: string;
-  better: "high" | "low" | "none";
-  get: (s: Side) => Fig;
-}
-
-const ROWS: Row[] = [
-  {
-    label: "Starting price",
-    better: "low",
-    get: (s) => {
-      const p = s.data.headline?.from_price;
-      if (!p?.value) return { text: null, value: null };
-      return {
-        text: `${formatMoney(p.value, p.currency)}${p.is_estimate ? " (est.)" : ""}`,
-        value: p.value,
-        group: p.currency ?? "",
-        variant: p.variant,
-      };
-    },
-  },
-  {
-    label: "Range",
-    better: "high",
-    get: (s) => {
-      const r = s.data.headline?.max_range;
-      if (!r?.value) return { text: null, value: null };
-      return {
-        text: `${formatRange(r.value, r.unit, r.cycle)}${r.is_estimate ? " (est.)" : ""}`,
-        value: r.value,
-        group: `${r.unit}|${r.cycle}`,
-        variant: r.variant,
-      };
-    },
-  },
-  {
-    label: "0–60 mph",
-    better: "low",
-    get: (s) => {
-      const q = s.data.headline?.quickest_0_60;
-      return q?.value ? { text: `${num(q.value, 2)} s`, value: q.value, variant: q.variant } : { text: null, value: null };
-    },
-  },
-  {
-    label: "0–100 km/h",
-    better: "low",
-    get: (s) => {
-      const q = s.data.headline?.quickest_0_100;
-      return q?.value ? { text: `${num(q.value, 2)} s`, value: q.value, variant: q.variant } : { text: null, value: null };
-    },
-  },
-  { label: "Top speed", better: "high", get: (s) => best(s, (v) => v.top_speed_mph, (n) => `${num(n)} mph`) },
-  { label: "Power", better: "high", get: (s) => best(s, (v) => v.power_hp, (n) => `${num(n, 0)} hp`) },
-  {
-    label: "Battery",
-    better: "high",
-    get: (s) =>
-      best(
-        s,
-        (v) => v.battery_kwh,
-        (n, v) => `${num(n)} kWh${v.battery_basis ? ` (${v.battery_basis})` : ""}`,
-        (v) => v.battery_basis ?? ""
-      ),
-  },
-  { label: "Max DC charging", better: "high", get: (s) => best(s, (v) => v.dc_kw, (n) => `${num(n, 0)} kW`) },
-  {
-    label: "Seats",
-    better: "none",
-    get: (s) => {
-      const seats = Array.from(new Set(s.variants.map((v) => v.seats).filter((n): n is number => !!n))).sort((x, y) => x - y);
-      return { text: seats.length ? seats.join(" / ") : null, value: null };
-    },
-  },
-  {
-    label: "Drive",
-    better: "none",
-    get: (s) => {
-      const drives = Array.from(new Set(s.variants.map((v) => v.drivetrain).filter((d): d is string => !!d)));
-      return { text: drives.length ? drives.join(", ") : null, value: null };
-    },
-  },
-];
-
-function winner(row: Row, fa: Fig, fb: Fig): 0 | 1 | -1 {
-  if (row.better === "none") return -1;
-  if (!fa.value || !fb.value || fa.value === fb.value) return -1;
-  if ((fa.group ?? "") !== (fb.group ?? "")) return -1; // different currency / cycle / basis: not comparable
-  if (row.better === "high") return fa.value > fb.value ? 0 : 1;
-  return fa.value < fb.value ? 0 : 1;
-}
-
-function CatalogCompare({ pair, A, B }: { pair: string; A: CatalogModelResponse; B: CatalogModelResponse }) {
-  const headerBg = useColorModeValue("rgba(255,255,255,0.7)", "rgba(45,55,72,0.5)");
-  const winBg = useColorModeValue("green.50", "rgba(34,197,94,0.15)");
-  const subText = useColorModeValue("gray.600", "gray.400");
-
-  const sides = [sideOf(A), sideOf(B)];
-  const rows = ROWS.map((row) => ({ row, figs: sides.map((s) => row.get(s)) })).filter(
-    ({ figs }) => figs[0].text || figs[1].text
+function faqInPrerenderTail(path: string) {
+  if (typeof document === "undefined") return false;
+  return Array.from(document.querySelectorAll("#seo-content [data-faq-for]")).some(
+    (el) => el.getAttribute("data-faq-for") === path
   );
-  const markets = Array.from(new Set(sides.map((s) => s.market).filter(Boolean)));
+}
 
+const RELATION_LABEL: Record<string, string> = {
+  twin: "Twins: same car, two brands",
+  successor: "One replaced the other",
+  same_make: "Same brand",
+};
+
+function CarSide({ side, market }: { side: CompareModelSide; market: string | null }) {
+  const sub = useColorModeValue("gray.600", "gray.400");
+  const name = side.name ?? side.model.name ?? side.model.slug;
+  const gen = side.generation;
+  const img = gen?.image ?? null;
+  const status = side.model.status;
+  return (
+    <Box minW={0}>
+      <RouterLink to={side.model.path} aria-label={name}>
+        <CatalogImage
+          image={gen?.image ?? null}
+          ratio={16 / 10}
+          borderRadius="12px"
+          fallbackAlt={name}
+          placeholder="No photo yet"
+          sizes="(max-width: 768px) 50vw, 560px"
+        />
+      </RouterLink>
+      <Link as={RouterLink} to={side.model.path} display="block" mt={2} fontWeight="700" color="green.600" lineHeight="1.3">
+        {name}
+      </Link>
+      <Text fontSize="xs" color={sub}>
+        {[gen?.name, gen?.years, bodyStyleLabel(side.model.body_style)].filter(Boolean).join(" · ")}
+      </Text>
+      {img && (img.credit || img.license) && (
+        <Text fontSize="2xs" color={sub} mt={0.5} noOfLines={2}>
+          Photo:{" "}
+          {img.page_url ? (
+            <Link href={img.page_url} isExternal rel="noopener noreferrer" textDecoration="underline">
+              {[img.credit, img.license].filter(Boolean).join(" · ")}
+            </Link>
+          ) : (
+            [img.credit, img.license].filter(Boolean).join(" · ")
+          )}
+        </Text>
+      )}
+      <HStack spacing={1} mt={1} flexWrap="wrap">
+        {status && status !== "current" && <StatusBadge status={status} fontSize="10px" />}
+        {market && status === "current" && side.market_status !== "current" && (
+          <Badge variant="outline" colorScheme="gray" borderRadius="6px" textTransform="none" fontSize="10px">
+            Not on sale in {marketLabel(market)} in our data
+          </Badge>
+        )}
+      </HStack>
+    </Box>
+  );
+}
+
+function PairLinks({ title, pairs }: { title: string; pairs: ComparePairRef[] }) {
+  if (!pairs.length) return null;
   return (
     <Box>
-      <NavBar />
-      <Container maxW="4xl" py={8} px={{ base: 2, sm: 4 }}>
-        <Heading as="h1" size="lg" textAlign="center" mb={1} px={2}>
-          {sides[0].name} vs {sides[1].name}
-        </Heading>
-        <Text textAlign="center" color={subText} mb={2} px={2}>
-          Side-by-side specs from our live EV database — the better value in each row is highlighted.
-        </Text>
-        <Text textAlign="center" color={subText} fontSize="sm" mb={8} px={2}>
-          {markets.length === 1 && markets[0] === "US"
-            ? "US figures for the current version of each car."
-            : `Figures for the current version of each car, in the US where it is sold there, else its main market — prices in different currencies and ranges on different test cycles are not compared.`}{" "}
-          Each figure names the trim it comes from.
-        </Text>
-
-        <Table
-          size="sm"
-          bg={headerBg}
-          backdropFilter="blur(16px)"
-          borderRadius="xl"
-          overflow="hidden"
-          sx={{ tableLayout: "fixed" }}
-        >
-          <Thead>
-            <Tr>
-              <Th w={{ base: "24%", md: "28%" }} px={{ base: 2, md: 4 }}></Th>
-              {sides.map((s, i) => {
-                const years = s.gen ? formatGenYears(s.gen.start_year, s.gen.end_year, s.gen.status) : null;
-                const status = s.data.model.status;
-                const img = s.gen?.images?.find((im) => im.is_primary) ?? s.gen?.images?.[0] ?? null;
-                return (
-                  <Th key={i} textAlign="center" py={4} px={{ base: 2, md: 4 }} textTransform="none" letterSpacing="normal" verticalAlign="top">
-                    <VStack spacing={1}>
-                      <Box w="100%" maxW="220px" mx="auto">
-                        <RouterLink to={s.data.model.path} aria-label={s.name}>
-                          <CatalogImage
-                            image={img}
-                            ratio={16 / 9}
-                            borderRadius="8px"
-                            fallbackAlt={s.name}
-                            sizes="(max-width: 480px) 40vw, 220px"
-                          />
-                        </RouterLink>
-                        {img && (img.credit || img.license) && (
-                          <Text fontSize="2xs" color={subText} fontWeight="400" mt={0.5} noOfLines={2}>
-                            Photo:{" "}
-                            {img.page_url ? (
-                              <Link href={img.page_url} isExternal rel="noopener noreferrer" textDecoration="underline">
-                                {[img.credit, img.license].filter(Boolean).join(" · ")}
-                              </Link>
-                            ) : (
-                              [img.credit, img.license].filter(Boolean).join(" · ")
-                            )}
-                          </Text>
-                        )}
-                      </Box>
-                      <Link as={RouterLink} to={s.data.model.path} fontSize="sm" fontWeight="600" color="green.500">
-                        {s.name}
-                      </Link>
-                      {s.gen && (
-                        <Link as={RouterLink} to={s.gen.path} fontSize="xs" fontWeight="400" color={subText}>
-                          {[s.gen.name, years].filter(Boolean).join(" · ")}
-                        </Link>
-                      )}
-                      <HStack spacing={1} justify="center" flexWrap="wrap">
-                        {status && status !== "current" && <StatusBadge status={status} fontSize="2xs" />}
-                        {s.market && (
-                          <Text fontSize="2xs" fontWeight="500" color={subText}>
-                            {marketLabel(s.market)} figures
-                          </Text>
-                        )}
-                      </HStack>
-                    </VStack>
-                  </Th>
-                );
-              })}
-            </Tr>
-          </Thead>
-          <Tbody>
-            {rows.map(({ row, figs }) => {
-              const w = winner(row, figs[0], figs[1]);
-              return (
-                <Tr key={row.label}>
-                  <Td fontWeight="600" fontSize="xs" px={{ base: 2, md: 4 }}>
-                    {row.label}
-                  </Td>
-                  {figs.map((f, i) => (
-                    <Td
-                      key={i}
-                      textAlign="center"
-                      px={{ base: 1, md: 4 }}
-                      bg={w === i ? winBg : undefined}
-                      fontWeight={w === i ? "700" : "400"}
-                    >
-                      <HStack justify="center" spacing={1}>
-                        <Text fontSize="sm">{f.text ?? "—"}</Text>
-                        {w === i && <Icon as={FaCheckCircle} color="green.500" boxSize={3} flexShrink={0} />}
-                      </HStack>
-                      {f.text && f.variant && (
-                        <Link
-                          as={RouterLink}
-                          to={f.variant.path}
-                          display="block"
-                          fontSize="2xs"
-                          fontWeight="400"
-                          color={subText}
-                          noOfLines={2}
-                        >
-                          {f.variant.name}
-                        </Link>
-                      )}
-                    </Td>
-                  ))}
-                </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
-
-        <Wrap justify="center" mt={8} spacing={4}>
-          {sides.map((s) => (
-            <WrapItem key={s.data.model.slug}>
-              <Button as={RouterLink} to={s.data.model.path} size="sm" variant="outline" colorScheme="green" borderRadius="full">
-                {s.name} details
-              </Button>
-            </WrapItem>
-          ))}
-        </Wrap>
-
-        <Box px={2}>
-          <MoreComparisons current={pair} />
-        </Box>
-      </Container>
+      <Text fontSize="sm" fontWeight="700" mb={1}>
+        {title}
+      </Text>
+      <UnorderedList spacing={1} fontSize="sm" ml={5}>
+        {pairs.map((p) => (
+          <ListItem key={p.path}>
+            <Link as={RouterLink} to={p.path} color="green.600">
+              {p.name ?? p.key}
+            </Link>
+          </ListItem>
+        ))}
+      </UnorderedList>
     </Box>
+  );
+}
+
+function CatalogCompare({
+  data,
+  isFetching,
+  onMarket,
+}: {
+  data: CatalogCompareResponse;
+  isFetching: boolean;
+  onMarket: (m: string) => void;
+}) {
+  const sub = useColorModeValue("gray.600", "gray.400");
+  const nameA = data.a.name ?? data.a.model.slug;
+  const nameB = data.b.name ?? data.b.model.slug;
+  const rows = (data.rows ?? []).filter((r) => r.a || r.b);
+  const faq = data.faq ?? [];
+  const showFaq = faq.length > 0 && !faqInPrerenderTail(data.path);
+  const lists = data.lists ?? [];
+  const moreA = data.more?.a ?? [];
+  const moreB = data.more?.b ?? [];
+  const relation = data.relation?.kind ? RELATION_LABEL[data.relation.kind] : null;
+
+  return (
+    <CatalogPage
+      maxW="1100px"
+      crumbs={[
+        { label: "Compare", to: "/compare" },
+        { label: `${nameA} vs ${nameB}` },
+      ]}
+    >
+      <VStack align="stretch" spacing={6}>
+        <GlassCard>
+          <Heading as="h1" size="lg" letterSpacing="-0.01em">
+            {nameA} vs {nameB}
+          </Heading>
+          {relation && (
+            <Badge mt={2} variant="outline" colorScheme="purple" borderRadius="6px" textTransform="none">
+              {relation}
+            </Badge>
+          )}
+          <VStack align="stretch" spacing={2} mt={3}>
+            {(data.summary ?? []).map((s, i) => (
+              <Text key={i} fontSize={i === 0 ? "md" : "sm"} lineHeight="1.7">
+                {s}
+              </Text>
+            ))}
+          </VStack>
+          <SimpleGrid columns={2} spacing={{ base: 3, md: 5 }} mt={5} maxW="860px" mx="auto">
+            <CarSide side={data.a} market={data.market} />
+            <CarSide side={data.b} market={data.market} />
+          </SimpleGrid>
+        </GlassCard>
+
+        {rows.length > 0 && (
+          <GlassCard as="section" p={{ base: 3, md: 6 }}>
+            <HStack justify="space-between" align="baseline" flexWrap="wrap" gap={2} mb={3} px={{ base: 1, md: 0 }}>
+              <Heading as="h2" size="md">
+                Side by side
+              </Heading>
+              <Box opacity={isFetching ? 0.6 : 1}>
+                <MarketPicker markets={data.markets ?? []} value={data.market} onChange={onMarket} />
+              </Box>
+            </HStack>
+            <Box opacity={isFetching ? 0.6 : 1} transition="opacity 0.15s">
+              <CompareTable rows={rows} nameA={nameA} nameB={nameB} />
+            </Box>
+            <Text fontSize="xs" color={sub} mt={2} px={{ base: 1, md: 0 }}>
+              Each figure is the highest (or lowest) on file across the current version's trims, with the trim it comes
+              from. Prices, ranges and batteries are compared only on the same market, currency, price basis, test cycle
+              and battery basis; nothing is converted.
+              {(data.notes ?? []).length ? ` ${(data.notes ?? []).join(" ")}` : ""}
+            </Text>
+          </GlassCard>
+        )}
+
+        {showFaq && (
+          <GlassCard as="section">
+            <Heading as="h2" size="md" mb={3}>
+              Questions and answers
+            </Heading>
+            <VStack align="stretch" spacing={3}>
+              {faq.map((f) => (
+                <Box key={f.q}>
+                  <Heading as="h3" size="sm" mb={1}>
+                    {f.q}
+                  </Heading>
+                  <Text fontSize="sm" lineHeight="1.7">
+                    {f.a}
+                  </Text>
+                </Box>
+              ))}
+            </VStack>
+          </GlassCard>
+        )}
+
+        {lists.length > 0 && (
+          <GlassCard as="section">
+            <Heading as="h2" size="md" mb={3}>
+              Where they rank
+            </Heading>
+            <VStack align="stretch" spacing={2}>
+              {lists.map((l) => (
+                <Box key={l.key} fontSize="sm">
+                  <Link as={RouterLink} to={l.path} color="green.600" fontWeight="600">
+                    {l.title ?? l.key}
+                  </Link>
+                  <Text as="span" color={sub}>
+                    {" "}
+                    {[
+                      l.a_rank ? `${nameA} #${l.a_rank}` : null,
+                      l.b_rank ? `${nameB} #${l.b_rank}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </Text>
+                </Box>
+              ))}
+            </VStack>
+          </GlassCard>
+        )}
+
+        <GlassCard as="nav" aria-label="Related pages">
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+            <PairLinks title={`More ${nameA} comparisons`} pairs={moreA} />
+            <PairLinks title={`More ${nameB} comparisons`} pairs={moreB} />
+          </SimpleGrid>
+          <Wrap spacing={4} mt={moreA.length || moreB.length ? 4 : 0} fontSize="sm">
+            <WrapItem>
+              <Link as={RouterLink} to={data.a.model.path} color="green.600">
+                Everything on the {nameA} →
+              </Link>
+            </WrapItem>
+            <WrapItem>
+              <Link as={RouterLink} to={data.b.model.path} color="green.600">
+                Everything on the {nameB} →
+              </Link>
+            </WrapItem>
+            <WrapItem>
+              <Link as={RouterLink} to="/compare" color="green.600">
+                All comparisons →
+              </Link>
+            </WrapItem>
+          </Wrap>
+        </GlassCard>
+
+        <GlassCard>
+          <SourcesList sources={data.sources ?? []} updatedAt={formatDate(data.updated_at)} />
+        </GlassCard>
+      </VStack>
+    </CatalogPage>
   );
 }
 

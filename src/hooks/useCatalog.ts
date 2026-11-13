@@ -2,8 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import catalogClient from "../services/catalog-client";
 import {
+  CatalogAlternativesResponse,
   CatalogBestResponse,
   CatalogChangesResponse,
+  CatalogComparePairsResponse,
+  CatalogCompareResponse,
+  CatalogListsResponse,
   CatalogMakeResponse,
   CatalogMakesResponse,
   CatalogMeta,
@@ -124,7 +128,10 @@ export function useCatalogResolve(kind: "model" | "make" | "variant", key: strin
   });
 }
 
-/** Best-of list (`/catalog/best/{key}`): US figures, each naming its variant. */
+/**
+ * A list (`/catalog/best/{key}`, any key in the backend's registry): one market per list,
+ * each figure naming its trim. `limit` defaults to the list's own size.
+ */
 export function useCatalogBest(key: string | undefined, limit?: number) {
   return useQuery({
     queryKey: ["catalog", "best", key, limit ?? null],
@@ -132,6 +139,72 @@ export function useCatalogBest(key: string | undefined, limit?: number) {
       get<CatalogBestResponse>(`/catalog/best/${encodeURIComponent(key ?? "")}`, limit ? { limit } : undefined, signal),
     enabled: !!key,
     retry,
+  });
+}
+
+/** The list registry (`/catalog/lists`): every list with its rule and whether it is indexable. */
+export function useCatalogLists() {
+  return useQuery({
+    queryKey: ["catalog", "lists"],
+    queryFn: ({ signal }) => get<CatalogListsResponse>("/catalog/lists", undefined, signal),
+    retry,
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
+/**
+ * Model vs model, computed by the backend. Either order and legacy slugs are accepted; the
+ * response carries the canonical `path`. `market` switches the rows shown.
+ */
+export function useCatalogCompare(a: string | undefined, b: string | undefined, market?: string | null) {
+  return useQuery({
+    queryKey: ["catalog", "compare", a, b, market ?? null],
+    queryFn: ({ signal }) =>
+      get<CatalogCompareResponse>(
+        `/catalog/compare/${encodeURIComponent(a ?? "")}/${encodeURIComponent(b ?? "")}`,
+        market ? { market } : undefined,
+        signal
+      ),
+    enabled: !!a && !!b,
+    retry,
+    // Switching market keeps the same pair on screen while the new rows load.
+    placeholderData: (prev, prevQuery) =>
+      prevQuery && prevQuery.queryKey[2] === a && prevQuery.queryKey[3] === b ? prev : undefined,
+  });
+}
+
+/** The pair index (`/catalog/compare-pairs`), e.g. `{ indexable: true }` for the /compare hub. */
+export function useCatalogComparePairs(query: { model?: string; indexable?: boolean } = {}) {
+  return useQuery({
+    queryKey: ["catalog", "compare-pairs", query.model ?? null, query.indexable ?? null],
+    queryFn: ({ signal }) =>
+      get<CatalogComparePairsResponse>(
+        "/catalog/compare-pairs",
+        {
+          ...(query.model ? { model: query.model } : {}),
+          ...(query.indexable !== undefined ? { indexable: query.indexable } : {}),
+        },
+        signal
+      ),
+    retry,
+    staleTime: 30 * 60 * 1000,
+  });
+}
+
+/** Model-page links: similar EVs in one market, indexable comparisons, lists it is ranked in. */
+export function useCatalogAlternatives(make: string | undefined, model: string | undefined, market?: string | null) {
+  return useQuery({
+    queryKey: ["catalog", "alternatives", make, model, market ?? null],
+    queryFn: ({ signal }) =>
+      get<CatalogAlternativesResponse>(
+        `/catalog/models/${encodeURIComponent(make ?? "")}/${encodeURIComponent(model ?? "")}/alternatives`,
+        market ? { market } : undefined,
+        signal
+      ),
+    enabled: !!make && !!model,
+    retry,
+    placeholderData: (prev, prevQuery) =>
+      prevQuery && prevQuery.queryKey[2] === make && prevQuery.queryKey[3] === model ? prev : undefined,
   });
 }
 

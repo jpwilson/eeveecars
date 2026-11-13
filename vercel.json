@@ -61,8 +61,16 @@
       "destination": "/api/prerender?page=legacy&kind=variant&slug=:id"
     },
     {
+      "source": "/compare",
+      "destination": "/api/prerender?page=compare-index"
+    },
+    {
       "source": "/compare/:pair",
       "destination": "/api/prerender?page=compare&slug=:pair"
+    },
+    {
+      "source": "/best",
+      "destination": "/api/prerender?page=best-index"
     },
     {
       "source": "/best/:criteria",
@@ -123,6 +131,26 @@
     {
       "source": "/cars/",
       "destination": "/cars",
+      "permanent": true
+    },
+    {
+      "source": "/compare/",
+      "destination": "/compare",
+      "permanent": true
+    },
+    {
+      "source": "/compare/:pair/",
+      "destination": "/compare/:pair",
+      "permanent": true
+    },
+    {
+      "source": "/best/",
+      "destination": "/best",
+      "permanent": true
+    },
+    {
+      "source": "/best/:criteria/",
+      "destination": "/best/:criteria",
       "permanent": true
     },
     {

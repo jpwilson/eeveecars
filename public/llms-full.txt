@@ -43,7 +43,7 @@ Manufacturer page | A brand's entire EV lineup, with company background | Hyunda
 
 What changed | Two consecutive versions of one model, figure by figure, each value naming its trim and model year | Tesla Model 3: Highland vs Original |
 
-Comparison | Two models side by side on identical specs | Tesla Model 3 vs BMW i4 |
+Comparison | Two models side by side on identical specs | BMW i4 vs Tesla Model 3 |
 
 Best-of list | A ranking generated from the database | Longest range electric cars |
 
@@ -161,7 +161,7 @@ Specs are researched from manufacturer material and public sources, and range fi
 
 How do I compare two electric cars side by side?
 
-Open a comparison URL directly — for example /compare/tesla-model-3-vs-bmw-i4 — or pick two cars in the database and use the compare bar. The comparison table puts price, EPA range, 0–60 mph, top speed, power, battery capacity, DC charging speed and seat count in one view and marks which car wins each row.
+Browse /compare for every comparison, open a comparison URL directly — for example /compare/bmw-i4-vs-tesla-model-3 — or pick two cars in the database and use the compare bar. The comparison table puts entry price, range, 0–60 mph, top speed, power, battery capacity, DC charging peak, connector and seats in one view, names the trim behind each figure, and marks the lower price, longer range, higher charging peak and quicker time only where the two figures are comparable (same market, currency and test cycle).
 
 Which electric car has the longest range?
 
@@ -201,11 +201,11 @@ Where to go next
 
 - Best EV comparison tools, compared honestly
 
+- All rankings, by market
+
 - Longest range electric cars
 
 - Cheapest electric cars
-
-- Best EVs under $40,000
 
 - Fastest electric cars (0–60 mph)
 
@@ -317,19 +317,27 @@ More from EV Lineup
 
 - EV Lineup FAQ
 
+- All rankings, by market
+
 - Longest range electric cars
 
 - Cheapest electric cars
-
-- Best EVs under $40,000
 
 - Fastest electric cars (0–60 mph)
 
 - Best 3-row electric SUVs (6+ seats)
 
+- EVs under $40,000, ranked by range
+
 - Electric pickup trucks
 
-- EVs with 300+ miles of range
+- EVs with 300+ miles of range, cheapest first
+
+- Cheapest electric cars in the UK
+
+- Longest range electric cars in Europe
+
+- Cheapest electric cars in China
 
 ================================================================
 URL: https://www.evlineup.org/vs/edmunds
@@ -403,15 +411,15 @@ In practice the two are complements rather than substitutes: shortlist on EV Lin
 
 Try the comparison yourself
 
-- Tesla Model 3 vs BMW i4
+- BMW i4 vs Tesla Model 3
 
 - Hyundai Ioniq 5 vs Kia EV6
 
-- Tesla Model Y vs Ford Mustang Mach-E
+- Ford Mustang Mach-E vs Tesla Model Y
 
 - Rivian R1S vs Tesla Model X
 
-- Tesla Model 3 vs Hyundai Ioniq 6
+- Hyundai Ioniq 6 vs Tesla Model 3
 
 - Longest range electric cars, ranked
 
@@ -491,15 +499,15 @@ In practice the two are complements rather than substitutes: shortlist on EV Lin
 
 Try the comparison yourself
 
-- Tesla Model 3 vs BMW i4
+- BMW i4 vs Tesla Model 3
 
 - Hyundai Ioniq 5 vs Kia EV6
 
-- Tesla Model Y vs Ford Mustang Mach-E
+- Ford Mustang Mach-E vs Tesla Model Y
 
 - Rivian R1S vs Tesla Model X
 
-- Tesla Model 3 vs Hyundai Ioniq 6
+- Hyundai Ioniq 6 vs Tesla Model 3
 
 - Longest range electric cars, ranked
 
@@ -579,15 +587,15 @@ In practice the two are complements rather than substitutes: shortlist on EV Lin
 
 Try the comparison yourself
 
-- Tesla Model 3 vs BMW i4
+- BMW i4 vs Tesla Model 3
 
 - Hyundai Ioniq 5 vs Kia EV6
 
-- Tesla Model Y vs Ford Mustang Mach-E
+- Ford Mustang Mach-E vs Tesla Model Y
 
 - Rivian R1S vs Tesla Model X
 
-- Tesla Model 3 vs Hyundai Ioniq 6
+- Hyundai Ioniq 6 vs Tesla Model 3
 
 - Longest range electric cars, ranked
 
@@ -667,15 +675,15 @@ In practice the two are complements rather than substitutes: shortlist on EV Lin
 
 Try the comparison yourself
 
-- Tesla Model 3 vs BMW i4
+- BMW i4 vs Tesla Model 3
 
 - Hyundai Ioniq 5 vs Kia EV6
 
-- Tesla Model Y vs Ford Mustang Mach-E
+- Ford Mustang Mach-E vs Tesla Model Y
 
 - Rivian R1S vs Tesla Model X
 
-- Tesla Model 3 vs Hyundai Ioniq 6
+- Hyundai Ioniq 6 vs Tesla Model 3
 
 - Longest range electric cars, ranked
 

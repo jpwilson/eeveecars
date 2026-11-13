@@ -30,6 +30,8 @@ const TermsPage = lazy(() => import("../pages/TermsPage"));
 const AdvertisePage = lazy(() => import("../pages/AdvertisePage"));
 const ComparePage = lazy(() => import("../pages/ComparePage"));
 const BestPage = lazy(() => import("../pages/BestPage"));
+const CompareIndexPage = lazy(() => import("../pages/CompareIndexPage"));
+const BestIndexPage = lazy(() => import("../pages/BestIndexPage"));
 // Catalog pages (make → model → generation → variant) and the browse page
 const AllCarsPage = lazy(() => import("../pages/AllCarsPage"));
 const MakesIndexPage = lazy(() => import("../pages/catalog/MakesIndexPage"));
@@ -77,7 +79,9 @@ const router = createBrowserRouter(
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/advertise" element={<AdvertisePage />} />
       <Route path="/advertize" element={<Navigate to="/advertise" replace />} />
+      <Route path="/compare" element={<CompareIndexPage />} />
       <Route path="/compare/:pair" element={<ComparePage />} />
+      <Route path="/best" element={<BestIndexPage />} />
       <Route path="/best/:criteria" element={<BestPage />} />
       <Route path="/layout_test" element={<Layouts />} />
       <Route path="*" element={<NotFoundPage />} />
