@@ -2,11 +2,16 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import posthog from "posthog-js";
 
-const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY?.trim();
+// PostHog project key for Bookmarker/EV Lineup shared analytics (project 588858, US cloud)
+// This is a PUBLIC client-side key (phc_*), safe to commit and ship in the bundle.
+// Sites are distinguished by $host; we also set app='evlineup' as a super property.
+const POSTHOG_KEY =
+  import.meta.env.VITE_POSTHOG_KEY || "phc_o34s8vv6TWjzDemdh39CAW8d4R52qFzVt2RZCnQEEKqx";
 const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://us.i.posthog.com";
 
 let isInitialized = false;
 
+// Initialize PostHog
 if (POSTHOG_KEY && !isInitialized) {
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
@@ -16,7 +21,7 @@ if (POSTHOG_KEY && !isInitialized) {
     autocapture: false,
   });
   
-  // Distinguish EV Lineup events when a PostHog project serves multiple apps.
+  // Register super property to distinguish this app from others in the shared project
   posthog.register({ app: "evlineup" });
   
   isInitialized = true;
