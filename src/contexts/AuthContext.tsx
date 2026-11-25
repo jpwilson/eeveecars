@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../services/supabase-client";
+import { identifyUser, trackSignup } from "../utils/analytics";
 
 interface AuthUser {
   id: string;
@@ -59,25 +60,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ? mapUser(session.user) : null);
       setIsLoading(false);
+      
+      // Identify user in analytics (but don't track signup, since this is an existing session)
+      if (session?.user) {
+        identifyUser(session.user.id);
+      }
     });
 
     // Listen for auth changes (login, logout, token refresh)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ? mapUser(session.user) : null);
       setIsLoading(false);
+      
+      // Identify user on sign-in (signup tracking happens in the signup functions)
+      if (event === "SIGNED_IN" && session?.user) {
+        identifyUser(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { data } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    // Note: signup tracking for OAuth happens in AuthCallbackPage after redirect
   };
 
   const signInWithTwitter = async () => {
@@ -108,12 +120,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     name: string
   ) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: name } },
     });
     if (error) return { error: error.message };
+    
+    // Track signup (the SIGNED_UP event will also fire, but this ensures we capture it)
+    if (data.user) {
+      trackSignup(data.user.id, "email");
+    }
+    
     return { needsVerification: true };
   };
 

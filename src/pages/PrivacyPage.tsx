@@ -10,7 +10,7 @@ export default function PrivacyPage() {
           Privacy Policy
         </Heading>
         <Text fontSize="sm" color="gray.500" mb={8}>
-          Effective date: July 10, 2026
+          Effective date: November 20, 2026
         </Text>
 
         <Heading as="h2" size="md" mt={8} mb={3}>
@@ -26,9 +26,11 @@ export default function PrivacyPage() {
         </Heading>
         <UnorderedList spacing={2} mb={4}>
           <ListItem>
-            <b>Usage analytics.</b> We use Google Analytics and Vercel Analytics
-            to understand how the site is used (pages visited, device type,
-            approximate location). These set cookies or use similar technologies.
+            <b>Usage analytics.</b> We use Google Analytics, Vercel Analytics,
+            and PostHog to understand how the site is used (pages visited, device type,
+            approximate location, UTM campaign sources). These set cookies or use
+            similar technologies. We never track personally identifiable information
+            beyond an internal user ID for account holders.
           </ListItem>
           <ListItem>
             <b>Account data.</b> If you create an account, we store your email
@@ -53,7 +55,7 @@ export default function PrivacyPage() {
         <Text mb={4}>
           We do not sell your personal information. We share it only with the
           service providers that run the site (Google Analytics, Vercel,
-          Supabase) or when you explicitly ask us to (e.g., a dealer quote
+          PostHog, Supabase) or when you explicitly ask us to (e.g., a dealer quote
           request).
         </Text>
 
